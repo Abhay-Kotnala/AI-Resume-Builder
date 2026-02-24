@@ -1,0 +1,39 @@
+# =============================================
+# ElevateAI — .gitignore
+# =============================================
+
+# ---- Secrets (NEVER COMMIT THESE) ----
+**/application-local.properties
+application-local.properties
+**/.env
+**/.env.local
+**/.env.*.local
+frontend/.env.local
+frontend/.env.*.local
+
+# ---- Build outputs ----
+target/
+dist/
+build/
+*.class
+*.jar
+*.war
+
+# ---- Dependencies ----
+node_modules/
+
+# ---- IDE & OS files ----
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ---- Logs ----
+*.log
+*.txt
+logs/
+
+# ---- Test artifacts ----
+*.dump

@@ -1,0 +1,16 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ai-resume-builder
+  datasource:
+    url: jdbc:postgresql://localhost:5432/airesume
+    username: postgres
+    password: password 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
