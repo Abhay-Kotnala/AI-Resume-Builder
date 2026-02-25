@@ -1,5 +1,6 @@
 package com.airesume.config;
 
+import com.airesume.security.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.airesume.security.JwtAuthenticationFilter;
 import com.airesume.security.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,9 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/resume/**").permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
+                                                .authorizationEndpoint(endpoint -> endpoint
+                                                                .authorizationRequestRepository(
+                                                                                cookieAuthorizationRequestRepository()))
                                                 .successHandler(oAuth2LoginSuccessHandler))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -56,6 +60,11 @@ public class SecurityConfig {
 
         @Value("${frontend.url:http://localhost:5173}")
         private String frontendUrl;
+
+        @Bean
+        public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+                return new HttpCookieOAuth2AuthorizationRequestRepository();
+        }
 
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
