@@ -13,8 +13,7 @@ export const MegaFooter: React.FC = () => {
                     {/* Brand & Mission */}
                     <div className="lg:col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <Logo className="w-8 h-8" />
-                            <span className="font-bold text-xl tracking-tight text-white">ElevateAI</span>
+                            <Logo className="w-14 h-14" />
                         </div>
                         <p className="text-slate-400 mb-8 max-w-sm leading-relaxed text-sm">
                             We're on a mission to democratize the job hunt. Using advanced NLP, we level the playing field so your resume gets the attention it deserves from modern ATS software.
