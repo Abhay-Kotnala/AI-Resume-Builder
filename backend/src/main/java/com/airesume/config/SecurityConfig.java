@@ -34,9 +34,8 @@ public class SecurityConfig {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(auth -> auth
                                                 // Allow public access to error and static files
-                                                .requestMatchers("/error", "/favicon.ico", "/**/*.png", "/**/*.gif",
-                                                                "/**/*.svg", "/**/*.jpg",
-                                                                "/**/*.html", "/**/*.css", "/**/*.js")
+                                                .requestMatchers("/error", "/favicon.ico", "/images/**", "/static/**",
+                                                                "/assets/**")
                                                 .permitAll()
                                                 // All /api/resume endpoints are currently open, allowing users to build
                                                 // a

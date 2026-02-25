@@ -3,7 +3,7 @@
 # ============================================================
 
 # Stage 1: Build the JAR with Maven
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 
 # Copy Maven wrapper and pom.xml first (for layer caching)
@@ -20,7 +20,7 @@ RUN ./mvnw package -DskipTests -q
 # ============================================================
 # Stage 2: Run on a lean JRE image (much smaller final image)
 # ============================================================
-FROM eclipse-temurin:21-jre AS runner
+FROM eclipse-temurin:17-jre AS runner
 WORKDIR /app
 
 # Copy only the built artifact from Stage 1
