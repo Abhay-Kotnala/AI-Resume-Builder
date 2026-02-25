@@ -23,6 +23,9 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    @org.springframework.beans.factory.annotation.Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
@@ -75,8 +78,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String token = jwtService.generateToken(user.getEmail());
 
         // 3. Redirect to frontend with Token
-        // Adjust this URL to match your frontend port & OAuth2 Callback route
-        String frontendUrl = "http://localhost:5173/oauth2/callback?token=" + token;
-        getRedirectStrategy().sendRedirect(request, response, frontendUrl);
+        String redirectUrl = frontendUrl + "/oauth2/callback?token=" + token;
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }
