@@ -93,74 +93,72 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
             {/* Left Sidebar - Analysis & Tools */}
             <div className="w-full lg:w-1/2 xl:w-5/12 p-4 sm:p-6 lg:p-8 space-y-8 overflow-y-auto border-r border-slate-200 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 animate-fade-in-left">
                 {/* Header / Score Section */}
-                <div className={`p-4 sm:p-8 rounded-3xl border flex flex-col items-center justify-between gap-6 transition-colors duration-500 relative ${getScoreLightBg(result.atsScore)}`}>
-                    <div className="space-y-4 text-center flex-1 w-full">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between w-full">
-                            <div>
-                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Analysis Complete</h2>
-                                <p className="text-slate-600 font-medium mt-2 text-sm sm:text-base">Here is how your resume performed against our ATS algorithms.</p>
-                            </div>
-                            <div className="flex gap-2 w-full sm:w-auto">
-                                {/* Mobile toggle for preview panel */}
-                                <button
-                                    onClick={() => setShowPreview(v => !v)}
-                                    className="lg:hidden bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all flex-1 text-sm"
-                                >
-                                    {showPreview ? 'Hide Preview' : 'View PDF Preview'}
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            setIsExporting(true);
-                                            trackPdfExported(exportTemplate, exportFont);
-                                            await exportToPdf(result.resumeId, {
-                                                text: '', // Using the existing backend text
-                                                template: exportTemplate,
-                                                font: exportFont
-                                            });
-                                        } catch (error) {
-                                            console.error('Failed to export PDF:', error);
-                                        } finally {
-                                            setIsExporting(false);
-                                        }
-                                    }}
-                                    disabled={isExporting}
-                                    className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2 text-sm flex-1 print:hidden cursor-pointer active:scale-95"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                    Download
-                                </button>
-                            </div>
+                <div className={`p-4 sm:p-6 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(result.atsScore)}`}>
 
-                            <div className="relative flex items-center justify-center shrink-0">
-                                <svg className="w-32 h-32 transform -rotate-90">
-                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-200" />
-                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray={364} strokeDashoffset={364 - (364 * result.atsScore) / 100} className={`${getScoreColor(result.atsScore)} transition-all duration-1000 ease-out`} strokeLinecap="round" />
-                                </svg>
-                                <div className="absolute flex flex-col items-center justify-center">
-                                    <span className={`text-4xl font-extrabold tracking-tighter ${getScoreColor(result.atsScore)}`}>{result.atsScore}</span>
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Score</span>
-                                </div>
+                    {/* Top row: title + action buttons */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Analysis Complete</h2>
+                            <p className="text-slate-600 font-medium mt-1 text-sm sm:text-base">Here's how your resume scored against ATS algorithms.</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <button
+                                onClick={() => setShowPreview(v => !v)}
+                                className="lg:hidden bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-2 rounded-xl font-bold shadow-sm transition-all text-sm"
+                            >
+                                {showPreview ? 'Hide' : '📄 Preview'}
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setIsExporting(true);
+                                        trackPdfExported(exportTemplate, exportFont);
+                                        await exportToPdf(result.resumeId, {
+                                            text: '',
+                                            template: exportTemplate,
+                                            font: exportFont
+                                        });
+                                    } catch (error) {
+                                        console.error('Failed to export PDF:', error);
+                                    } finally {
+                                        setIsExporting(false);
+                                    }
+                                }}
+                                disabled={isExporting}
+                                className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2 text-sm print:hidden cursor-pointer active:scale-95"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Score ring + sub-score breakdown side by side */}
+                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                        {/* ATS Score Ring */}
+                        <div className="relative flex items-center justify-center shrink-0">
+                            <svg className="w-28 h-28 transform -rotate-90">
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" strokeWidth="10" fill="transparent" className="text-slate-200" />
+                                <circle cx="56" cy="56" r="50" stroke="currentColor" strokeWidth="10" fill="transparent" strokeDasharray={314} strokeDashoffset={314 - (314 * result.atsScore) / 100} className={`${getScoreColor(result.atsScore)} transition-all duration-1000 ease-out`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center justify-center">
+                                <span className={`text-3xl font-extrabold tracking-tighter ${getScoreColor(result.atsScore)}`}>{result.atsScore}</span>
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Score</span>
                             </div>
                         </div>
 
-                        {/* Granular Score Breakdown */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Sub-scores */}
+                        <div className="grid grid-cols-3 gap-3 flex-1 w-full">
                             {[
-                                { label: 'Impact Metrics', score: result.impactScore, icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-100' },
-                                { label: 'Brevity & Scanability', score: result.brevityScore, icon: 'M4 6h16M4 12h16m-7 6h7', color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
-                                { label: 'Action Verbs', score: result.actionVerbScore, icon: 'M13 10V3L4 14h7v7l9-11h-7z', color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
+                                { label: 'Impact', score: result.impactScore, color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-100' },
+                                { label: 'Brevity', score: result.brevityScore, color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
+                                { label: 'Action', score: result.actionVerbScore, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
                             ].map((item, idx) => (
-                                <div key={idx} className={`${item.bg} ${item.border} rounded-2xl p-5 border shadow-sm`}>
-                                    <div className="flex justify-between items-center mb-3">
-                                        <span className={`font-bold flex items-center gap-2 ${item.text}`}>
-                                            <svg className="w-5 h-5 opacity-75" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} /></svg>
-                                            {item.label}
-                                        </span>
-                                        <span className={`font-extrabold ${item.text}`}>{item.score}/100</span>
-                                    </div>
-                                    <div className="w-full bg-white rounded-full h-2.5 overflow-hidden">
-                                        <div className={`${item.color} h-2.5 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${item.score}%` }}></div>
+                                <div key={idx} className={`${item.bg} ${item.border} rounded-2xl p-3 border shadow-sm text-center`}>
+                                    <div className={`text-2xl font-extrabold ${item.text}`}>{item.score}</div>
+                                    <div className={`text-xs font-bold ${item.text} opacity-80 mt-0.5`}>{item.label}</div>
+                                    <div className="w-full bg-white rounded-full h-1.5 mt-2 overflow-hidden">
+                                        <div className={`${item.color} h-1.5 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${item.score}%` }} />
                                     </div>
                                 </div>
                             ))}
