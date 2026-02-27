@@ -40,14 +40,10 @@ export const TestimonialsSlider: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const setSlide = (index: number) => {
-        setActiveIndex(index);
-    };
-
     return (
         <section className="py-24 bg-white border-y border-slate-100 overflow-hidden relative">
-            {/* Background elements */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-50 rounded-[100%] blur-[80px] opacity-60 pointer-events-none"></div>
+            {/* Background glow */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-50 rounded-[100%] blur-[80px] opacity-60 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center mb-16">
@@ -55,36 +51,37 @@ export const TestimonialsSlider: React.FC = () => {
                         Trusted by professionals landing roles at
                     </h2>
                     <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-8 opacity-60 grayscale filter hover:grayscale-0 transition-all duration-500">
-                        {/* Mock Company Logos (Text based for now) */}
-                        <div className="text-2xl font-black text-slate-400">Google</div>
-                        <div className="text-2xl font-black text-slate-400">Microsoft</div>
-                        <div className="text-2xl font-black text-slate-400">Meta</div>
-                        <div className="text-2xl font-black text-slate-400">Netflix</div>
-                        <div className="text-2xl font-black text-slate-400">Spotify</div>
+                        {['Google', 'Microsoft', 'Meta', 'Netflix', 'Spotify'].map(name => (
+                            <div key={name} className="text-2xl font-black text-slate-400">{name}</div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="max-w-4xl mx-auto relative">
-
-                    {/* Testimonial Cards */}
-                    <div className="relative h-[280px] sm:h-[220px]">
+                <div className="max-w-4xl mx-auto">
+                    {/* Slider — dynamic height, no clipping */}
+                    <div className="relative overflow-hidden">
                         {testimonials.map((testimonial, index) => {
-                            const isActive = index === activeIndex;
-                            const isPrev = index === (activeIndex - 1 + testimonials.length) % testimonials.length;
+                            const diff = (index - activeIndex + testimonials.length) % testimonials.length;
+                            // 0 = active, 1 = next (right), 2 = prev (left)
+                            const isActive = diff === 0;
+                            const isNext = diff === 1;
 
-                            let transformClass = "opacity-0 translate-x-32 scale-95 z-0";
-                            if (isActive) transformClass = "opacity-100 translate-x-0 scale-100 z-20 shadow-2xl shadow-emerald-100/50";
-                            else if (isPrev) transformClass = "opacity-0 -translate-x-32 scale-95 z-0";
+                            const base = "absolute top-0 left-0 w-full transition-all duration-700 ease-in-out";
+                            const cls = isActive
+                                ? "relative opacity-100 translate-x-0 scale-100 z-20 shadow-2xl shadow-emerald-100/50"
+                                : isNext
+                                    ? `${base} opacity-0 translate-x-full scale-95 z-0 pointer-events-none`
+                                    : `${base} opacity-0 -translate-x-full scale-95 z-0 pointer-events-none`;
 
                             return (
-                                <div
-                                    key={testimonial.id}
-                                    className={`absolute top-0 left-0 w-full transition-all duration-700 ease-in-out ${transformClass}`}
-                                >
-                                    <div className="bg-white rounded-3xl p-8 md:p-10 border border-slate-100 text-center">
+                                <div key={testimonial.id} className={cls}>
+                                    <div className="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 text-center">
+                                        {/* Stars */}
                                         <div className="flex justify-center gap-1 mb-6 text-amber-400">
                                             {[...Array(testimonial.rating)].map((_, i) => (
-                                                <svg key={i} className="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                                <svg key={i} className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
                                             ))}
                                         </div>
                                         <p className="text-xl md:text-2xl text-slate-700 font-medium italic mb-8 leading-relaxed">
@@ -103,17 +100,16 @@ export const TestimonialsSlider: React.FC = () => {
                         })}
                     </div>
 
-                    {/* Navigation Dots */}
-                    <div className="flex justify-center gap-3 mt-10">
+                    {/* Dots */}
+                    <div className="flex justify-center gap-3 mt-8">
                         {testimonials.map((_, index) => (
                             <button
                                 key={index}
-                                onClick={() => setSlide(index)}
+                                onClick={() => setActiveIndex(index)}
                                 className={`w-3 h-3 rounded-full transition-all duration-300 ${index === activeIndex ? 'bg-emerald-500 scale-125' : 'bg-slate-200 hover:bg-slate-300'}`}
                             />
                         ))}
                     </div>
-
                 </div>
             </div>
         </section>

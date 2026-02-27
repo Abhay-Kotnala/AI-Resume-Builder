@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateCoverLetter } from '../services/api';
+import { trackCoverLetterGenerated } from '../services/analytics';
 
 interface Props {
     resumeId: number;
@@ -17,6 +18,7 @@ export const CoverLetterGenerator: React.FC<Props> = ({ resumeId }) => {
         try {
             const res = await generateCoverLetter(resumeId, jobDescription);
             setResult(res.coverLetter);
+            trackCoverLetterGenerated();
         } catch (err: any) {
             setError(err.message || 'Failed to generate cover letter.');
         } finally {

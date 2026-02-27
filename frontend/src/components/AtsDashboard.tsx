@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnalysisResponse, exportToPdf } from '../services/api';
 import { MagicWandEditor } from './MagicWandEditor';
 import { CoverLetterGenerator } from './CoverLetterGenerator';
+import { trackPdfExported, trackAiRewriteUsed, trackUpgradeClicked } from '../services/analytics';
 
 interface AtsDashboardProps {
     result: AnalysisResponse;
@@ -109,6 +110,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                     onClick={async () => {
                                         try {
                                             setIsExporting(true);
+                                            trackPdfExported(exportTemplate, exportFont);
                                             await exportToPdf(result.resumeId, {
                                                 text: '', // Using the existing backend text
                                                 template: exportTemplate,
@@ -201,7 +203,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                     </div>
                                     {result.isPartialAnalysis && (
                                         <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/40">
-                                            <button onClick={() => window.location.href = '/pricing'} className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-full shadow-lg hover:bg-emerald-500 hover:shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer">
+                                            <button onClick={() => { trackUpgradeClicked('keywords'); window.location.href = '/pricing'; }} className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-full shadow-lg hover:bg-emerald-500 hover:shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer">
                                                 <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
                                                 Upgrade to Reveal
                                             </button>
@@ -241,7 +243,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                     <span className="text-rose-400 mt-1 flex-shrink-0">•</span>
                                     <span className="leading-relaxed flex-1 pr-8">{weakness}</span>
                                     <button
-                                        onClick={() => setEditingBullet(weakness)}
+                                        onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
                                         className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-rose-100/80 text-rose-600 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg shadow-sm"
                                         title="Rewrite with Magic Wand"
                                     >
@@ -288,7 +290,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                 </div>
                                 {result.isPartialAnalysis && (
                                     <div className="absolute inset-0 flex items-center justify-center z-10 mt-12">
-                                        <button onClick={() => window.location.href = '/pricing'} className="px-6 py-3 bg-slate-900 border border-slate-700 text-white text-md font-bold rounded-full shadow-2xl hover:bg-emerald-500 hover:border-emerald-400 hover:shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer transform hover:scale-105 duration-300">
+                                        <button onClick={() => { trackUpgradeClicked('checklist'); window.location.href = '/pricing'; }} className="px-6 py-3 bg-slate-900 border border-slate-700 text-white text-md font-bold rounded-full shadow-2xl hover:bg-emerald-500 hover:border-emerald-400 hover:shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer transform hover:scale-105 duration-300">
                                             <svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
                                             Unlock Premium Insights
                                         </button>
@@ -335,6 +337,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                 onClick={() => {
                                     if (result.isPartialAnalysis && tpl.id !== 'basic') {
                                         if (window.confirm("Premium templates require ElevateAI Pro. Upgrade now?")) {
+                                            trackUpgradeClicked('template_guard');
                                             window.location.href = '/pricing';
                                         }
                                     } else {

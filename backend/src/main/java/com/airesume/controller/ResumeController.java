@@ -10,6 +10,8 @@ import com.airesume.service.AiAnalysisService;
 import com.airesume.service.PdfParserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
@@ -76,10 +78,11 @@ public class ResumeController {
 
             String jobDescription = request != null ? request.get("jobDescription") : null;
 
-            // Determine pro status from session
+            // Determine pro status from JWT-populated SecurityContext
             boolean isProUser = false;
-            String userEmail = (String) session.getAttribute("user");
-            if (userEmail != null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                String userEmail = auth.getName();
                 isProUser = userRepository.findByEmail(userEmail)
                         .map(User::isPro)
                         .orElse(false);
@@ -133,9 +136,11 @@ public class ResumeController {
         }
     }
 
-    @GetMapping(value = "/{resumeId}/export-pdf", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
+    @PostMapping(value = "/{resumeId}/export-pdf", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
     @ResponseBody
-    public ResponseEntity<byte[]> exportToPdf(@PathVariable Long resumeId) {
+    public ResponseEntity<byte[]> exportToPdf(
+            @PathVariable Long resumeId,
+            @RequestBody(required = false) Map<String, String> options) {
         try {
             String fileName = "My Resume";
             String extractedText = "";
@@ -150,11 +155,22 @@ public class ResumeController {
                 extractedText = resume.getExtractedText();
             }
 
+            String template = options != null && options.containsKey("template") ? options.get("template") : "basic";
+            String font = options != null && options.containsKey("font") ? options.get("font") : "Helvetica";
+
+            String templateFile = "resume-template";
+            if ("modern".equals(template)) {
+                templateFile = "resume-template-modern";
+            } else if ("executive".equals(template)) {
+                templateFile = "resume-template-executive";
+            }
+
             org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
             context.setVariable("resumeName", escapeXml(fileName));
             context.setVariable("extractedText", escapeXml(extractedText));
+            context.setVariable("fontFamily", font);
 
-            byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml("resume-template", context);
+            byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml(templateFile, context);
 
             return ResponseEntity.ok()
                     .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
@@ -191,9 +207,11 @@ public class ResumeController {
                     .map(Resume::getExtractedText)
                     .orElse("");
 
+            // Determine pro status from JWT-populated SecurityContext
             boolean isProUser = false;
-            String userEmail = (String) session.getAttribute("user");
-            if (userEmail != null) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                String userEmail = auth.getName();
                 isProUser = userRepository.findByEmail(userEmail)
                         .map(User::isPro)
                         .orElse(false);

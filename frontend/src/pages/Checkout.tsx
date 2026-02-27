@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { API_BASE_URL } from '../services/api';
+import { trackCheckoutStarted } from '../services/analytics';
 
 
 export const Checkout: React.FC = () => {
@@ -12,13 +13,16 @@ export const Checkout: React.FC = () => {
     const handleStripeCheckout = async () => {
         setIsProcessing(true);
         setError(null);
+        trackCheckoutStarted();
 
         try {
             // Call our new Spring Boot endpoint
+            const token = localStorage.getItem('elevateAI_token');
             const response = await fetch(`${API_BASE_URL.replace('/resume', '/stripe')}/create-checkout-session`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                 },
             });
 
@@ -61,7 +65,7 @@ export const Checkout: React.FC = () => {
                     <div className="relative z-10 w-full mb-12">
                         <span className="text-emerald-400 font-bold text-sm tracking-wider uppercase mb-2 block">Subscription</span>
                         <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">ElevateAI Premium</h1>
-                        <p className="text-slate-400">Interview-generating AI for serious job seekers.</p>
+                        <p className="text-slate-400">AI-powered resume optimization for serious job seekers.</p>
 
                         <div className="flex items-end gap-2 mt-6 border-b border-slate-800 pb-8">
                             <span className="text-5xl font-extrabold text-white">$19</span>

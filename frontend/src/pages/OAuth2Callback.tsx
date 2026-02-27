@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { trackLoginCompleted } from '../services/analytics';
 
 const OAuth2Callback: React.FC = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const OAuth2Callback: React.FC = () => {
         if (token) {
             // Save the token to context (which saves to localStorage)
             login(token);
+            trackLoginCompleted('oauth2');
             // Redirect to the dashboard
             navigate('/dashboard', { replace: true });
         } else {

@@ -1,10 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
+import { trackPurchaseCompleted } from '../services/analytics';
 
 export const Success: React.FC = () => {
 
     useEffect(() => {
+        // Track purchase immediately on page mount
+        trackPurchaseCompleted();
+
         // Fire confetti animation lightly upon mounting the success page
         const duration = 3 * 1000;
         const animationEnd = Date.now() + duration;

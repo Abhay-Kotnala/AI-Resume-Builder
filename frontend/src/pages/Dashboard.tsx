@@ -60,7 +60,7 @@ export const Dashboard: React.FC = () => {
                                 <img src={user.picture} alt={user.name} className="w-8 h-8 rounded-full border-2 border-emerald-200 shadow-sm object-cover" />
                             ) : (
                                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
-                                    {firstName[0].toUpperCase()}
+                                    {firstName?.[0]?.toUpperCase() ?? '?'}
                                 </div>
                             )}
                             <span className="text-sm font-medium text-slate-700 hidden sm:block">{user?.name}</span>
@@ -88,7 +88,7 @@ export const Dashboard: React.FC = () => {
                             <img src={user.picture} alt={user.name} className="w-20 h-20 rounded-2xl border-2 border-white/20 shadow-2xl object-cover" />
                         ) : (
                             <div className="w-20 h-20 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 font-bold text-3xl">
-                                {firstName[0].toUpperCase()}
+                                {firstName?.[0]?.toUpperCase() ?? '?'}
                             </div>
                         )}
                         <div>

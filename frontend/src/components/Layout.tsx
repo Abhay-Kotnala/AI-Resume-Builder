@@ -4,6 +4,7 @@ import { MegaFooter } from './MegaFooter';
 import { Logo } from './Logo';
 import { SignInModal } from './SignInModal';
 import { useAuth } from '../context/AuthContext';
+import { trackLoginStarted } from '../services/analytics';
 
 export const Layout: React.FC = () => {
     const navigate = useNavigate();
@@ -48,7 +49,7 @@ export const Layout: React.FC = () => {
                         <div className="flex items-center gap-2 md:gap-4">
                             {!isAuthenticated ? (
                                 <>
-                                    <button onClick={() => setIsSignInOpen(true)} className="hidden md:block px-5 py-2 text-slate-600 font-medium border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Sign in</button>
+                                    <button onClick={() => { trackLoginStarted(); setIsSignInOpen(true); }} className="hidden md:block px-5 py-2 text-slate-600 font-medium border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Sign in</button>
                                     <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="px-4 md:px-5 py-2 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all cursor-pointer">Get Started</button>
                                 </>
                             ) : (
@@ -86,7 +87,7 @@ export const Layout: React.FC = () => {
                                 <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 font-medium hover:text-emerald-600">How it works</a>
                                 <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium hover:text-emerald-600">Pricing</Link>
                                 {!isAuthenticated && (
-                                    <button onClick={() => { setIsSignInOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 font-medium hover:text-emerald-600">Sign in</button>
+                                    <button onClick={() => { trackLoginStarted(); setIsSignInOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 font-medium hover:text-emerald-600">Sign in</button>
                                 )}
                                 {isAuthenticated && (
                                     <>

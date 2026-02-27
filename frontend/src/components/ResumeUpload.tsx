@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { uploadResume, analyzeResume, AnalysisResponse } from '../services/api';
+import { trackResumeUploadStarted, trackResumeAnalyzed } from '../services/analytics';
 
 interface ResumeUploadProps {
     onAnalysisComplete: (result: AnalysisResponse) => void;
@@ -15,6 +16,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
+            trackResumeUploadStarted();
         }
     };
 
@@ -33,6 +35,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
         setIsDragging(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             setFile(e.dataTransfer.files[0]);
+            trackResumeUploadStarted();
         }
     };
 
@@ -45,6 +48,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
         try {
             const uploadResult = await uploadResume(file);
             const analysisResult = await analyzeResume(uploadResult.resumeId, jobDescription);
+            trackResumeAnalyzed(analysisResult.atsScore, !!jobDescription.trim());
             onAnalysisComplete(analysisResult);
         } catch (err: any) {
             setError(err.message || 'Error processing resume');

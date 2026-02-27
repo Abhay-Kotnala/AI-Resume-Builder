@@ -9,11 +9,16 @@ import OAuth2Callback from './pages/OAuth2Callback';
 import { AuthProvider } from './context/AuthContext';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { usePageTracking } from './hooks/usePageTracking';
+
+/** Fires a GA4 page_view on every React Router navigation */
+const PageTracker = () => { usePageTracking(); return null; };
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <PageTracker />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
