@@ -37,7 +37,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
     useEffect(() => {
         if (!result.resumeId || result.resumeId <= 0) return;
         setPreviewLoading(true);
-        const apiBase = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
+        const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
         fetch(`${apiBase}/api/resume/${result.resumeId}/preview-html?template=${exportTemplate}&font=${encodeURIComponent(exportFont)}`)
             .then(res => res.text())
             .then(html => {
