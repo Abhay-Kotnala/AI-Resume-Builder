@@ -23,9 +23,9 @@ public class AiAnalysisService {
         this.objectMapper = objectMapper;
     }
 
-    public AnalysisResult analyzeResume(String resumeText, String jobDescription) {
+    public AnalysisResult analyzeResume(String resumeText, String jobDescription, boolean isPro) {
         if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return getMockResult();
+            return getMockResult(isPro);
         }
 
         try {
@@ -44,11 +44,27 @@ public class AiAnalysisService {
                     .retrieve()
                     .body(String.class);
 
-            return parseResponse(response);
+            AnalysisResult result = parseResponse(response);
+
+            // Apply Partial Analysis for Free Users
+            if (!isPro) {
+                result.setPartialAnalysis(true);
+                result.setMissingKeywords(
+                        "Upgrade to Pro to reveal exactly which keywords you are missing from this job description.");
+                if (result.getSuggestedImprovements() != null) {
+                    String[] improvements = result.getSuggestedImprovements().split("\n");
+                    if (improvements.length > 2) {
+                        result.setSuggestedImprovements(improvements[0] + "\n" + improvements[1]
+                                + "\n- [Locked] Upgrade to Pro to see all critical improvements.");
+                    }
+                }
+            }
+
+            return result;
 
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockResult(); // fallback
+            return getMockResult(isPro); // fallback
         }
     }
 
@@ -174,7 +190,7 @@ public class AiAnalysisService {
             return objectMapper.readValue(text.trim(), AnalysisResult.class);
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockResult();
+            return getMockResult(false);
         }
     }
 
@@ -187,7 +203,7 @@ public class AiAnalysisService {
         }
     }
 
-    private AnalysisResult getMockResult() {
+    private AnalysisResult getMockResult(boolean isPro) {
         AnalysisResult result = new AnalysisResult();
         result.setAtsScore(85);
         result.setImpactScore(65);
@@ -198,10 +214,21 @@ public class AiAnalysisService {
         result.setStrengths("- Strong programming languages (Java, React)\n- Concise and easy to read");
         result.setWeaknesses(
                 "- Missing keywords related to teamwork\n- Lacks numerical metrics to prove impact\n- Uses weak verbs like 'helped' and 'worked on'");
-        result.setSuggestedImprovements(
-                "Expand on the impact of your projects using specific action verbs and percentages.\nAdd a 'Soft Skills' section.");
         result.setFoundKeywords("Java, React, SQL, Spring Boot");
-        result.setMissingKeywords("AWS, Docker, CI/CD, Agile");
+
+        if (isPro) {
+            result.setPartialAnalysis(false);
+            result.setMissingKeywords("AWS, Docker, CI/CD, Agile");
+            result.setSuggestedImprovements(
+                    "Expand on the impact of your projects using specific action verbs and percentages.\nAdd a 'Soft Skills' section.");
+        } else {
+            result.setPartialAnalysis(true);
+            result.setMissingKeywords(
+                    "Upgrade to Pro to reveal exactly which keywords you are missing from this job description.");
+            result.setSuggestedImprovements(
+                    "Expand on the impact of your projects using specific action verbs and percentages.\n- [Locked] Upgrade to Pro to see all critical improvements.");
+        }
+
         return result;
     }
 }

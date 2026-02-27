@@ -63,7 +63,7 @@ export const MegaMenu: React.FC = () => {
                                 </div>
                             </a>
 
-                            <a href="#" className="group flex items-center gap-3 w-full">
+                            <a href="/#builder" className="group flex items-center gap-3 w-full">
                                 <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                                 </div>
@@ -81,10 +81,10 @@ export const MegaMenu: React.FC = () => {
                                     Resume Examples
                                 </div>
                                 <ul className="space-y-3 pl-7">
-                                    <li><a href="#" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Software Engineer</a></li>
-                                    <li><a href="#" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Product Manager</a></li>
-                                    <li><a href="#" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Data Scientist</a></li>
-                                    <li><a href="#" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Business Analyst</a></li>
+                                    <li><a href="/templates/software-engineer" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Software Engineer</a></li>
+                                    <li><a href="/templates/product-manager" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Product Manager</a></li>
+                                    <li><a href="/templates/data-scientist" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Data Scientist</a></li>
+                                    <li><a href="/templates/business-analyst" className="text-sm font-medium text-slate-600 hover:text-emerald-600">&bull; Business Analyst</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -97,15 +97,15 @@ export const MegaMenu: React.FC = () => {
                                     Resume Guides
                                 </div>
                                 <div className="space-y-5 pl-7">
-                                    <a href="#" className="block group">
+                                    <a href="/article/writing" className="block group">
                                         <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Writing a Resume</div>
                                         <p className="text-xs text-slate-500 mt-1">The most comprehensive guide on writing.</p>
                                     </a>
-                                    <a href="#" className="block group">
+                                    <a href="/article/summary" className="block group">
                                         <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Resume Summary</div>
                                         <p className="text-xs text-slate-500 mt-1">How to write a summary that gets attention.</p>
                                     </a>
-                                    <a href="#" className="block group">
+                                    <a href="/article/formats" className="block group">
                                         <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Formats & Templates</div>
                                         <p className="text-xs text-slate-500 mt-1">Which format is best for your use case.</p>
                                     </a>

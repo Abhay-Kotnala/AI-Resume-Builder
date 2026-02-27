@@ -43,4 +43,7 @@ public class AnalysisResult {
 
     @Column(columnDefinition = "TEXT")
     private String missingKeywords;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean isPartialAnalysis;
 }

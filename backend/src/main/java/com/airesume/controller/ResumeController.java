@@ -2,13 +2,18 @@ package com.airesume.controller;
 
 import com.airesume.entity.AnalysisResult;
 import com.airesume.entity.Resume;
+import com.airesume.entity.User;
 import com.airesume.repository.AnalysisResultRepository;
 import com.airesume.repository.ResumeRepository;
+import com.airesume.repository.UserRepository;
 import com.airesume.service.AiAnalysisService;
 import com.airesume.service.PdfParserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.Map;
 import org.slf4j.Logger;
@@ -26,17 +31,23 @@ public class ResumeController {
     private final ResumeRepository resumeRepository;
     private final AnalysisResultRepository analysisResultRepository;
     private final com.airesume.service.PdfGeneratorService pdfGeneratorService;
+    private final UserRepository userRepository;
+    private final TemplateEngine templateEngine;
 
     public ResumeController(PdfParserService pdfParserService,
             AiAnalysisService aiAnalysisService,
             ResumeRepository resumeRepository,
             AnalysisResultRepository analysisResultRepository,
-            com.airesume.service.PdfGeneratorService pdfGeneratorService) {
+            com.airesume.service.PdfGeneratorService pdfGeneratorService,
+            UserRepository userRepository,
+            TemplateEngine templateEngine) {
         this.pdfParserService = pdfParserService;
         this.aiAnalysisService = aiAnalysisService;
         this.resumeRepository = resumeRepository;
         this.analysisResultRepository = analysisResultRepository;
         this.pdfGeneratorService = pdfGeneratorService;
+        this.userRepository = userRepository;
+        this.templateEngine = templateEngine;
     }
 
     @PostMapping("/upload")
@@ -57,14 +68,25 @@ public class ResumeController {
 
     @PostMapping("/{resumeId}/analyze")
     public ResponseEntity<?> analyzeResume(@PathVariable Long resumeId,
-            @RequestBody(required = false) Map<String, String> request) {
+            @RequestBody(required = false) Map<String, String> request,
+            HttpSession session) {
         try {
             Resume resume = resumeRepository.findById(resumeId)
                     .orElseThrow(() -> new RuntimeException("Resume not found"));
 
             String jobDescription = request != null ? request.get("jobDescription") : null;
 
-            AnalysisResult result = aiAnalysisService.analyzeResume(resume.getExtractedText(), jobDescription);
+            // Determine pro status from session
+            boolean isProUser = false;
+            String userEmail = (String) session.getAttribute("user");
+            if (userEmail != null) {
+                isProUser = userRepository.findByEmail(userEmail)
+                        .map(User::isPro)
+                        .orElse(false);
+            }
+
+            AnalysisResult result = aiAnalysisService.analyzeResume(resume.getExtractedText(), jobDescription,
+                    isProUser);
             result.setResumeId(resume.getId());
 
             AnalysisResult savedResult = analysisResultRepository.save(result);
@@ -152,5 +174,69 @@ public class ResumeController {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
+    }
+
+    @GetMapping("/{id}/preview-html")
+    public ResponseEntity<String> previewHtml(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "basic") String template,
+            @RequestParam(defaultValue = "Helvetica") String font,
+            HttpSession session) {
+        try {
+            AnalysisResult result = analysisResultRepository.findByResumeId(id)
+                    .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+            // Get extracted text from the Resume entity
+            String extractedText = resumeRepository.findById(id)
+                    .map(Resume::getExtractedText)
+                    .orElse("");
+
+            boolean isProUser = false;
+            String userEmail = (String) session.getAttribute("user");
+            if (userEmail != null) {
+                isProUser = userRepository.findByEmail(userEmail)
+                        .map(User::isPro)
+                        .orElse(false);
+            }
+
+            // Enforce template restriction for preview too
+            if (!isProUser && ("modern".equals(template) || "executive".equals(template))) {
+                template = "basic";
+            }
+
+            // Generate HTML using Thymeleaf Context
+            Context context = new Context();
+
+            // Build context variables for the template
+            context.setVariable("extractedText", escapeXml(extractedText));
+            context.setVariable("atsScore", result.getAtsScore());
+            context.setVariable("impactScore", result.getImpactScore());
+            context.setVariable("brevityScore", result.getBrevityScore());
+            context.setVariable("actionVerbScore", result.getActionVerbScore());
+
+            // Watermark flag based on pro status
+            context.setVariable("isPro", isProUser);
+
+            // Styling context
+            context.setVariable("fontFamily", font);
+
+            String templateFile = "resume-template";
+            if ("modern".equals(template)) {
+                templateFile = "resume-template-modern";
+            } else if ("executive".equals(template)) {
+                templateFile = "resume-template-executive";
+            }
+
+            String htmlContent = templateEngine.process(templateFile, context);
+
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.TEXT_HTML);
+            return new ResponseEntity<>(htmlContent, headers, org.springframework.http.HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error generating preview: " + e.getMessage());
+        }
     }
 }

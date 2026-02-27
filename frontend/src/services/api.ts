@@ -13,6 +13,7 @@ export interface AnalysisResponse {
     suggestedImprovements: string;
     foundKeywords?: string;
     missingKeywords?: string;
+    isPartialAnalysis?: boolean;
 }
 
 const getAuthHeaders = (): Record<string, string> => {
@@ -90,12 +91,20 @@ export const generateCoverLetter = async (resumeId: number, jobDescription?: str
     return response.json();
 };
 
-export const exportToPdf = async (resumeId: number): Promise<void> => {
+export interface PdfExportOptions {
+    text: string;
+    template: string;
+    font: string;
+}
+
+export const exportToPdf = async (resumeId: number, options: PdfExportOptions): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/export-pdf`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
         },
+        body: JSON.stringify(options)
     });
 
     if (!response.ok) {

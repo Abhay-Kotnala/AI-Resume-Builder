@@ -26,7 +26,7 @@ class AiAnalysisServiceTest {
         String mockResumeText = "John Doe, Java Developer, 5 years of experience.";
         String mockJobDescription = "Looking for a Java Developer with Spring Boot experience.";
 
-        AnalysisResult result = aiAnalysisService.analyzeResume(mockResumeText, mockJobDescription);
+        AnalysisResult result = aiAnalysisService.analyzeResume(mockResumeText, mockJobDescription, true);
 
         assertNotNull(result);
         assertEquals(85, result.getAtsScore());

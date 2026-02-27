@@ -32,4 +32,11 @@ public class User {
     @Column(nullable = false, unique = true)
     private String providerId; // The user ID from the OAuth provider
 
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isPro = false;
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int scansUsed = 0;
 }
