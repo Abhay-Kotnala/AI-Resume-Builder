@@ -42,7 +42,7 @@ export const Success: React.FC = () => {
                     <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 </div>
 
-                <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
                     Welcome to Pro!
                 </h1>
 
@@ -50,7 +50,7 @@ export const Success: React.FC = () => {
                     Your payment was successful. You now have unlimited access to ElevateAI's premium optimization suite.
                 </p>
 
-                <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 mb-10 text-left max-w-sm mx-auto">
+                <div className="bg-white p-5 sm:p-8 rounded-3xl shadow-xl border border-slate-200 mb-10 text-left max-w-sm mx-auto">
                     <h3 className="font-bold text-slate-900 mb-4 border-b border-slate-100 pb-3">What's unlocked:</h3>
                     <ul className="space-y-3">
                         <li className="flex items-center gap-3 text-slate-700">

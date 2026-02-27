@@ -50,7 +50,10 @@ export const Layout: React.FC = () => {
                             {!isAuthenticated ? (
                                 <>
                                     <button onClick={() => { trackLoginStarted(); setIsSignInOpen(true); }} className="hidden md:block px-5 py-2 text-slate-600 font-medium border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Sign in</button>
-                                    <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="px-4 md:px-5 py-2 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all cursor-pointer">Get Started</button>
+                                    <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="px-3 sm:px-5 py-2 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all cursor-pointer text-sm sm:text-base">
+                                        <span className="sm:hidden">Start Free</span>
+                                        <span className="hidden sm:inline">Get Started</span>
+                                    </button>
                                 </>
                             ) : (
                                 <>

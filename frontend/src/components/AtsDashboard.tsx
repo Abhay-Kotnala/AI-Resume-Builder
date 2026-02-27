@@ -11,6 +11,7 @@ interface AtsDashboardProps {
 export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
     const [completedTodos, setCompletedTodos] = useState<Set<number>>(new Set());
     const [editingBullet, setEditingBullet] = useState<string | null>(null);
+    const [showPreview, setShowPreview] = useState(false); // mobile: preview panel toggle
 
     // Export Settings State
     const [exportTemplate, setExportTemplate] = useState('basic');
@@ -90,21 +91,22 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-slate-50">
             {/* Left Sidebar - Analysis & Tools */}
-            <div className="w-full lg:w-1/2 xl:w-5/12 p-6 lg:p-8 space-y-8 overflow-y-auto border-r border-slate-200 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 animate-fade-in-left">
+            <div className="w-full lg:w-1/2 xl:w-5/12 p-4 sm:p-6 lg:p-8 space-y-8 overflow-y-auto border-r border-slate-200 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 animate-fade-in-left">
                 {/* Header / Score Section */}
-                <div className={`p-8 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-8 transition-colors duration-500 relative ${getScoreLightBg(result.atsScore)}`}>
-                    <div className="space-y-4 text-center md:text-left flex-1">
-                        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between w-full">
+                <div className={`p-4 sm:p-8 rounded-3xl border flex flex-col items-center justify-between gap-6 transition-colors duration-500 relative ${getScoreLightBg(result.atsScore)}`}>
+                    <div className="space-y-4 text-center flex-1 w-full">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between w-full">
                             <div>
-                                <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Analysis Complete</h2>
-                                <p className="text-slate-600 font-medium mt-2">Here is how your resume performed against our ATS algorithms.</p>
+                                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Analysis Complete</h2>
+                                <p className="text-slate-600 font-medium mt-2 text-sm sm:text-base">Here is how your resume performed against our ATS algorithms.</p>
                             </div>
-                            <div className="flex gap-2 w-full md:w-auto">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                {/* Mobile toggle for preview panel */}
                                 <button
-                                    onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-                                    className="md:hidden bg-slate-100 text-slate-700 hover:bg-slate-200 px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all flex-1"
+                                    onClick={() => setShowPreview(v => !v)}
+                                    className="lg:hidden bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all flex-1 text-sm"
                                 >
-                                    View PDF
+                                    {showPreview ? 'Hide Preview' : 'View PDF Preview'}
                                 </button>
                                 <button
                                     onClick={async () => {
@@ -318,7 +320,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
             {/* End of Left Sidebar */}
 
             {/* Right Panel - Template Selection & Live Preview */}
-            <div className="w-full lg:w-1/2 xl:w-7/12 bg-slate-100 p-6 lg:p-8 flex flex-col h-auto lg:h-screen sticky top-0">
+            <div className={`w-full lg:w-1/2 xl:w-7/12 bg-slate-100 p-4 sm:p-6 lg:p-8 flex flex-col lg:h-screen lg:sticky lg:top-0 ${showPreview ? 'block' : 'hidden lg:flex'}`}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
@@ -326,7 +328,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     </h3>
 
                     {/* Inline Template Selection */}
-                    <div className="flex bg-white rounded-xl shadow-sm border border-slate-200 p-1">
+                    <div className="flex flex-wrap gap-1 bg-white rounded-xl shadow-sm border border-slate-200 p-1">
                         {[
                             { id: 'basic', label: 'Classic' },
                             { id: 'modern', label: 'Modern (Pro)' },
@@ -344,7 +346,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                         setExportTemplate(tpl.id);
                                     }
                                 }}
-                                className={`relative px-4 py-2 text-sm font-bold rounded-lg transition-all ${exportTemplate === tpl.id ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
+                                className={`relative px-2 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${exportTemplate === tpl.id ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
                             >
                                 {tpl.label}
                                 {(result.isPartialAnalysis && tpl.id !== 'basic') && (
