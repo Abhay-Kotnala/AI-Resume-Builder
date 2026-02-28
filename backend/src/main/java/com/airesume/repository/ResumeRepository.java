@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
     List<Resume> findAllByUserOrderByUploadDateDesc(User user);
+
+    long countByUser(User user);
 }

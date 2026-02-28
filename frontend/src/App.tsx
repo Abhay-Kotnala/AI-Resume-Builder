@@ -8,6 +8,12 @@ import { Success } from './pages/Success';
 import OAuth2Callback from './pages/OAuth2Callback';
 import { AuthProvider } from './context/AuthContext';
 import { Dashboard } from './pages/Dashboard';
+import { Profile } from './pages/Profile';
+import { AboutUs } from './pages/AboutUs';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
+import { HelpFAQ } from './pages/HelpFAQ';
+import { Contact } from './pages/Contact';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { usePageTracking } from './hooks/usePageTracking';
 
@@ -24,6 +30,11 @@ function App() {
             <Route index element={<Home />} />
             <Route path="pricing" element={<Pricing />} />
             <Route path="article/:id" element={<Article />} />
+            <Route path="about" element={<AboutUs />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsOfService />} />
+            <Route path="help" element={<HelpFAQ />} />
+            <Route path="contact" element={<Contact />} />
           </Route>
           {/* Full screen routes without the main Layout (Navbar/Footer) */}
           <Route path="/checkout" element={<Checkout />} />
@@ -31,6 +42,7 @@ function App() {
           <Route path="/oauth2/callback" element={<OAuth2Callback />} />
           {/* Protected routes — redirects to home if not authenticated */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

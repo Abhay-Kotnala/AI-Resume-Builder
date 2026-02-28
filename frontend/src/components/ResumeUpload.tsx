@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { uploadResume, analyzeResume, AnalysisResponse } from '../services/api';
 import { trackResumeUploadStarted, trackResumeAnalyzed } from '../services/analytics';
 import { useAuth } from '../context/AuthContext';
+import { PaywallModal } from './PaywallModal';
 
 interface ResumeUploadProps {
     onAnalysisComplete: (result: AnalysisResponse) => void;
@@ -13,6 +14,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [isPaywallOpen, setIsPaywallOpen] = useState(false);
     const { isAuthenticated, openSignInModal } = useAuth();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +68,11 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
             trackResumeAnalyzed(analysisResult.atsScore, !!jobDescription.trim());
             onAnalysisComplete(analysisResult);
         } catch (err: any) {
-            setError(err.message || 'Error processing resume');
+            if (err.code === 'QuotaExceeded') {
+                setIsPaywallOpen(true);
+            } else {
+                setError(err.message || 'Error processing resume');
+            }
         } finally {
             setLoading(false);
         }
@@ -175,6 +181,8 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                     </div>
                 )}
             </div>
+
+            <PaywallModal isOpen={isPaywallOpen} onClose={() => setIsPaywallOpen(false)} />
         </div>
     );
 };

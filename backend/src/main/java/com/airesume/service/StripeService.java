@@ -40,6 +40,7 @@ public class StripeService {
         // This generates a secure, hosted payment page URL for ElevateAI Pro ($19)
         SessionCreateParams params = SessionCreateParams.builder()
                 .setCustomerEmail(userEmail)
+                .setClientReferenceId(userEmail)
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setSuccessUrl(frontendUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendUrl + "/pricing")
@@ -71,14 +72,21 @@ public class StripeService {
             switch (event.getType()) {
                 case "checkout.session.completed":
                     Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
-                    if (session == null || session.getCustomerEmail() == null)
+                    if (session == null)
                         break;
 
-                    System.out.println("✅ Stripe Payment Success for user: " + session.getCustomerEmail());
-                    userRepository.findByEmail(session.getCustomerEmail()).ifPresent(user -> {
+                    String emailToUpgrade = session.getClientReferenceId();
+                    if (emailToUpgrade == null) {
+                        emailToUpgrade = session.getCustomerEmail();
+                    }
+                    if (emailToUpgrade == null)
+                        break;
+
+                    System.out.println("✅ Stripe Payment Success for user: " + emailToUpgrade);
+                    userRepository.findByEmail(emailToUpgrade).ifPresent(user -> {
                         user.setPro(true);
                         userRepository.save(user);
-                        System.out.println("✅ Assigned ElevateAI Pro Tier to " + session.getCustomerEmail());
+                        System.out.println("✅ Assigned ElevateAI Pro Tier to " + user.getEmail());
                     });
                     break;
                 case "invoice.payment_failed":

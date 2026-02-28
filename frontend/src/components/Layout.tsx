@@ -10,6 +10,7 @@ export const Layout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isToolsOpen, setIsToolsOpen] = useState(false);
     const { isAuthenticated, logout, user, isSignInModalOpen, openSignInModal, closeSignInModal } = useAuth();
     const firstName = user?.name?.split(' ')[0] || '';
 
@@ -40,9 +41,35 @@ export const Layout: React.FC = () => {
                         <Link to="/" className="flex items-center gap-2 cursor-pointer">
                             <Logo className="w-12 h-12" />
                         </Link>
-                        <div className="hidden md:flex space-x-8">
+                        <div className="hidden md:flex space-x-8 items-center">
                             <a href="/#features" onClick={(e) => handleNavClick(e, '#features')} className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer">Features</a>
                             <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer">How it works</a>
+
+                            {/* Tools Dropdown */}
+                            <div className="relative group" onMouseEnter={() => setIsToolsOpen(true)} onMouseLeave={() => setIsToolsOpen(false)}>
+                                <button className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer flex items-center gap-1">
+                                    Tools
+                                    <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                </button>
+                                {isToolsOpen && (
+                                    <div className="absolute top-full left-0 mt-4 w-56 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 py-3 z-50 animate-fade-in-up">
+                                        <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-t border-l border-slate-100 transform rotate-45"></div>
+                                        <Link to="/" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            </div>
+                                            AI Resume Scanner
+                                        </Link>
+                                        <Link to="/dashboard" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                                            </div>
+                                            Template Selector
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+
                             <Link to="/pricing" className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer">Pricing</Link>
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4">
@@ -56,15 +83,16 @@ export const Layout: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <Link to="/dashboard" className="hidden md:flex items-center gap-2.5 px-4 py-1.5 border border-slate-200 rounded-full hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">
+                                    <Link to="/profile" className="hidden md:flex items-center gap-2.5 px-4 py-1.5 border border-slate-200 rounded-full hover:border-indigo-300 hover:bg-indigo-50 transition-all cursor-pointer group">
                                         {user?.picture ? (
-                                            <img src={user.picture} alt={firstName} className="w-7 h-7 rounded-full object-cover" />
+                                            <img src={user.picture} alt={firstName} className="w-7 h-7 rounded-full object-cover ring-2 ring-white" />
                                         ) : (
-                                            <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
+                                            <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
                                                 {firstName[0]?.toUpperCase()}
                                             </div>
                                         )}
-                                        <span className="text-slate-700 font-medium text-sm">{firstName}</span>
+                                        <span className="text-slate-700 group-hover:text-indigo-700 font-medium text-sm">{firstName}</span>
+                                        <svg className="w-3 h-3 text-slate-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                     </Link>
                                     <button onClick={logout} className="hidden md:block px-4 py-2 text-slate-600 font-medium text-sm border border-slate-200 rounded-lg hover:bg-slate-50 transition-all cursor-pointer">Sign out</button>
                                 </>
@@ -94,6 +122,7 @@ export const Layout: React.FC = () => {
                                 {isAuthenticated && (
                                     <>
                                         <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium hover:text-emerald-600">Dashboard</Link>
+                                        <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium hover:text-indigo-600">My Profile</Link>
                                         <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 font-medium hover:text-emerald-600">Sign out</button>
                                     </>
                                 )}

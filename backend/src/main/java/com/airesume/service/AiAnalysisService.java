@@ -142,6 +142,47 @@ public class AiAnalysisService {
         }
     }
 
+    public String generateInterviewQuestions(String resumeText, String jobDescription) {
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+            return "[{\"question\":\"Tell me about a challenging project you worked on and how you overcame the obstacles.\",\"tip\":\"Use the STAR method: Situation, Task, Action, Result.\",\"category\":\"Behavioural\"},{\"question\":\"How do you approach debugging a complex production issue?\",\"tip\":\"Mention systematic isolation, logging, and collaboration.\",\"category\":\"Technical\"},{\"question\":\"Describe a time when you disagreed with a technical decision. How did you handle it?\",\"tip\":\"Show maturity and ability to advocate constructively.\",\"category\":\"Behavioural\"},{\"question\":\"What is your approach to writing maintainable, scalable code?\",\"tip\":\"Mention SOLID principles, code reviews, tests.\",\"category\":\"Technical\"},{\"question\":\"Where do you see yourself professionally in 3 years?\",\"tip\":\"Align your growth with the company direction.\",\"category\":\"Career\"}]";
+        }
+        try {
+            String prompt = "You are a senior engineering hiring manager at a top tech company conducting a technical interview. "
+                    +
+                    "Based on the candidate's resume and the job description provided, generate EXACTLY 5 highly targeted interview questions. "
+                    +
+                    "The questions should be a mix of: behavioural (2 questions), technical (2 questions), and career/motivation (1 question). "
+                    +
+                    "Each question must be specific to the candidate's actual experience and the role—do NOT use generic cookie-cutter questions. "
+                    +
+                    "Return ONLY a valid JSON array (no markdown, no explanation) in this exact format: " +
+                    "[{\"question\": \"...\", \"tip\": \"Brief 1-sentence coaching tip for answering this question well.\", \"category\": \"Behavioural|Technical|Career\"}]\\n\\n";
+
+            if (jobDescription != null && !jobDescription.isBlank()) {
+                prompt += "TARGET ROLE / JOB DESCRIPTION:\\n" + jobDescription + "\\n\\n";
+            }
+            prompt += "CANDIDATE RESUME:\\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = restClient.post()
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+
+            return extractTextFromGeminiResponse(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
+        }
+    }
+
     private String buildPrompt(String resumeText, String jobDescription) {
         String base = "You are an elite executive career coach and a ruthless Applicant Tracking System (ATS) algorithm for top-tier tech companies. "
                 +

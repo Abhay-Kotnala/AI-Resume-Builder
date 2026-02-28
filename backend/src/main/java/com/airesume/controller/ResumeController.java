@@ -122,14 +122,22 @@ public class ResumeController {
 
             String jobDescription = request != null ? request.get("jobDescription") : null;
 
-            // Determine pro status from JWT-populated SecurityContext
+            // Determine pro status and quota from user
             boolean isProUser = false;
+            User user = null;
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
                 String userEmail = auth.getName();
-                isProUser = userRepository.findByEmail(userEmail)
-                        .map(User::isPro)
-                        .orElse(false);
+                user = userRepository.findByEmail(userEmail).orElse(null);
+
+                if (user != null) {
+                    isProUser = user.isPro();
+                    // Intercept free users over limit
+                    if (!isProUser && user.getScansUsed() >= 2) {
+                        return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
+                                "You have reached your free limit of 2 AI scans. Please upgrade to Pro to continue."));
+                    }
+                }
             }
 
             AnalysisResult result = aiAnalysisService.analyzeResume(resume.getExtractedText(), jobDescription,
@@ -137,6 +145,13 @@ public class ResumeController {
             result.setResumeId(resume.getId());
 
             AnalysisResult savedResult = analysisResultRepository.save(result);
+
+            // Increment quota on successful processing if they are free
+            if (user != null && !isProUser) {
+                user.setScansUsed(user.getScansUsed() + 1);
+                userRepository.save(user);
+            }
+
             return ResponseEntity.ok(savedResult);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -175,6 +190,31 @@ public class ResumeController {
 
             String coverLetter = aiAnalysisService.generateCoverLetter(extractedText, jobDescription);
             return ResponseEntity.ok(Map.of("coverLetter", coverLetter));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{resumeId}/interview-questions")
+    public ResponseEntity<?> generateInterviewQuestions(@PathVariable Long resumeId,
+            @RequestBody(required = false) Map<String, String> request) {
+        try {
+            String extractedText = resumeRepository.findById(resumeId)
+                    .map(Resume::getExtractedText)
+                    .orElse("");
+            String jobDescription = request != null ? request.get("jobDescription") : "";
+            String questionsJson = aiAnalysisService.generateInterviewQuestions(extractedText, jobDescription);
+
+            // Clean up any markdown fences Gemini might add
+            questionsJson = questionsJson.trim();
+            if (questionsJson.startsWith("```json"))
+                questionsJson = questionsJson.substring(7);
+            if (questionsJson.startsWith("```"))
+                questionsJson = questionsJson.substring(3);
+            if (questionsJson.endsWith("```"))
+                questionsJson = questionsJson.substring(0, questionsJson.length() - 3);
+
+            return ResponseEntity.ok(Map.of("questions", questionsJson.trim()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -261,10 +301,9 @@ public class ResumeController {
                         .orElse(false);
             }
 
-            // Enforce template restriction for preview too
-            if (!isProUser && ("modern".equals(template) || "executive".equals(template))) {
-                template = "basic";
-            }
+            // NOTE: Free users can preview Pro templates (teaser/upsell).
+            // The paywall is enforced on PDF download via watermark + export-pdf endpoint
+            // restriction.
 
             // Generate HTML using Thymeleaf Context
             Context context = new Context();

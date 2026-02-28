@@ -21,6 +21,27 @@ const getAuthHeaders = (): Record<string, string> => {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
+const handleApiError = async (response: Response, defaultMessage: string) => {
+    if (response.status === 401) {
+        localStorage.removeItem('elevateAI_token');
+        throw new Error('Your session has expired. Please refresh the page and sign in again.');
+    }
+    let errorMsg = defaultMessage;
+    let errorCode = 'Unknown';
+    try {
+        const text = await response.text();
+        if (text) {
+            const data = JSON.parse(text);
+            if (data && data.message) errorMsg = data.message;
+            if (data && data.error) errorCode = data.error;
+        }
+    } catch (e) { }
+
+    const error = new Error(errorMsg) as any;
+    error.code = errorCode;
+    throw error;
+};
+
 export const uploadResume = async (file: File): Promise<{ resumeId: number, message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -34,7 +55,7 @@ export const uploadResume = async (file: File): Promise<{ resumeId: number, mess
     });
 
     if (!response.ok) {
-        throw new Error('Failed to upload resume');
+        await handleApiError(response, 'Failed to upload resume');
     }
 
     return response.json();
@@ -51,7 +72,7 @@ export const analyzeResume = async (resumeId: number, jobDescription?: string): 
     });
 
     if (!response.ok) {
-        throw new Error('Failed to analyze resume');
+        await handleApiError(response, 'Failed to analyze resume');
     }
 
     return response.json();
@@ -68,7 +89,7 @@ export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string
     });
 
     if (!response.ok) {
-        throw new Error('Failed to enhance bullet point');
+        await handleApiError(response, 'Failed to enhance bullet point');
     }
 
     return response.json();
@@ -85,7 +106,7 @@ export const generateCoverLetter = async (resumeId: number, jobDescription?: str
     });
 
     if (!response.ok) {
-        throw new Error('Failed to generate cover letter');
+        await handleApiError(response, 'Failed to generate cover letter');
     }
 
     return response.json();
@@ -108,7 +129,7 @@ export const exportToPdf = async (resumeId: number, options: PdfExportOptions): 
     });
 
     if (!response.ok) {
-        throw new Error('Failed to export PDF');
+        await handleApiError(response, 'Failed to export PDF');
     }
 
     // Convert the response into a blob, and create a temporary link to download it

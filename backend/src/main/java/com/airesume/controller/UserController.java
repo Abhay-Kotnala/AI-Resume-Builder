@@ -1,6 +1,7 @@
 package com.airesume.controller;
 
 import com.airesume.entity.User;
+import com.airesume.repository.ResumeRepository;
 import com.airesume.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final ResumeRepository resumeRepository;
 
     /**
      * Returns the profile of the currently authenticated user.
@@ -34,10 +36,14 @@ public class UserController {
         }
 
         User user = optionalUser.get();
+        long resumeCount = resumeRepository.countByUser(user);
         return ResponseEntity.ok(Map.of(
-                "name", user.getName(),
+                "name", user.getName() != null ? user.getName() : "",
                 "email", user.getEmail(),
                 "picture", user.getProfilePictureUrl() != null ? user.getProfilePictureUrl() : "",
-                "provider", user.getProvider()));
+                "provider", user.getProvider() != null ? user.getProvider() : "google",
+                "isPro", user.isPro(),
+                "scansUsed", user.getScansUsed(),
+                "resumeCount", resumeCount));
     }
 }

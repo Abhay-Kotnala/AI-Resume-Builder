@@ -8,7 +8,7 @@ export const Logo: React.FC<{ className?: string, showText?: boolean }> = ({ cla
             className={`${className} object-contain`}
         />
         {showText && (
-            <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
+            <span className="text-xl font-bold tracking-tight text-slate-800">
                 Elevate <span className="text-emerald-500">AI</span>
             </span>
         )}
