@@ -79,7 +79,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     };
 
     return (
-        <div className="w-full bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 sm:p-10 space-y-8 relative overflow-hidden">
+        <div className="w-full bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-slate-100 dark:border-slate-800 p-8 sm:p-10 space-y-8 relative overflow-hidden">
             {/* Subtle top accent */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-blue-500"></div>
 
@@ -91,7 +91,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={`relative overflow-hidden group rounded-2xl p-10 text-center transition-all duration-300 ease-in-out border-2 border-dashed
-                        ${isDragging ? 'scale-[1.01] border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-emerald-400 hover:bg-slate-50'} bg-slate-50/50`}
+                        ${isDragging ? 'scale-[1.01] border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700 hover:border-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-800'} bg-slate-50/50 dark:bg-slate-800/50`}
                 >
                     <input
                         id="resume-upload-input"
@@ -104,7 +104,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                     <div className="relative z-20 flex flex-col items-center justify-center gap-4 pointer-events-none">
                         {/* Circle Icon */}
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-colors shadow-sm
-                            ${file ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-emerald-500 ring-1 ring-slate-200'}`}>
+                            ${file ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-white dark:bg-slate-700 text-emerald-500 ring-1 ring-slate-200 dark:ring-slate-600'}`}>
                             {file ? (
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
                             ) : (
@@ -117,14 +117,14 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
 
                         {/* Upload Text Info */}
                         <div className="text-center space-y-1.5">
-                            <h3 className="text-xl font-bold text-slate-800">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">
                                 {file ? 'Resume Ready' : 'Drag & Drop Resume'}
                             </h3>
                             <p className="text-slate-500 font-medium text-sm">
                                 {file ? file.name : '(PDF files only - Max 5MB)'}
                             </p>
                             {!file && (
-                                <div className="mt-4 inline-block px-5 py-2 bg-white border border-slate-200 rounded-full text-slate-600 text-sm font-semibold pointer-events-none shadow-sm">
+                                <div className="mt-4 inline-block px-5 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full text-slate-600 dark:text-slate-200 text-sm font-semibold pointer-events-none shadow-sm">
                                     {isAuthenticated ? 'Click to Browse Files' : 'Sign in to Upload'}
                                 </div>
                             )}
@@ -134,7 +134,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
 
                 {/* Job Description Optional Input */}
                 <div className="space-y-3">
-                    <label className="block text-sm font-bold text-slate-800 tracking-wide">
+                    <label className="block text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">
                         Target Job Description <span className="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
@@ -143,9 +143,9 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                             value={jobDescription}
                             onChange={(e) => setJobDescription(e.target.value)}
                             placeholder="Paste the job description here to tailor analysis..."
-                            className="block w-full rounded-2xl border border-slate-200 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-5 bg-white text-slate-700 transition-all duration-200 resize-none pl-5 pr-16 text-[15px] leading-relaxed"
+                            className="block w-full rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 p-5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all duration-200 resize-none pl-5 pr-16 text-[15px] leading-relaxed"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-slate-100 pointer-events-none">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-600 pointer-events-none">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                     </div>
@@ -157,7 +157,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                     disabled={!file || loading}
                     className={`relative w-full overflow-hidden py-4 px-6 rounded-2xl text-[17px] font-bold text-white transition-all duration-300 shadow-sm
                         ${!file || loading
-                            ? 'bg-slate-300 cursor-not-allowed text-slate-500'
+                            ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-500 dark:text-slate-400'
                             : 'bg-emerald-500 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-200 hover:-translate-y-0.5 active:translate-y-0'
                         }`}
                 >

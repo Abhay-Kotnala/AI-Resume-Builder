@@ -46,14 +46,13 @@ export const Dashboard: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:bg-slate-900">
             {/* Navbar */}
-            <nav className="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+            <nav className="border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <Link to="/" className="flex items-center gap-2">
                             <Logo className="w-8 h-8" />
-                            <span className="font-bold text-xl tracking-tight text-slate-800">ElevateAI</span>
                         </Link>
                         <div className="flex items-center gap-4">
                             {user?.picture ? (
@@ -63,10 +62,10 @@ export const Dashboard: React.FC = () => {
                                     {firstName?.[0]?.toUpperCase() ?? '?'}
                                 </div>
                             )}
-                            <span className="text-sm font-medium text-slate-700 hidden sm:block">{user?.name}</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 hidden sm:block">{user?.name}</span>
                             <button
                                 onClick={logout}
-                                className="text-sm px-4 py-2 text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
+                                className="text-sm px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                             >
                                 Sign out
                             </button>

@@ -59,10 +59,10 @@ export const Home: React.FC = () => {
         return (
             <div className="w-full animate-fade-in-up">
                 {/* slim top bar with back button */}
-                <div className="px-4 sm:px-6 lg:px-8 py-3 bg-slate-50 border-b border-slate-200">
+                <div className="px-4 sm:px-6 lg:px-8 py-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                     <button
                         onClick={() => setAnalysisResult(null)}
-                        className="group flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-200 text-sm font-bold rounded-xl text-slate-600 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all duration-300 focus:outline-none"
+                        className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-bold rounded-xl text-slate-600 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 focus:outline-none"
                     >
                         <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
                         Check Another Resume
@@ -78,7 +78,7 @@ export const Home: React.FC = () => {
     return (
         <>
             {/* ── Hero section ─────────────────────────────── */}
-            <section className="relative overflow-hidden bg-slate-50/50 pt-16 pb-10 lg:pt-24 lg:pb-16">
+            <section className="relative overflow-hidden bg-slate-50/50 dark:bg-slate-900 pt-16 pb-10 lg:pt-24 lg:pb-16">
                 {/* Blob decorations */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                     <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob" />
@@ -95,10 +95,10 @@ export const Home: React.FC = () => {
                                 <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
                                 Free ATS Resume Checker
                             </div>
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6">
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
                                 Is your resume <span className="text-emerald-500">good enough?</span>
                             </h1>
-                            <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                            <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                                 Our free and fast resume checker analyzes your resume against top ATS
                                 algorithms and provides actionable feedback within seconds.
                             </p>
@@ -109,7 +109,7 @@ export const Home: React.FC = () => {
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=33" alt="User" />
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=47" alt="User" />
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=12" alt="User" />
-                                    <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">+10k</div>
+                                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">+10k</div>
                                 </div>
                                 <div className="text-center sm:text-left">
                                     <div className="flex items-center gap-1 justify-center sm:justify-start text-amber-400">
@@ -119,8 +119,8 @@ export const Home: React.FC = () => {
                                             </svg>
                                         ))}
                                     </div>
-                                    <div className="text-sm text-slate-500 mt-0.5">
-                                        <span className="font-bold text-slate-800">4.9/5</span> from 10,000+ reviews
+                                    <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                                        <span className="font-bold text-slate-800 dark:text-white">4.9/5</span> from 10,000+ reviews
                                     </div>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@ export const Home: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => setAnalysisResult(SAMPLE_RESULT)}
-                                    className="px-8 py-3.5 bg-white text-slate-700 font-bold rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-lg cursor-pointer"
+                                    className="px-8 py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-lg cursor-pointer"
                                 >
                                     View Sample Report
                                 </button>
@@ -153,12 +153,12 @@ export const Home: React.FC = () => {
             </section>
 
             {/* ── Stats ticker strip ─────────────────────────────── */}
-            <div className="bg-white border-y border-slate-100 py-8">
+            <div className="bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 py-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto px-4 text-center">
                     {STATS.map((s) => (
                         <div key={s.label}>
-                            <div className="text-2xl font-extrabold text-slate-900">{s.value}</div>
-                            <div className="text-sm text-slate-500 mt-0.5">{s.label}</div>
+                            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{s.value}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
                         </div>
                     ))}
                 </div>

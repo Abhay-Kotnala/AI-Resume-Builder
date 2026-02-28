@@ -48,9 +48,9 @@ export const FAQSection: React.FC = () => {
     };
 
     return (
-        <section className="bg-white py-24 border-t border-slate-100">
+        <section className="bg-white dark:bg-slate-950 py-24 border-t border-slate-100 dark:border-slate-800">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl md:text-4xl font-medium text-slate-800 mb-10">
+                <h2 className="text-3xl md:text-4xl font-medium text-slate-800 dark:text-white mb-10">
                     Frequently asked questions
                 </h2>
 
@@ -59,7 +59,7 @@ export const FAQSection: React.FC = () => {
                         const isOpen = openIndex === index;
 
                         return (
-                            <div key={index} className="border-b border-slate-100 pb-4">
+                            <div key={index} className="border-b border-slate-100 dark:border-slate-800 pb-4">
                                 <button
                                     onClick={() => toggleFAQ(index)}
                                     className="w-full flex items-center justify-between text-left py-2 group focus:outline-none"
@@ -75,7 +75,7 @@ export const FAQSection: React.FC = () => {
                                             )}
                                         </div>
                                         <span className={`text-xl font-medium transition-colors duration-200
-                                            ${isOpen ? 'text-indigo-500' : 'text-slate-700 group-hover:text-indigo-400'}
+                                            ${isOpen ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200 group-hover:text-indigo-400'}
                                         `}>
                                             {faq.question}
                                         </span>
@@ -87,7 +87,7 @@ export const FAQSection: React.FC = () => {
                                         ${isOpen ? 'max-h-[500px] opacity-100 mt-4 mb-2' : 'max-h-0 opacity-0 my-0'}
                                     `}
                                 >
-                                    <p className="text-slate-600 leading-relaxed text-[15px]">
+                                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[15px]">
                                         {faq.answer}
                                     </p>
                                 </div>
