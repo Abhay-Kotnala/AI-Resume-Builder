@@ -17,6 +17,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,12 +32,19 @@ public class SecurityConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
         private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+        private final ClientRegistrationRepository clientRegistrationRepository;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .csrf(AbstractHttpConfigurer::disable)
+                                .exceptionHandling(exceptions -> exceptions
+                                                .defaultAuthenticationEntryPointFor(
+                                                                new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+                                                                                org.springframework.http.HttpStatus.UNAUTHORIZED),
+                                                                new org.springframework.security.web.util.matcher.AntPathRequestMatcher(
+                                                                                "/api/**")))
                                 .authorizeHttpRequests(auth -> auth
                                                 // Allow public access to error and static files
                                                 .requestMatchers("/error", "/favicon.ico", "/images/**", "/static/**",
@@ -48,6 +60,8 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
                                                 .authorizationEndpoint(endpoint -> endpoint
+                                                                .authorizationRequestResolver(
+                                                                                customAuthorizationRequestResolver())
                                                                 .authorizationRequestRepository(
                                                                                 cookieAuthorizationRequestRepository()))
                                                 .successHandler(oAuth2LoginSuccessHandler))
@@ -60,6 +74,23 @@ public class SecurityConfig {
 
         @Value("${frontend.url:http://localhost:5173}")
         private String frontendUrl;
+
+        private OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver() {
+                DefaultOAuth2AuthorizationRequestResolver resolver = new DefaultOAuth2AuthorizationRequestResolver(
+                                clientRegistrationRepository, "/oauth2/authorization");
+
+                resolver.setAuthorizationRequestCustomizer(builder -> {
+                        builder.attributes(attributes -> {
+                                String registrationId = (String) attributes.get(OAuth2ParameterNames.REGISTRATION_ID);
+                                if ("linkedin".equalsIgnoreCase(registrationId)) {
+                                        builder.additionalParameters(params -> params.remove("nonce"));
+                                        attributes.remove("nonce");
+                                }
+                        });
+                });
+
+                return resolver;
+        }
 
         @Bean
         public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
