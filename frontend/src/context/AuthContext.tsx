@@ -13,6 +13,9 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (token: string) => void;
     logout: () => void;
+    isSignInModalOpen: boolean;
+    openSignInModal: () => void;
+    closeSignInModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +35,7 @@ const fetchUserProfile = async (token: string): Promise<UserProfile | null> => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(null);
     const [user, setUser] = useState<UserProfile | null>(null);
+    const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('elevateAI_token');
@@ -58,7 +62,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         user,
         isAuthenticated: !!token,
         login,
-        logout
+        logout,
+        isSignInModalOpen,
+        openSignInModal: () => setIsSignInModalOpen(true),
+        closeSignInModal: () => setIsSignInModalOpen(false)
     };
 
     return (

@@ -44,7 +44,7 @@ public class SecurityConfig {
                                                 // You can secure them later by changing this to .authenticated() if you
                                                 // want to
                                                 // force sign-in for everything.
-                                                .requestMatchers("/api/resume/**").permitAll()
+                                                .requestMatchers("/api/resume/**").authenticated()
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
                                                 .authorizationEndpoint(endpoint -> endpoint

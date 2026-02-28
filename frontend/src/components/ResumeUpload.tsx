@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { uploadResume, analyzeResume, AnalysisResponse } from '../services/api';
 import { trackResumeUploadStarted, trackResumeAnalyzed } from '../services/analytics';
+import { useAuth } from '../context/AuthContext';
 
 interface ResumeUploadProps {
     onAnalysisComplete: (result: AnalysisResponse) => void;
@@ -12,8 +13,16 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const { isAuthenticated, openSignInModal } = useAuth();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!isAuthenticated) {
+            e.preventDefault();
+            e.target.value = '';
+            openSignInModal();
+            return;
+        }
+
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
             trackResumeUploadStarted();
@@ -33,6 +42,12 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
+
+        if (!isAuthenticated) {
+            openSignInModal();
+            return;
+        }
+
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             setFile(e.dataTransfer.files[0]);
             trackResumeUploadStarted();
@@ -104,7 +119,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                             </p>
                             {!file && (
                                 <div className="mt-4 inline-block px-5 py-2 bg-white border border-slate-200 rounded-full text-slate-600 text-sm font-semibold pointer-events-none shadow-sm">
-                                    Click to Browse Files
+                                    {isAuthenticated ? 'Click to Browse Files' : 'Sign in to Upload'}
                                 </div>
                             )}
                         </div>

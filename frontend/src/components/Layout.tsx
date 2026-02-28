@@ -9,9 +9,8 @@ import { trackLoginStarted } from '../services/analytics';
 export const Layout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isSignInOpen, setIsSignInOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { isAuthenticated, logout, user } = useAuth();
+    const { isAuthenticated, logout, user, isSignInModalOpen, openSignInModal, closeSignInModal } = useAuth();
     const firstName = user?.name?.split(' ')[0] || '';
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
@@ -46,10 +45,10 @@ export const Layout: React.FC = () => {
                             <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer">How it works</a>
                             <Link to="/pricing" className="text-slate-600 hover:text-emerald-600 font-medium transition-colors cursor-pointer">Pricing</Link>
                         </div>
-                        <div className="flex items-center gap-2 md:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             {!isAuthenticated ? (
                                 <>
-                                    <button onClick={() => { trackLoginStarted(); setIsSignInOpen(true); }} className="hidden md:block px-5 py-2 text-slate-600 font-medium border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Sign in</button>
+                                    <button onClick={() => { trackLoginStarted(); openSignInModal(); }} className="hidden md:block px-5 py-2 text-slate-600 font-medium border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">Sign in</button>
                                     <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="px-3 sm:px-5 py-2 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all cursor-pointer text-sm sm:text-base">
                                         <span className="sm:hidden">Start Free</span>
                                         <span className="hidden sm:inline">Get Started</span>
@@ -90,7 +89,7 @@ export const Layout: React.FC = () => {
                                 <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 font-medium hover:text-emerald-600">How it works</a>
                                 <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 font-medium hover:text-emerald-600">Pricing</Link>
                                 {!isAuthenticated && (
-                                    <button onClick={() => { trackLoginStarted(); setIsSignInOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 font-medium hover:text-emerald-600">Sign in</button>
+                                    <button onClick={() => { trackLoginStarted(); openSignInModal(); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 font-medium hover:text-emerald-600">Sign in</button>
                                 )}
                                 {isAuthenticated && (
                                     <>
@@ -104,7 +103,7 @@ export const Layout: React.FC = () => {
                 </div>
             </nav>
 
-            <SignInModal isOpen={isSignInOpen} onClose={() => setIsSignInOpen(false)} />
+            <SignInModal isOpen={isSignInModalOpen} onClose={closeSignInModal} />
 
             {/* Main Content Area */}
             <main className="flex-grow">

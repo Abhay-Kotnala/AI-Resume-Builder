@@ -61,10 +61,54 @@ public class ResumeController {
             resume.setFileName(file.getOriginalFilename());
             resume.setExtractedText(parsedText);
 
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                userRepository.findByEmail(auth.getName()).ifPresent(resume::setUser);
+            }
+
             Resume savedResume = resumeRepository.save(resume);
             return ResponseEntity.ok(Map.of("resumeId", savedResume.getId(), "message", "Upload successful"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<?> getResumeHistory() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            }
+
+            java.util.List<Resume> resumes = resumeRepository.findAllByUserOrderByUploadDateDesc(user);
+
+            java.util.List<Map<String, Object>> response = new java.util.ArrayList<>();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy");
+
+            for (Resume r : resumes) {
+                int atsScore = analysisResultRepository.findByResumeId(r.getId())
+                        .map(AnalysisResult::getAtsScore)
+                        .orElse(0);
+
+                String createdAt = r.getUploadDate() != null ? r.getUploadDate().format(formatter)
+                        : "Recently analyzed";
+
+                response.add(Map.of(
+                        "id", r.getId(),
+                        "fileName", r.getFileName() != null ? r.getFileName() : "Resume #" + r.getId(),
+                        "atsScore", atsScore,
+                        "createdAt", createdAt));
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to fetch history: " + e.getMessage()));
         }
     }
 

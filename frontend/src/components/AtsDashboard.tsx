@@ -38,7 +38,10 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
         if (!result.resumeId || result.resumeId <= 0) return;
         setPreviewLoading(true);
         const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-        fetch(`${apiBase}/api/resume/${result.resumeId}/preview-html?template=${exportTemplate}&font=${encodeURIComponent(exportFont)}`)
+        const token = localStorage.getItem('elevateAI_token');
+        const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        fetch(`${apiBase}/api/resume/${result.resumeId}/preview-html?template=${exportTemplate}&font=${encodeURIComponent(exportFont)}`, { headers })
             .then(res => res.text())
             .then(html => {
                 // Apply each bullet replacement (simple string substitution)
@@ -93,7 +96,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
             {/* Left Sidebar - Analysis & Tools */}
             <div className="w-full lg:w-1/2 xl:w-5/12 p-4 sm:p-6 lg:p-8 space-y-8 overflow-y-auto border-r border-slate-200 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 animate-fade-in-left">
                 {/* Header / Score Section */}
-                <div className={`p-4 sm:p-6 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(result.atsScore)}`}>
+                <div className={`p-4 sm:p-8 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(result.atsScore)}`}>
 
                     {/* Top row: title + action buttons */}
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
@@ -346,7 +349,10 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                 }}
                                 className={`relative px-2 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${exportTemplate === tpl.id ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
                             >
-                                {tpl.label}
+                                <span className="hidden sm:inline">{tpl.label}</span>
+                                <span className="sm:hidden">
+                                    {tpl.id === 'basic' ? 'Classic' : tpl.id === 'modern' ? 'Modern' : 'Exec'}
+                                </span>
                                 {(result.isPartialAnalysis && tpl.id !== 'basic') && (
                                     <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
