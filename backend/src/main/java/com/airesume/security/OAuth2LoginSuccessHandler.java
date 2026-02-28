@@ -45,13 +45,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             providerId = (String) attributes.get("sub");
             profilePictureUrl = (String) attributes.get("picture");
         } else if ("linkedin".equalsIgnoreCase(provider)) {
-            // LinkedIn's email and name structure can be more complex depending on the
-            // requested scopes
+            // LinkedIn now uses standard OpenID Connect claims if "openid" scope is used
             email = (String) attributes.get("email");
-            name = (String) attributes.get("localizedFirstName") + " " + attributes.get("localizedLastName");
-            providerId = (String) attributes.get("id");
-            profilePictureUrl = (String) attributes.get("profilePicture"); // Might require nested parsing based on
-                                                                           // LinkedIn API version
+            name = (String) attributes.get("name");
+            if (name == null || name.isBlank()) {
+                name = attributes.get("given_name") + " " + attributes.get("family_name");
+            }
+            providerId = (String) attributes.get("sub");
+            profilePictureUrl = (String) attributes.get("picture");
         }
 
         // 1. Check if user exists, otherwise create
