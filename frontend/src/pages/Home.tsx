@@ -24,8 +24,8 @@ const SAMPLE_RESULT: AnalysisResponse = {
     resumeId: 0,
     atsScore: 85,
     impactScore: 65,
-    brevityScore: 90,
-    actionVerbScore: 70,
+    formattingScore: 90,
+    keywordsScore: 70,
     summary: 'This is a strong resume tailored for a Software Engineer role. The experience section highlights key achievements effectively.',
     strengths: '• Strong use of action verbs\n• Clear contact information\n• Good educational background highlighted',
     weaknesses: '• Some bullet points lack quantifiable metrics\n• Missing a few key technical skills for modern web development',
@@ -83,7 +83,7 @@ export const Home: React.FC = () => {
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                     <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob" />
                     <div className="absolute top-[20%] right-[-5%] w-[30%] h-[40%] bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000" />
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlMmU4ZjAiLz48L3N2Zz4=')] opacity-50" />
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiNlMmU4ZjAiLz48L3N2Zz4=')] opacity-50 dark:hidden" />
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

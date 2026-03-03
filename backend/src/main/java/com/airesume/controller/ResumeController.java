@@ -163,10 +163,11 @@ public class ResumeController {
         try {
             String bulletPoint = request.get("bulletPoint");
             String targetJob = request.get("targetJob");
+            String tone = request.get("tone");
             if (bulletPoint == null || bulletPoint.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Bullet point is required"));
             }
-            String enhanced = aiAnalysisService.enhanceBulletPoint(bulletPoint, targetJob);
+            String enhanced = aiAnalysisService.enhanceBulletPoint(bulletPoint, targetJob, tone);
             return ResponseEntity.ok(Map.of("enhancedBulletPoint", enhanced));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -312,8 +313,8 @@ public class ResumeController {
             context.setVariable("extractedText", escapeXml(extractedText));
             context.setVariable("atsScore", result.getAtsScore());
             context.setVariable("impactScore", result.getImpactScore());
-            context.setVariable("brevityScore", result.getBrevityScore());
-            context.setVariable("actionVerbScore", result.getActionVerbScore());
+            context.setVariable("formattingScore", result.getFormattingScore());
+            context.setVariable("keywordsScore", result.getKeywordsScore());
 
             // Watermark flag based on pro status
             context.setVariable("isPro", isProUser);

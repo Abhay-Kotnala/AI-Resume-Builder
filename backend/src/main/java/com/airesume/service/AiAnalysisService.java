@@ -68,17 +68,26 @@ public class AiAnalysisService {
         }
     }
 
-    public String enhanceBulletPoint(String bulletPoint, String targetJob) {
+    public String enhanceBulletPoint(String bulletPoint, String targetJob, String tone) {
         if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return "Accomplished [X] as measured by [Y], by doing [Z]. (Mocked test feature)";
+            return "Accomplished [X] as measured by [Y], by doing [Z]. (Mocked test feature with tone: " + tone + ")";
         }
         try {
             String prompt = "You are a professional resume writer who has drafted resumes for top-tier tech companies. "
                     +
-                    "Your goal is to rewrite the following resume bullet point to make it extremely impactful, metric-driven, and active. "
-                    +
-                    "STRICTLY follow the XYZ formula: 'Accomplished [X] as measured by [Y], by doing [Z].' " +
-                    "Never hallucinate generic metrics; if there are no metrics, focus on the scope of the accomplishment. ";
+                    "Your goal is to rewrite the following resume bullet point to make it extremely impactful, metric-driven, and active. ";
+
+            if ("Quantified".equalsIgnoreCase(tone)) {
+                prompt += "STRICTLY follow the XYZ formula: 'Accomplished [X] as measured by [Y], by doing [Z]'. Maximize numerical metrics. ";
+            } else if ("Leadership".equalsIgnoreCase(tone)) {
+                prompt += "Focus heavily on leadership, mentoring, and cross-functional impact. Use strong leadership action verbs. ";
+            } else if ("Concise".equalsIgnoreCase(tone)) {
+                prompt += "Make it extremely brief and high-impact. Remove any fluff words or unnecessary details. ";
+            } else {
+                prompt += "STRICTLY follow the XYZ formula: 'Accomplished [X] as measured by [Y], by doing [Z]'. ";
+            }
+
+            prompt += "Never hallucinate generic metrics; if there are no metrics, focus on the scope of the accomplishment. ";
             if (targetJob != null && !targetJob.isBlank()) {
                 prompt += "Tailor it specifically to highlight skills relevant to this role: " + targetJob + ". ";
             }
@@ -193,9 +202,9 @@ public class AiAnalysisService {
                 "- 'atsScore' (integer 0-100: overall parseability and relevance)\n" +
                 "- 'impactScore' (integer 0-100: measures use of quantifiable metrics, percentages, and dollar amounts)\n"
                 +
-                "- 'brevityScore' (integer 0-100: penalizes walls of text; rewards concise, scannable bullet points)\n"
+                "- 'formattingScore' (integer 0-100: penalizes walls of text, unconventional sections, bad formatting)\n"
                 +
-                "- 'actionVerbScore' (integer 0-100: evaluates whether bullets start with strong power verbs vs weak passive verbs)\n"
+                "- 'keywordsScore' (integer 0-100: evaluates keyword matches, missing skills, relevance to job)\n"
                 +
                 "- 'summary' (string: a concise, 2-sentence brutal but constructive evaluation)\n" +
                 "- 'strengths' (string: a bulleted list using • of 3 key strengths)\n" +
@@ -248,8 +257,8 @@ public class AiAnalysisService {
         AnalysisResult result = new AnalysisResult();
         result.setAtsScore(85);
         result.setImpactScore(65);
-        result.setBrevityScore(90);
-        result.setActionVerbScore(70);
+        result.setFormattingScore(90);
+        result.setKeywordsScore(70);
         result.setSummary(
                 "A strong resume with good technical skills but lacks some soft skills keywords and quantifiable impact.");
         result.setStrengths("- Strong programming languages (Java, React)\n- Concise and easy to read");

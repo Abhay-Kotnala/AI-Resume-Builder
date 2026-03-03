@@ -5,8 +5,8 @@ export interface AnalysisResponse {
     resumeId: number;
     atsScore: number;
     impactScore: number;
-    brevityScore: number;
-    actionVerbScore: number;
+    formattingScore: number;
+    keywordsScore: number;
     summary: string;
     strengths: string;
     weaknesses: string;
@@ -78,14 +78,14 @@ export const analyzeResume = async (resumeId: number, jobDescription?: string): 
     return response.json();
 };
 
-export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string): Promise<{ enhancedBulletPoint: string }> => {
+export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string, tone?: string): Promise<{ enhancedBulletPoint: string }> => {
     const response = await fetch(`${API_BASE_URL}/enhance`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             ...getAuthHeaders(),
         },
-        body: JSON.stringify({ bulletPoint, targetJob }),
+        body: JSON.stringify({ bulletPoint, targetJob, tone }),
     });
 
     if (!response.ok) {

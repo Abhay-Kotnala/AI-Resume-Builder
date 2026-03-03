@@ -155,8 +155,8 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                         <div className="grid grid-cols-3 gap-3 flex-1 w-full">
                             {[
                                 { label: 'Impact', score: result.impactScore, color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-100' },
-                                { label: 'Brevity', score: result.brevityScore, color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
-                                { label: 'Action', score: result.actionVerbScore, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
+                                { label: 'Formatting', score: result.formattingScore, color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
+                                { label: 'Keywords', score: result.keywordsScore, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
                             ].map((item, idx) => (
                                 <div key={idx} className={`${item.bg} ${item.border} rounded-2xl p-3 border shadow-sm text-center`}>
                                     <div className={`text-2xl font-extrabold ${item.text}`}>{item.score}</div>
@@ -243,16 +243,19 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                         </h3>
                         <ul className="space-y-3">
                             {weaknessesList.map((weakness, index) => (
-                                <li key={index} className="flex gap-3 text-rose-700 items-start group relative">
+                                <li key={index} className="flex gap-3 text-rose-700 items-start group">
                                     <span className="text-rose-400 mt-1 flex-shrink-0">•</span>
-                                    <span className="leading-relaxed flex-1 pr-8">{weakness}</span>
-                                    <button
-                                        onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
-                                        className="absolute right-0 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-rose-100/80 text-rose-600 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg shadow-sm"
-                                        title="Rewrite with Magic Wand"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                                    </button>
+                                    <div className="flex-1">
+                                        <span className="leading-relaxed">{weakness}</span>
+                                        <div className="mt-2 opacity-0 group-hover:opacity-100 h-0 group-hover:h-auto overflow-hidden transition-all duration-300">
+                                            <button
+                                                onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
+                                                className="text-[11px] uppercase tracking-wider font-extrabold inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-emerald-600 hover:bg-emerald-50 rounded shadow-sm border border-emerald-200 transition-all hover:scale-105"
+                                            >
+                                                ✨ Fix with AI
+                                            </button>
+                                        </div>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
@@ -285,9 +288,21 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                                 <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isCompleted ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-indigo-200 text-transparent'}`}>
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                                 </div>
-                                                <p className={`text-slate-700 leading-relaxed font-medium ${isCompleted ? 'line-through text-slate-500' : ''}`}>
-                                                    {suggestion.replace('- [Locked] ', '')}
-                                                </p>
+                                                <div className="flex-1 group">
+                                                    <p className={`text-slate-700 leading-relaxed font-medium ${isCompleted ? 'line-through text-slate-500' : ''}`}>
+                                                        {suggestion.replace('- [Locked] ', '')}
+                                                    </p>
+                                                    {!isLocked && !isCompleted && (
+                                                        <div className="mt-2 opacity-0 group-hover:opacity-100 h-0 group-hover:h-auto overflow-hidden transition-all duration-300">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); trackAiRewriteUsed(); setEditingBullet(suggestion.replace('- [Locked] ', '')); }}
+                                                                className="text-[11px] uppercase tracking-wider font-extrabold inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-indigo-600 hover:bg-indigo-50 rounded shadow-sm border border-indigo-200 transition-all hover:scale-105"
+                                                            >
+                                                                ✨ Fix with AI
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -316,6 +331,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     editingBullet && (
                         <MagicWandEditor
                             initialText={editingBullet}
+                            keywords={[...foundKeywordsList, ...missingKeywordsList]}
                             onClose={() => setEditingBullet(null)}
                             onApply={handleApplyEdit}
                         />

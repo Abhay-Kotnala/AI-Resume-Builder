@@ -3,22 +3,56 @@ import { enhanceBulletPoint } from '../services/api';
 
 interface MagicWandEditorProps {
     initialText: string;
+    keywords?: string[];
     onClose: () => void;
     onApply?: (original: string, enhanced: string) => void;
 }
 
-export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, onClose, onApply }) => {
+export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, keywords = [], onClose, onApply }) => {
     const [bullet, setBullet] = useState(initialText);
     const [targetJob, setTargetJob] = useState('');
+    const [tone, setTone] = useState('Quantified');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    const backdropRef = React.useRef<HTMLDivElement>(null);
+
+    const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+        if (backdropRef.current) {
+            backdropRef.current.scrollTop = e.currentTarget.scrollTop;
+            backdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
+        }
+    };
+
+    const renderHighlightedText = () => {
+        if (!keywords || keywords.length === 0 || !bullet) return bullet;
+        // Filter out empty strings
+        const validKeywords = keywords.filter(k => k.trim().length > 0);
+        if (validKeywords.length === 0) return bullet;
+
+        // Escape keywords for regex
+        const escapedKeywords = validKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+        const regex = new RegExp(`(${escapedKeywords})`, 'gi');
+        const parts = bullet.split(regex);
+
+        return parts.map((part, i) => {
+            if (validKeywords.some(k => k.toLowerCase() === part.toLowerCase())) {
+                return (
+                    <mark key={i} className="bg-emerald-200/60 text-slate-900 rounded-sm">
+                        {part}
+                    </mark>
+                );
+            }
+            return <span key={i} className="text-slate-900">{part}</span>;
+        });
+    };
 
     const handleEnhance = async () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await enhanceBulletPoint(bullet, targetJob);
+            const res = await enhanceBulletPoint(bullet, targetJob, tone);
             setResult(res.enhancedBulletPoint);
         } catch (err: any) {
             setError(err.message || 'Failed to enhance bullet point.');
@@ -42,23 +76,53 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, o
                 <div className="p-6 space-y-6">
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-700 block">Original Point</label>
-                        <textarea
-                            value={bullet}
-                            onChange={(e) => setBullet(e.target.value)}
-                            className="w-full text-sm border-2 border-slate-200 rounded-xl p-4 focus:ring-0 focus:border-emerald-500 bg-slate-50 transition-colors resize-none"
-                            rows={3}
-                        />
+                        <div className="relative rounded-xl overflow-hidden bg-slate-50 border-2 border-slate-200 focus-within:border-emerald-500 transition-colors">
+                            {/* Highlight Layer (Behind) */}
+                            <div
+                                ref={backdropRef}
+                                className="absolute inset-0 w-full h-full text-sm p-4 whitespace-pre-wrap break-words pointer-events-none overflow-y-auto"
+                                aria-hidden="true"
+                            >
+                                {renderHighlightedText()}
+                            </div>
+                            {/* Actual Textarea (Transparent text via styling, caret visible) */}
+                            <textarea
+                                value={bullet}
+                                onChange={(e) => setBullet(e.target.value)}
+                                onScroll={handleScroll}
+                                className="relative w-full h-full text-sm p-4 bg-transparent outline-none resize-y z-10"
+                                style={{
+                                    color: 'transparent',
+                                    caretColor: 'rgb(15 23 42)', // slate-900
+                                }}
+                                rows={3}
+                            />
+                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-700 block">Target Job Title (Optional)</label>
-                        <input
-                            type="text"
-                            value={targetJob}
-                            onChange={(e) => setTargetJob(e.target.value)}
-                            placeholder="e.g. Senior Frontend Engineer"
-                            className="w-full text-sm border-2 border-slate-200 rounded-xl p-3 focus:ring-0 focus:border-emerald-500 bg-white transition-colors"
-                        />
+                    <div className="flex gap-4">
+                        <div className="space-y-2 flex-1">
+                            <label className="text-sm font-bold text-slate-700 block">Target Job Title (Optional)</label>
+                            <input
+                                type="text"
+                                value={targetJob}
+                                onChange={(e) => setTargetJob(e.target.value)}
+                                placeholder="e.g. Senior Frontend Engineer"
+                                className="w-full text-sm border-2 border-slate-200 rounded-xl p-3 focus:ring-0 focus:border-emerald-500 bg-white transition-colors"
+                            />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                            <label className="text-sm font-bold text-slate-700 block">Tone Filter</label>
+                            <select
+                                value={tone}
+                                onChange={(e) => setTone(e.target.value)}
+                                className="w-full text-sm border-2 border-slate-200 rounded-xl p-3 focus:ring-0 focus:border-emerald-500 bg-white transition-colors cursor-pointer"
+                            >
+                                <option value="Quantified">Quantified (Metrics-driven)</option>
+                                <option value="Leadership">Leadership & Impact</option>
+                                <option value="Concise">Concise & Direct</option>
+                            </select>
+                        </div>
                     </div>
 
                     {error && (

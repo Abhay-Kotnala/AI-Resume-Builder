@@ -22,9 +22,9 @@ public class AnalysisResult {
 
     private Integer impactScore;
 
-    private Integer brevityScore;
+    private Integer formattingScore;
 
-    private Integer actionVerbScore;
+    private Integer keywordsScore;
 
     @Column(columnDefinition = "TEXT")
     private String summary;
