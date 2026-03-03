@@ -50,13 +50,16 @@ public class SecurityConfig {
                                                 .requestMatchers("/error", "/favicon.ico", "/images/**", "/static/**",
                                                                 "/assets/**")
                                                 .permitAll()
-                                                // All /api/resume endpoints are currently open, allowing users to build
                                                 // a
                                                 // resume without logging in as requested originally.
                                                 // You can secure them later by changing this to .authenticated() if you
                                                 // want to
                                                 // force sign-in for everything.
-                                                .requestMatchers("/api/resume/**").authenticated()
+                                                .requestMatchers("/", "/error", "/oauth2/**", "/api/auth/**")
+                                                .permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/resumes/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/resumes/**").permitAll()
+                                                .requestMatchers(HttpMethod.PATCH, "/api/resumes/**").permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
                                                 .authorizationEndpoint(endpoint -> endpoint

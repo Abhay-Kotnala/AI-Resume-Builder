@@ -28,7 +28,42 @@ const SAMPLE_RESULT: AnalysisResponse = {
     keywordsScore: 70,
     summary: 'This is a strong resume tailored for a Software Engineer role. The experience section highlights key achievements effectively.',
     strengths: '• Strong use of action verbs\n• Clear contact information\n• Good educational background highlighted',
-    weaknesses: '• Some bullet points lack quantifiable metrics\n• Missing a few key technical skills for modern web development',
+    weaknesses: "• Some bullet points lack quantifiable metrics\n• Missing keywords related to teamwork\n• Lacks numerical metrics to prove impact",
+    isPartialAnalysis: true,
+    parsedResume: {
+        id: 0,
+        fullName: "Sarah Jenkins",
+        email: "s.jenkins@example.com",
+        phone: "(555) 123-4567",
+        location: "San Francisco, CA",
+        summary: "Results-driven Software Engineer with 5+ years of experience building highly scalable architectures and leading cross-functional teams to deliver 99.99% uptime systems.",
+        skills: ["React", "TypeScript", "Node.js", "Java", "Spring Boot", "AWS", "Docker", "Kubernetes"],
+        experiences: [
+            {
+                id: 1,
+                company: "TechNova Solutions",
+                role: "Senior Frontend Engineer",
+                dates: "Jan 2021 - Present",
+                summary: "Led a team of 4 frontend engineers to architect and ship a massive migration from Angular to React, resulting in a 40% decrease in page load times.\n\nSpearheaded the integration of a unified design system that accelerated developer velocity across 3 distinct product squads."
+            },
+            {
+                id: 2,
+                company: "CloudData Inc",
+                role: "Software Engineer",
+                dates: "Jun 2018 - Dec 2020",
+                summary: "Developed scalable RESTful APIs in Spring Boot serving over 1M daily requests.\n\nOptimized Postgres database queries to reduce average latency by 200ms."
+            }
+        ],
+        educations: [
+            {
+                id: 1,
+                institution: "University of California, Berkeley",
+                degree: "B.S. Computer Science",
+                graduationDate: "May 2018",
+                details: "GPA: 3.8/4.0 | Dean's List | Minor in Data Science"
+            }
+        ]
+    },
     suggestedImprovements: '• Quantify your impact in the "Backend Developer" role (e.g., "Increased performance by X%").\n• Add skills like "Docker" and "Kubernetes" if applicable.',
     foundKeywords: 'React, Node.js, TypeScript, SQL',
     missingKeywords: 'Docker, AWS, GraphQL',
