@@ -46,7 +46,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                     {/* Header Section */}
                     <div className="flex flex-col items-center text-center mb-10">
                         <div className="w-16 h-16 bg-gradient-to-tr from-emerald-100 to-emerald-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-emerald-100/50 transform transition-transform hover:scale-110 duration-300">
-                            <Logo className="w-10 h-10" />
+                            <Logo className="w-10 h-10" showText={false} />
                         </div>
                         <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600 mb-3">Welcome Back</h2>
                         <p className="text-slate-500 leading-relaxed max-w-[280px]">
