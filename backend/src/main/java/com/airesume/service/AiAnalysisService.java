@@ -68,6 +68,61 @@ public class AiAnalysisService {
         }
     }
 
+    public com.airesume.entity.ParsedResume parseStructuredResume(String resumeText, boolean isPro) {
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+            return getMockParsedResume();
+        }
+
+        try {
+            String prompt = "You are an expert AI resume parser. I will provide you with unstructured text from a resume PDF. "
+                    +
+                    "Extract all information and organize it perfectly into the following ONLY valid JSON structure. " +
+                    "DO NOT include markdown block tags like ```json. \n" +
+                    "{\n" +
+                    "  \"fullName\": \"\",\n" +
+                    "  \"email\": \"\",\n" +
+                    "  \"phone\": \"\",\n" +
+                    "  \"location\": \"\",\n" +
+                    "  \"summary\": \"\",\n" +
+                    "  \"skills\": [\"\", \"\"],\n" +
+                    "  \"experiences\": [\n" +
+                    "    { \"company\": \"\", \"role\": \"\", \"dates\": \"\", \"summary\": \"\" }\n" +
+                    "  ],\n" +
+                    "  \"educations\": [\n" +
+                    "    { \"institution\": \"\", \"degree\": \"\", \"graduationDate\": \"\", \"details\": \"\" }\n" +
+                    "  ]\n" +
+                    "}\n\n" +
+                    "RESUME TEXT TO PARSE:\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = restClient.post()
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+
+            String text = extractTextFromGeminiResponse(response);
+            if (text.startsWith("```json"))
+                text = text.substring(7);
+            else if (text.startsWith("```"))
+                text = text.substring(3);
+            if (text.endsWith("```"))
+                text = text.substring(0, text.length() - 3);
+
+            return objectMapper.readValue(text.trim(), com.airesume.entity.ParsedResume.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return getMockParsedResume();
+        }
+    }
+
     public String enhanceBulletPoint(String bulletPoint, String targetJob, String tone) {
         if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
             return "Accomplished [X] as measured by [Y], by doing [Z]. (Mocked test feature with tone: " + tone + ")";
@@ -221,6 +276,8 @@ public class AiAnalysisService {
             base += "Since no job description was provided, evaluate it against general best practices for a modern Software Engineering or Tech role.\n\n";
         }
 
+        base += "CRITICAL RULE: If the resume text appears to be fake, gibberish, extremely short (e.g. just 'test'), or does not resemble a true resume, YOU MUST set all integer scores (atsScore, impactScore, formattingScore, keywordsScore) to 0. In the 'summary', explicitly state that the document does not appear to be a real resume.\n\n";
+
         base += "RESUME TEXT TO EVALUATE:\n" + resumeText;
         return base;
     }
@@ -255,30 +312,149 @@ public class AiAnalysisService {
 
     private AnalysisResult getMockResult(boolean isPro) {
         AnalysisResult result = new AnalysisResult();
-        result.setAtsScore(85);
-        result.setImpactScore(65);
-        result.setFormattingScore(90);
-        result.setKeywordsScore(70);
+        result.setAtsScore(0);
+        result.setImpactScore(0);
+        result.setFormattingScore(0);
+        result.setKeywordsScore(0);
         result.setSummary(
-                "A strong resume with good technical skills but lacks some soft skills keywords and quantifiable impact.");
-        result.setStrengths("- Strong programming languages (Java, React)\n- Concise and easy to read");
+                "API Key is missing or an error occurred during analysis. Could not score document. Please check the backend configuration or API limits.");
+        result.setStrengths("- Not applicable");
         result.setWeaknesses(
-                "- Missing keywords related to teamwork\n- Lacks numerical metrics to prove impact\n- Uses weak verbs like 'helped' and 'worked on'");
-        result.setFoundKeywords("Java, React, SQL, Spring Boot");
+                "- Backend needs valid gemini.api.key configuration to function properly.");
+        result.setFoundKeywords("");
 
         if (isPro) {
             result.setPartialAnalysis(false);
-            result.setMissingKeywords("AWS, Docker, CI/CD, Agile");
+            result.setMissingKeywords("System Error: No API available");
             result.setSuggestedImprovements(
-                    "Expand on the impact of your projects using specific action verbs and percentages.\nAdd a 'Soft Skills' section.");
+                    "Configure the environment with a valid API key.");
         } else {
             result.setPartialAnalysis(true);
             result.setMissingKeywords(
-                    "Upgrade to Pro to reveal exactly which keywords you are missing from this job description.");
+                    "System Error: No API available");
             result.setSuggestedImprovements(
-                    "Expand on the impact of your projects using specific action verbs and percentages.\n- [Locked] Upgrade to Pro to see all critical improvements.");
+                    "Configure the environment with a valid API key.");
         }
 
         return result;
     }
+
+    public com.airesume.entity.ParsedResume tailorResumeToJob(String resumeText, String jobDescription) {
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+            return getMockParsedResume();
+        }
+        try {
+            String prompt = "You are an expert resume tailoring AI. Given the candidate's current resume and a target job description, "
+                    +
+                    "rewrite the resume to maximize ATS keyword matches and highlight the most relevant experience for that specific role. "
+                    +
+                    "Rules:\n" +
+                    "1. Keep all factual information — do NOT invent new jobs, degrees, or companies.\n" +
+                    "2. Rewrite the professional summary to mirror the JD's language and priorities.\n" +
+                    "3. Rewrite each experience summary to highlight achievements most relevant to the JD.\n" +
+                    "4. Add missing JD keywords naturally where truthfully applicable.\n" +
+                    "5. Return ONLY valid JSON — no markdown, no code blocks.\n\n" +
+                    "Return this exact JSON structure:\n" +
+                    "{\n" +
+                    "  \"summary\": \"Tailored professional summary...\",\n" +
+                    "  \"experiences\": [\n" +
+                    "    { \"company\": \"\", \"role\": \"\", \"dates\": \"\", \"summary\": \"Tailored bullet points...\" }\n"
+                    +
+                    "  ]\n" +
+                    "}\n\n" +
+                    "JOB DESCRIPTION:\n" + jobDescription + "\n\n" +
+                    "CANDIDATE RESUME:\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = restClient.post()
+                    .uri("/v1beta/models/gemini-1.5-pro:generateContent?key={key}", apiKey)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+
+            String text = extractTextFromGeminiResponse(response);
+            if (text.startsWith("```json"))
+                text = text.substring(7);
+            else if (text.startsWith("```"))
+                text = text.substring(3);
+            if (text.endsWith("```"))
+                text = text.substring(0, text.length() - 3);
+
+            // Parse the partial update and return it as a ParsedResume for merging
+            com.airesume.entity.ParsedResume tailored = objectMapper.readValue(text.trim(),
+                    com.airesume.entity.ParsedResume.class);
+            return tailored;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String detectGrammarAndCliches(String resumeText) {
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+            return "[{\"phrase\":\"responsible for\",\"type\":\"cliche\",\"suggestion\":\"Replace with an active verb: 'led', 'owned', 'drove'\"},{\"phrase\":\"team player\",\"type\":\"cliche\",\"suggestion\":\"Show don't tell — describe a specific collaboration achievement\"},{\"phrase\":\"was managed\",\"type\":\"passive\",\"suggestion\":\"Rewrite actively: 'managed' or 'led'\"},{\"phrase\":\"go-getter\",\"type\":\"vague\",\"suggestion\":\"Replace with quantified accomplishments\"},{\"phrase\":\"detail oriented\",\"type\":\"cliche\",\"suggestion\":\"Remove — use specific examples instead\"}]";
+        }
+        try {
+            String prompt = "You are a professional resume editor and ATS optimization expert. " +
+                    "Carefully review the following resume text and identify all issues across these categories:\n" +
+                    "1. 'cliche' — overused buzz phrases like 'responsible for', 'team player', 'results-driven', 'go-getter', 'detail-oriented', 'hard worker', 'passionate'\n"
+                    +
+                    "2. 'passive' — passive voice constructions like 'was managed', 'were implemented', 'has been used'\n"
+                    +
+                    "3. 'vague' — weak, unquantified claims like 'improved performance', 'various clients', 'multiple projects'\n"
+                    +
+                    "4. 'typo' — obvious spelling or grammar errors\n\n" +
+                    "Return ONLY a valid JSON array (no markdown, no explanation):\n" +
+                    "[{\"phrase\": \"exact phrase from resume\", \"type\": \"cliche|passive|vague|typo\", \"suggestion\": \"one-sentence fix\"}]\n\n"
+                    +
+                    "If there are no issues, return an empty array: []\n\n" +
+                    "RESUME TEXT:\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = restClient.post()
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+
+            String text = extractTextFromGeminiResponse(response);
+            if (text.startsWith("```json"))
+                text = text.substring(7);
+            else if (text.startsWith("```"))
+                text = text.substring(3);
+            if (text.endsWith("```"))
+                text = text.substring(0, text.length() - 3);
+            return text.trim();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
+        }
+    }
+
+    private com.airesume.entity.ParsedResume getMockParsedResume() {
+        com.airesume.entity.ParsedResume mocked = new com.airesume.entity.ParsedResume();
+        mocked.setSummary("Mock tailored summary. API key is missing.");
+        return mocked;
+    }
+
+    public com.airesume.entity.ParsedResume parseLinkedInText(String linkedInText) {
+        // LinkedIn pasted text is structurally similar to a resume — reuse the same
+        // parser
+        return parseStructuredResume(linkedInText, true);
+    }
+
 }

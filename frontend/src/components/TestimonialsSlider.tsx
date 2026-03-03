@@ -41,18 +41,18 @@ export const TestimonialsSlider: React.FC = () => {
     }, []);
 
     return (
-        <section className="py-24 bg-white border-y border-slate-100 overflow-hidden relative">
+        <section className="py-24 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 overflow-hidden relative">
             {/* Background glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-50 rounded-[100%] blur-[80px] opacity-60 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-50 dark:bg-emerald-950/30 rounded-[100%] blur-[80px] opacity-60 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">
                         Trusted by professionals landing roles at
                     </h2>
                     <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-8 opacity-60 grayscale filter hover:grayscale-0 transition-all duration-500">
                         {['Google', 'Microsoft', 'Meta', 'Netflix', 'Spotify'].map(name => (
-                            <div key={name} className="text-2xl font-black text-slate-400">{name}</div>
+                            <div key={name} className="text-2xl font-black text-slate-400 dark:text-slate-500">{name}</div>
                         ))}
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export const TestimonialsSlider: React.FC = () => {
 
                             return (
                                 <div key={testimonial.id} className={cls}>
-                                    <div className="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 text-center">
+                                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 text-center">
                                         {/* Stars */}
                                         <div className="flex justify-center gap-1 mb-6 text-amber-400">
                                             {[...Array(testimonial.rating)].map((_, i) => (
@@ -84,14 +84,14 @@ export const TestimonialsSlider: React.FC = () => {
                                                 </svg>
                                             ))}
                                         </div>
-                                        <p className="text-xl md:text-2xl text-slate-700 font-medium italic mb-8 leading-relaxed">
+                                        <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 font-medium italic mb-8 leading-relaxed">
                                             "{testimonial.quote}"
                                         </p>
                                         <div className="flex items-center justify-center gap-4">
-                                            <img src={testimonial.image} alt={testimonial.name} className="w-14 h-14 rounded-full border-2 border-emerald-100 object-cover" />
+                                            <img src={testimonial.image} alt={testimonial.name} className="w-14 h-14 rounded-full border-2 border-emerald-100 dark:border-emerald-800 object-cover" />
                                             <div className="text-left">
-                                                <div className="font-extrabold text-slate-900">{testimonial.name}</div>
-                                                <div className="text-emerald-600 font-medium text-sm">{testimonial.role} @ {testimonial.company}</div>
+                                                <div className="font-extrabold text-slate-900 dark:text-white">{testimonial.name}</div>
+                                                <div className="text-emerald-600 dark:text-emerald-400 font-medium text-sm">{testimonial.role} @ {testimonial.company}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -106,7 +106,7 @@ export const TestimonialsSlider: React.FC = () => {
                             <button
                                 key={index}
                                 onClick={() => setActiveIndex(index)}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === activeIndex ? 'bg-emerald-500 scale-125' : 'bg-slate-200 hover:bg-slate-300'}`}
+                                className={`w-3 h-3 rounded-full transition-all duration-300 ${index === activeIndex ? 'bg-emerald-500 scale-125' : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600'}`}
                             />
                         ))}
                     </div>

@@ -33,6 +33,7 @@ public class ResumeController {
     private final ResumeRepository resumeRepository;
     private final AnalysisResultRepository analysisResultRepository;
     private final com.airesume.service.PdfGeneratorService pdfGeneratorService;
+    private final com.airesume.service.DocxGeneratorService docxGeneratorService;
     private final UserRepository userRepository;
     private final TemplateEngine templateEngine;
 
@@ -41,6 +42,7 @@ public class ResumeController {
             ResumeRepository resumeRepository,
             AnalysisResultRepository analysisResultRepository,
             com.airesume.service.PdfGeneratorService pdfGeneratorService,
+            com.airesume.service.DocxGeneratorService docxGeneratorService,
             UserRepository userRepository,
             TemplateEngine templateEngine) {
         this.pdfParserService = pdfParserService;
@@ -48,6 +50,7 @@ public class ResumeController {
         this.resumeRepository = resumeRepository;
         this.analysisResultRepository = analysisResultRepository;
         this.pdfGeneratorService = pdfGeneratorService;
+        this.docxGeneratorService = docxGeneratorService;
         this.userRepository = userRepository;
         this.templateEngine = templateEngine;
     }
@@ -62,8 +65,22 @@ public class ResumeController {
             resume.setExtractedText(parsedText);
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isPro = false;
             if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-                userRepository.findByEmail(auth.getName()).ifPresent(resume::setUser);
+                userRepository.findByEmail(auth.getName()).ifPresent(user -> {
+                    resume.setUser(user);
+                });
+
+                isPro = userRepository.findByEmail(auth.getName())
+                        .map(User::isPro).orElse(false);
+            }
+
+            // Immediately run phase 1 semantic document structure parsing!
+            com.airesume.entity.ParsedResume parsedStructure = aiAnalysisService.parseStructuredResume(parsedText,
+                    isPro);
+            if (parsedStructure != null) {
+                parsedStructure.setResume(resume);
+                resume.setParsedResume(parsedStructure);
             }
 
             Resume savedResume = resumeRepository.save(resume);
@@ -102,6 +119,7 @@ public class ResumeController {
                 response.add(Map.of(
                         "id", r.getId(),
                         "fileName", r.getFileName() != null ? r.getFileName() : "Resume #" + r.getId(),
+                        "label", r.getLabel() != null ? r.getLabel() : "",
                         "atsScore", atsScore,
                         "createdAt", createdAt));
             }
@@ -109,6 +127,35 @@ public class ResumeController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Failed to fetch history: " + e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{resumeId}/label")
+    public ResponseEntity<?> updateResumeLabel(@PathVariable Long resumeId, @RequestBody Map<String, String> request) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found"));
+            String newLabel = request.get("label");
+            if (newLabel != null) {
+                resume.setLabel(newLabel);
+                resumeRepository.save(resume);
+            }
+            return ResponseEntity.ok(Map.of("message", "Label updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{resumeId}")
+    public ResponseEntity<?> deleteResume(@PathVariable Long resumeId) {
+        try {
+            if (!resumeRepository.existsById(resumeId)) {
+                return ResponseEntity.status(404).body(Map.of("error", "Resume not found"));
+            }
+            resumeRepository.deleteById(resumeId);
+            return ResponseEntity.ok(Map.of("message", "Resume deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -152,7 +199,26 @@ public class ResumeController {
                 userRepository.save(user);
             }
 
-            return ResponseEntity.ok(savedResult);
+            // Build response map: all AnalysisResult fields + parsedResume for the canvas
+            java.util.Map<String, Object> responseMap = new java.util.LinkedHashMap<>();
+            responseMap.put("id", savedResult.getId());
+            responseMap.put("resumeId", savedResult.getResumeId());
+            responseMap.put("atsScore", savedResult.getAtsScore());
+            responseMap.put("impactScore", savedResult.getImpactScore());
+            responseMap.put("formattingScore", savedResult.getFormattingScore());
+            responseMap.put("keywordsScore", savedResult.getKeywordsScore());
+            responseMap.put("summary", savedResult.getSummary());
+            responseMap.put("strengths", savedResult.getStrengths());
+            responseMap.put("weaknesses", savedResult.getWeaknesses());
+            responseMap.put("suggestedImprovements", savedResult.getSuggestedImprovements());
+            responseMap.put("foundKeywords", savedResult.getFoundKeywords());
+            responseMap.put("missingKeywords", savedResult.getMissingKeywords());
+            responseMap.put("isPartialAnalysis", savedResult.isPartialAnalysis());
+            if (resume.getParsedResume() != null) {
+                responseMap.put("parsedResume", resume.getParsedResume());
+            }
+
+            return ResponseEntity.ok(responseMap);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -225,23 +291,35 @@ public class ResumeController {
     @ResponseBody
     public ResponseEntity<byte[]> exportToPdf(
             @PathVariable Long resumeId,
-            @RequestBody(required = false) Map<String, String> options) {
+            @RequestBody(required = false) Map<String, Object> options) {
         try {
             String fileName = "My Resume";
             String extractedText = "";
+            Resume resume = null;
 
             if (resumeId == 0) {
                 fileName = "Sample_Resume";
                 extractedText = "Sample Resume Content\n\nExperience:\n- Software Engineer at Google\n- Built scalable microservices\n\nEducation:\n- B.S. Computer Science";
             } else {
-                Resume resume = resumeRepository.findById(resumeId)
+                resume = resumeRepository.findById(resumeId)
                         .orElseThrow(() -> new RuntimeException("Resume not found"));
                 fileName = resume.getFileName() != null ? resume.getFileName().replace(".pdf", "") : "My Resume";
                 extractedText = resume.getExtractedText();
             }
 
-            String template = options != null && options.containsKey("template") ? options.get("template") : "basic";
-            String font = options != null && options.containsKey("font") ? options.get("font") : "Helvetica";
+            String template = options != null && options.containsKey("template") ? (String) options.get("template")
+                    : "basic";
+            String font = options != null && options.containsKey("font") ? (String) options.get("font") : "Helvetica";
+
+            @SuppressWarnings("unchecked")
+            java.util.List<Map<String, String>> appliedEdits = options != null && options.containsKey("appliedEdits")
+                    ? (java.util.List<Map<String, String>>) options.get("appliedEdits")
+                    : null;
+
+            @SuppressWarnings("unchecked")
+            java.util.List<String> sectionOrder = options != null && options.containsKey("sectionOrder")
+                    ? (java.util.List<String>) options.get("sectionOrder")
+                    : java.util.Arrays.asList("Summary", "Experience", "Education", "Skills");
 
             String templateFile = "resume-template";
             if ("modern".equals(template)) {
@@ -254,8 +332,24 @@ public class ResumeController {
             context.setVariable("resumeName", escapeXml(fileName));
             context.setVariable("extractedText", escapeXml(extractedText));
             context.setVariable("fontFamily", font);
+            if (resume != null && resume.getParsedResume() != null) {
+                context.setVariable("parsedResume", resume.getParsedResume());
+            }
+            context.setVariable("sectionOrder", sectionOrder);
 
-            byte[] pdfBytes = pdfGeneratorService.generatePdfFromHtml(templateFile, context);
+            String htmlContent = templateEngine.process(templateFile, context);
+
+            if (appliedEdits != null) {
+                for (Map<String, String> edit : appliedEdits) {
+                    String original = edit.get("original");
+                    String enhanced = edit.get("enhanced");
+                    if (original != null && enhanced != null) {
+                        htmlContent = htmlContent.replace(original, enhanced);
+                    }
+                }
+            }
+
+            byte[] pdfBytes = pdfGeneratorService.generatePdfFromRawHtml(htmlContent);
 
             return ResponseEntity.ok()
                     .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
@@ -265,6 +359,206 @@ public class ResumeController {
             logger.error("Failed to generate PDF", e);
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    /**
+     * PATCH /api/resume/{resumeId}/parsed
+     * Allows the frontend ResumeCanvas to save inline field edits directly to the
+     * ParsedResume entity.
+     * Body: { "field": "summary", "value": "new text", "expIndex": 0, "eduIndex": 0
+     * }
+     */
+    @PatchMapping("/{resumeId}/parsed")
+    public ResponseEntity<?> patchParsedResume(
+            @PathVariable Long resumeId,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found"));
+            com.airesume.entity.ParsedResume pr = resume.getParsedResume();
+            if (pr == null) {
+                return ResponseEntity.status(404).body(Map.of("error", "No parsed resume found for this upload"));
+            }
+
+            String field = (String) body.get("field");
+            String rawValue = body.get("value") != null ? body.get("value").toString() : "";
+            // Sanitize: strip all tags except the safe formatting subset
+            String value = rawValue
+                    .replaceAll("(?i)<(?!/?(?:b|strong|i|em|u|br)(?:\\s|/?>))[^>]+>", "");
+
+            if (field == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "field is required"));
+            }
+
+            switch (field) {
+                case "fullName" -> pr.setFullName(value);
+                case "email" -> pr.setEmail(value);
+                case "phone" -> pr.setPhone(value);
+                case "location" -> pr.setLocation(value);
+                case "summary" -> pr.setSummary(value);
+                case "skills" -> {
+                    // value is a comma-separated list of skills
+                    java.util.List<String> skills = java.util.Arrays.stream(value.split(","))
+                            .map(String::trim).filter(s -> !s.isEmpty())
+                            .collect(java.util.stream.Collectors.toList());
+                    pr.setSkills(skills);
+                }
+                case "expSummary" -> {
+                    int idx = body.get("expIndex") != null ? ((Number) body.get("expIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getExperiences() != null && idx < pr.getExperiences().size()) {
+                        pr.getExperiences().get(idx).setSummary(value);
+                    }
+                }
+                case "expRole" -> {
+                    int idx = body.get("expIndex") != null ? ((Number) body.get("expIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getExperiences() != null && idx < pr.getExperiences().size()) {
+                        pr.getExperiences().get(idx).setRole(value);
+                    }
+                }
+                case "expCompany" -> {
+                    int idx = body.get("expIndex") != null ? ((Number) body.get("expIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getExperiences() != null && idx < pr.getExperiences().size()) {
+                        pr.getExperiences().get(idx).setCompany(value);
+                    }
+                }
+                case "expDates" -> {
+                    int idx = body.get("expIndex") != null ? ((Number) body.get("expIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getExperiences() != null && idx < pr.getExperiences().size()) {
+                        pr.getExperiences().get(idx).setDates(value);
+                    }
+                }
+                case "eduDegree" -> {
+                    int idx = body.get("eduIndex") != null ? ((Number) body.get("eduIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getEducations() != null && idx < pr.getEducations().size()) {
+                        pr.getEducations().get(idx).setDegree(value);
+                    }
+                }
+                case "eduInstitution" -> {
+                    int idx = body.get("eduIndex") != null ? ((Number) body.get("eduIndex")).intValue() : -1;
+                    if (idx >= 0 && pr.getEducations() != null && idx < pr.getEducations().size()) {
+                        pr.getEducations().get(idx).setInstitution(value);
+                    }
+                }
+                default -> {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Unknown field: " + field));
+                }
+            }
+
+            resumeRepository.save(resume);
+            return ResponseEntity.ok(Map.of("status", "saved"));
+        } catch (Exception e) {
+            logger.error("Failed to patch parsed resume", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── POST /api/resume/{resumeId}/tailor ────────────────────────────────────
+    @org.springframework.web.bind.annotation.PostMapping("/{resumeId}/tailor")
+    public ResponseEntity<?> tailorResume(
+            @PathVariable Long resumeId,
+            @RequestBody Map<String, String> request) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            String jobDescription = request.getOrDefault("jobDescription", "");
+            if (jobDescription.isBlank())
+                return ResponseEntity.badRequest().body(Map.of("error", "jobDescription is required"));
+
+            com.airesume.entity.ParsedResume existing = resume.getParsedResume();
+            if (existing == null)
+                return ResponseEntity.badRequest().body(Map.of("error", "No parsed resume found. Upload first."));
+
+            com.airesume.entity.ParsedResume tailored = aiAnalysisService.tailorResumeToJob(
+                    resume.getExtractedText(), jobDescription);
+            if (tailored == null)
+                return ResponseEntity.status(500).body(Map.of("error", "AI tailoring failed"));
+
+            // Merge: update summary and experience bullet summaries only
+            if (tailored.getSummary() != null && !tailored.getSummary().isBlank())
+                existing.setSummary(tailored.getSummary());
+            if (tailored.getExperiences() != null) {
+                java.util.List<com.airesume.entity.Experience> existExps = existing.getExperiences();
+                java.util.List<com.airesume.entity.Experience> tailExps = tailored.getExperiences();
+                if (existExps != null) {
+                    for (int i = 0; i < Math.min(existExps.size(), tailExps.size()); i++) {
+                        String s = tailExps.get(i).getSummary();
+                        if (s != null && !s.isBlank())
+                            existExps.get(i).setSummary(s);
+                    }
+                }
+            }
+            resumeRepository.save(resume);
+            return ResponseEntity.ok(existing);
+        } catch (Exception e) {
+            logger.error("Failed to tailor resume", e);
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── POST /api/resume/{resumeId}/import-linkedin ───────────────────────────
+    @org.springframework.web.bind.annotation.PostMapping("/{resumeId}/import-linkedin")
+    public ResponseEntity<?> importLinkedIn(
+            @PathVariable Long resumeId,
+            @RequestBody Map<String, String> request) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            String linkedInText = request.getOrDefault("linkedInText", "");
+            if (linkedInText.isBlank())
+                return ResponseEntity.badRequest().body(Map.of("error", "linkedInText is required"));
+
+            com.airesume.entity.ParsedResume parsed = aiAnalysisService.parseLinkedInText(linkedInText);
+            com.airesume.entity.ParsedResume existing = resume.getParsedResume();
+            if (existing == null) {
+                parsed.setResume(resume);
+                resume.setParsedResume(parsed);
+            } else {
+                // Additive merge — only fill in empty fields
+                if (isBlank(existing.getFullName()))
+                    existing.setFullName(parsed.getFullName());
+                if (isBlank(existing.getEmail()))
+                    existing.setEmail(parsed.getEmail());
+                if (isBlank(existing.getPhone()))
+                    existing.setPhone(parsed.getPhone());
+                if (isBlank(existing.getLocation()))
+                    existing.setLocation(parsed.getLocation());
+                if (isBlank(existing.getSummary()))
+                    existing.setSummary(parsed.getSummary());
+                if ((existing.getSkills() == null || existing.getSkills().isEmpty()) && parsed.getSkills() != null)
+                    existing.setSkills(parsed.getSkills());
+                if ((existing.getExperiences() == null || existing.getExperiences().isEmpty())
+                        && parsed.getExperiences() != null)
+                    existing.setExperiences(parsed.getExperiences());
+                if ((existing.getEducations() == null || existing.getEducations().isEmpty())
+                        && parsed.getEducations() != null)
+                    existing.setEducations(parsed.getEducations());
+            }
+            resumeRepository.save(resume);
+            return ResponseEntity.ok(resume.getParsedResume());
+        } catch (Exception e) {
+            logger.error("Failed to import LinkedIn profile", e);
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── POST /api/resume/{resumeId}/grammar-check ─────────────────────────────
+    @org.springframework.web.bind.annotation.PostMapping("/{resumeId}/grammar-check")
+    public ResponseEntity<?> grammarCheck(@PathVariable Long resumeId) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            String result = aiAnalysisService.detectGrammarAndCliches(resume.getExtractedText());
+            return ResponseEntity.ok()
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(result);
+        } catch (Exception e) {
+            logger.error("Failed grammar check", e);
+            return ResponseEntity.status(500).body("[]");
+        }
+    }
+
+    private boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     private String escapeXml(String text) {
@@ -321,6 +615,11 @@ public class ResumeController {
 
             // Styling context
             context.setVariable("fontFamily", font);
+
+            Resume resumeObj = resumeRepository.findById(id).orElse(null);
+            if (resumeObj != null && resumeObj.getParsedResume() != null) {
+                context.setVariable("parsedResume", resumeObj.getParsedResume());
+            }
 
             String templateFile = "resume-template";
             if ("modern".equals(template)) {

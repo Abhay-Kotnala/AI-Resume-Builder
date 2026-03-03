@@ -107,16 +107,16 @@ export const ChecklistSection: React.FC = () => {
                     {/* Right grid pattern of cards */}
                     <div className="lg:col-span-7 grid md:grid-cols-2 gap-6 relative">
                         {checklistItems.map((item, index) => (
-                            <div key={index} className={`bg-white rounded-2xl p-8 shadow-xl border border-slate-100 transition-transform duration-300 hover:-translate-y-1 ${index % 2 === 1 ? 'md:mt-12' : ''}`}>
+                            <div key={index} className={`bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-xl border border-slate-100 dark:border-slate-700 transition-transform duration-300 hover:-translate-y-1 ${index % 2 === 1 ? 'md:mt-12' : ''}`}>
                                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${item.bgColor} ${item.color}`}>
                                     {item.icon}
                                 </div>
-                                <h4 className="text-xl font-bold text-slate-800 mb-6">{item.title}</h4>
+                                <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-6">{item.title}</h4>
                                 <ul className="space-y-4">
                                     {item.points.map((point, idx) => (
                                         <li key={idx} className="flex items-start gap-3">
                                             <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                                            <span className="text-slate-600 font-medium">{point}</span>
+                                            <span className="text-slate-600 dark:text-slate-400 font-medium">{point}</span>
                                         </li>
                                     ))}
                                 </ul>

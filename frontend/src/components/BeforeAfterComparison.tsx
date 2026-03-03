@@ -120,7 +120,7 @@ export const BeforeAfterComparison: React.FC = () => {
     };
 
     return (
-        <section className="py-24 bg-slate-50 border-t border-slate-100 overflow-hidden relative">
+        <section className="py-24 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 overflow-hidden relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <div className="text-center max-w-3xl mx-auto mb-12">
@@ -129,11 +129,11 @@ export const BeforeAfterComparison: React.FC = () => {
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         Interactive Mockup
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
+                    <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-6">
                         Stop getting rejected by <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500">invisible algorithms.</span>
                     </h2>
-                    <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                    <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
                         Experience the power of ElevateAI. Click "Fix with AI" to see how our engine transforms weak bullet points into interview-generating achievements.
                     </p>
 
@@ -150,7 +150,7 @@ export const BeforeAfterComparison: React.FC = () => {
                         ) : (
                             <button
                                 onClick={handleReset}
-                                className="px-6 py-3 bg-white text-slate-700 border-2 border-slate-200 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2"
+                                className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 transition-all flex items-center gap-2"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
                                 Reset Demo
@@ -161,7 +161,7 @@ export const BeforeAfterComparison: React.FC = () => {
 
                 {/* Resume Mockup Display */}
                 <div className="max-w-4xl mx-auto relative perspective-1000">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full p-6 sm:p-10 md:p-14 relative overflow-hidden transition-all duration-500">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full p-6 sm:p-10 md:p-14 relative overflow-hidden transition-all duration-500">
                         {/* Status Bar */}
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
                             <div
@@ -171,22 +171,22 @@ export const BeforeAfterComparison: React.FC = () => {
                         </div>
 
                         {/* Header Section */}
-                        <div className="border-b-2 border-slate-800 pb-6 mb-8 text-center pt-4">
-                            <h3 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-2">Alex Morgan</h3>
-                            <p className="text-slate-600 text-sm sm:text-base font-medium">San Francisco, CA • alex.morgan@email.com • (555) 123-4567 • linkedin.com/in/alexmorgan</p>
+                        <div className="border-b-2 border-slate-800 dark:border-slate-600 pb-6 mb-8 text-center pt-4">
+                            <h3 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white mb-2">Alex Morgan</h3>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base font-medium">San Francisco, CA • alex.morgan@email.com • (555) 123-4567 • linkedin.com/in/alexmorgan</p>
                         </div>
 
                         {/* Experience Section */}
                         <div className="mb-10">
-                            <h4 className="text-lg font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 pb-1 mb-6 text-left">Professional Experience</h4>
+                            <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest border-b border-slate-300 dark:border-slate-600 pb-1 mb-6 text-left">Professional Experience</h4>
 
                             <div className="mb-4">
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-4 gap-1 sm:gap-0">
-                                    <h5 className="font-bold text-slate-800 text-lg">Senior Marketing Manager | InnovateTech</h5>
-                                    <span className="text-slate-500 text-sm font-medium">Jan 2021 - Present</span>
+                                    <h5 className="font-bold text-slate-800 dark:text-slate-200 text-lg">Senior Marketing Manager | InnovateTech</h5>
+                                    <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">Jan 2021 - Present</span>
                                 </div>
 
-                                <div className="space-y-2 mt-4 text-slate-700 text-base">
+                                <div className="space-y-2 mt-4 text-slate-700 dark:text-slate-300 text-base">
                                     {renderItem('bullet1')}
                                     {renderItem('bullet2')}
                                     {renderItem('bullet3')}
@@ -196,9 +196,9 @@ export const BeforeAfterComparison: React.FC = () => {
 
                         {/* Skills Section */}
                         <div className="pb-8">
-                            <h4 className="text-lg font-bold text-slate-800 uppercase tracking-widest border-b border-slate-300 pb-1 mb-6 text-left">Core Competencies</h4>
-                            <div className="text-base text-slate-700 leading-relaxed text-left">
-                                <span className="font-bold text-slate-800 mr-2">Skills: </span>
+                            <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200 uppercase tracking-widest border-b border-slate-300 dark:border-slate-600 pb-1 mb-6 text-left">Core Competencies</h4>
+                            <div className="text-base text-slate-700 dark:text-slate-300 leading-relaxed text-left">
+                                <span className="font-bold text-slate-800 dark:text-slate-200 mr-2">Skills: </span>
                                 Digital Marketing, SEO, Content Strategy,
                                 {renderItem('skills', true)},
                                 A/B Testing, Team Leadership.

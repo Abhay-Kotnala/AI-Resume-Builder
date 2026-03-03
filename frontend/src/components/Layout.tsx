@@ -104,7 +104,8 @@ export const Layout: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <Link to="/profile" className="hidden md:flex items-center gap-2.5 px-4 py-1.5 border border-slate-200 rounded-full hover:border-indigo-300 hover:bg-indigo-50 transition-all cursor-pointer group">
+                                    <Link to="/dashboard" className="hidden md:block text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors mr-2">Dashboard</Link>
+                                    <Link to="/profile" className="hidden md:flex items-center gap-2.5 px-4 py-1.5 border border-slate-200 dark:border-slate-700 rounded-full hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all cursor-pointer group">
                                         {user?.picture ? (
                                             <img src={user.picture} alt={firstName} className="w-7 h-7 rounded-full object-cover ring-2 ring-white" />
                                         ) : (

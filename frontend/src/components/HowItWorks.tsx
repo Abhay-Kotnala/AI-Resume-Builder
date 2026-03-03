@@ -106,15 +106,15 @@ export const HowItWorks: React.FC = () => {
     const [activeStep, setActiveStep] = useState(0);
 
     return (
-        <section id="how-it-works" className="py-24 bg-slate-50 relative border-y border-slate-100">
+        <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-900 relative border-y border-slate-100 dark:border-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
                     <h2 className="text-emerald-500 font-bold tracking-wider uppercase text-sm">The Process</h2>
-                    <h3 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-                        How ElevateAI <span className="text-slate-400">works</span>
+                    <h3 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        How ElevateAI <span className="text-slate-400 dark:text-slate-500">works</span>
                     </h3>
-                    <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
+                    <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
                         We've streamlined the resume optimization process. In less than 30 seconds,
                         transform your resume from good to interview-ready.
                     </p>
@@ -132,8 +132,8 @@ export const HowItWorks: React.FC = () => {
                                     onClick={() => setActiveStep(index)}
                                     className={`cursor-pointer rounded-2xl p-6 transition-all duration-300 border-2 text-left relative overflow-hidden group
                                         ${isActive
-                                            ? 'bg-white border-emerald-500 shadow-lg shadow-emerald-100/50'
-                                            : 'bg-transparent border-transparent hover:bg-white hover:border-slate-200 hover:shadow-md'
+                                            ? 'bg-white dark:bg-slate-800 border-emerald-500 shadow-lg shadow-emerald-100/50 dark:shadow-emerald-900/30'
+                                            : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md'
                                         }`}
                                 >
                                     {isActive && (
@@ -141,16 +141,16 @@ export const HowItWorks: React.FC = () => {
                                     )}
                                     <div className="flex items-start gap-5">
                                         <div className={`mt-0.5 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300
-                                            ${isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'}`}>
+                                            ${isActive ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
                                             {step.icon}
                                         </div>
                                         <div>
                                             <h4 className={`text-xl font-bold mb-2 transition-colors duration-300 
-                                                ${isActive ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                                                ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-slate-200'}`}>
                                                 {step.title}
                                             </h4>
                                             {isActive && (
-                                                <p className="text-slate-600 leading-relaxed text-sm animate-fade-in-up">
+                                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm animate-fade-in-up">
                                                     {step.description}
                                                 </p>
                                             )}
@@ -162,7 +162,7 @@ export const HowItWorks: React.FC = () => {
                     </div>
 
                     {/* Right side: Dynamic Visuals */}
-                    <div className="lg:col-span-7 relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-white">
+                    <div className="lg:col-span-7 relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                         {/* Tab Content Rendering */}
                         {steps.map((step, index) => (
                             <div

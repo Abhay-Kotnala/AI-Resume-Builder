@@ -199,7 +199,7 @@ export const Home: React.FC = () => {
                 <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-3 px-4">
                     <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                         <p className="text-white font-semibold text-sm sm:text-base">
-                            🚀 Get your free ATS score in under 2 minutes
+                            Get your free ATS score in under 2 minutes
                         </p>
                         <button
                             onClick={() => {

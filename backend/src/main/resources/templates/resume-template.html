@@ -79,13 +79,71 @@
     <h1 th:text="${resumeName != null ? resumeName : 'Professional Resume'}">Professional Resume</h1>
 
     <div class="contact-info">
-        <span th:text="${email != null ? email : 'student@example.com'}">student@example.com</span> &nbsp; &bull; &nbsp;
-        <span th:text="${phone != null ? phone : '(123) 456-7890'}">(123) 456-7890</span>
+        <span
+            th:text="${parsedResume != null && parsedResume.email != null ? parsedResume.email : (email != null ? email : 'student@example.com')}">student@example.com</span>
+        &nbsp; &bull; &nbsp;
+        <span
+            th:text="${parsedResume != null && parsedResume.phone != null ? parsedResume.phone : (phone != null ? phone : '(123) 456-7890')}">(123)
+            456-7890</span>
     </div>
 
-    <div class="section-title">Professional Profile</div>
-    <div class="content" th:text="${extractedText}">
-        [Extracted Professional Experience and Details will appear here]
+    <!-- Fallback if there is no parsed data -->
+    <div th:if="${parsedResume == null}">
+        <div class="section-title">Professional Profile</div>
+        <!-- Unescaped text to allow Rich Text tags -->
+        <div class="content" th:utext="${extractedText}">
+            [Extracted Professional Experience and Details will appear here]
+        </div>
+    </div>
+
+    <!-- Structured Data if available -->
+    <div th:if="${parsedResume != null}">
+        <th:block th:each="sectionName : ${sectionOrder}">
+            <!-- Summary -->
+            <div th:if="${sectionName == 'Summary' and parsedResume.summary != null}" class="section-item">
+                <div class="section-title">Summary</div>
+                <div class="content" th:utext="${parsedResume.summary}">Summary text</div>
+            </div>
+
+            <!-- Skills -->
+            <div th:if="${sectionName == 'Skills' and parsedResume.skills != null && !parsedResume.skills.isEmpty()}"
+                class="section-item">
+                <div class="section-title">Skills</div>
+                <div class="content">
+                    <ul style="list-style-type: square; margin-top: 5px;">
+                        <li th:each="skill : ${parsedResume.skills}" th:text="${skill}">Skill</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div
+                th:if="${sectionName == 'Experience' and parsedResume.experiences != null && !parsedResume.experiences.isEmpty()}">
+                <div class="section-title">Work Experience</div>
+                <div th:each="exp : ${parsedResume.experiences}" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
+                        <span th:text="${exp.role} + ' at ' + ${exp.company}">Role at Company</span>
+                        <span th:text="${exp.dates}">Dates</span>
+                    </div>
+                    <div class="content" th:utext="${exp.summary}" style="margin-left: 15px;">Experience Summary</div>
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div
+                th:if="${sectionName == 'Education' and parsedResume.educations != null && !parsedResume.educations.isEmpty()}">
+                <div class="section-title">Education</div>
+                <div th:each="edu : ${parsedResume.educations}" style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
+                        <span th:text="${edu.institution}">Institution</span>
+                        <span th:text="${edu.graduationDate}">Graduation Date</span>
+                    </div>
+                    <div style="font-weight: 500;" th:text="${edu.degree}">Degree</div>
+                    <div class="content" th:if="${edu.details != null}" th:utext="${edu.details}"
+                        style="margin-left: 15px;">Education Details</div>
+                </div>
+            </div>
+        </th:block>
     </div>
 </body>
 

@@ -30,16 +30,16 @@ const resources = [
 
 export const ResourcesGrid: React.FC = () => {
     return (
-        <section className="py-24 bg-slate-50 border-t border-slate-100 relative">
+        <section className="py-24 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div className="max-w-2xl">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight mb-4">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-4">
                             Further reading to level up your career.
                         </h2>
-                        <p className="text-lg text-slate-600 leading-relaxed">
+                        <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
                             Expert advice on resume writing, passing the ATS, and negotiating your next offer.
                         </p>
                     </div>
@@ -55,7 +55,7 @@ export const ResourcesGrid: React.FC = () => {
                         <Link
                             key={article.id}
                             to={`/article/${article.id}`}
-                            className="group flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
+                            className="group flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
                         >
                             {/* Image Container */}
                             <div className="relative h-48 sm:h-56 overflow-hidden">
@@ -74,14 +74,14 @@ export const ResourcesGrid: React.FC = () => {
 
                             {/* Content */}
                             <div className="p-6 sm:p-8 flex flex-col flex-1">
-                                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors leading-snug">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug">
                                     {article.title}
                                 </h3>
-                                <p className="text-slate-600 leading-relaxed text-sm mb-6 flex-1">
+                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm mb-6 flex-1">
                                     {article.description}
                                 </p>
 
-                                <div className="flex items-center justify-between text-sm font-medium text-slate-500 mt-auto pt-4 border-t border-slate-100">
+                                <div className="flex items-center justify-between text-sm font-medium text-slate-500 dark:text-slate-400 mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
                                     <div className="flex items-center gap-1.5">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         {article.readTime}

@@ -8,7 +8,7 @@ interface MagicWandEditorProps {
     onApply?: (original: string, enhanced: string) => void;
 }
 
-export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, keywords = [], onClose, onApply }) => {
+export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, onClose, onApply }) => {
     const [bullet, setBullet] = useState(initialText);
     const [targetJob, setTargetJob] = useState('');
     const [tone, setTone] = useState('Quantified');
@@ -16,37 +16,7 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, k
     const [result, setResult] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const backdropRef = React.useRef<HTMLDivElement>(null);
-
-    const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
-        if (backdropRef.current) {
-            backdropRef.current.scrollTop = e.currentTarget.scrollTop;
-            backdropRef.current.scrollLeft = e.currentTarget.scrollLeft;
-        }
-    };
-
-    const renderHighlightedText = () => {
-        if (!keywords || keywords.length === 0 || !bullet) return bullet;
-        // Filter out empty strings
-        const validKeywords = keywords.filter(k => k.trim().length > 0);
-        if (validKeywords.length === 0) return bullet;
-
-        // Escape keywords for regex
-        const escapedKeywords = validKeywords.map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-        const regex = new RegExp(`(${escapedKeywords})`, 'gi');
-        const parts = bullet.split(regex);
-
-        return parts.map((part, i) => {
-            if (validKeywords.some(k => k.toLowerCase() === part.toLowerCase())) {
-                return (
-                    <mark key={i} className="bg-emerald-200/60 text-slate-900 rounded-sm">
-                        {part}
-                    </mark>
-                );
-            }
-            return <span key={i} className="text-slate-900">{part}</span>;
-        });
-    };
+    // React Simple WYSIWYG state handled via contentEditable intrinsic DOM value
 
     const handleEnhance = async () => {
         setLoading(true);
@@ -75,27 +45,29 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, k
 
                 <div className="p-6 space-y-6">
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-slate-700 block">Original Point</label>
-                        <div className="relative rounded-xl overflow-hidden bg-slate-50 border-2 border-slate-200 focus-within:border-emerald-500 transition-colors">
-                            {/* Highlight Layer (Behind) */}
-                            <div
-                                ref={backdropRef}
-                                className="absolute inset-0 w-full h-full text-sm p-4 whitespace-pre-wrap break-words pointer-events-none overflow-y-auto"
-                                aria-hidden="true"
-                            >
-                                {renderHighlightedText()}
+                        <div className="flex justify-between items-center">
+                            <label className="text-sm font-bold text-slate-700 block">Original Text</label>
+                            {/* Rich Text Toolbar — onMouseDown preventDefault keeps focus in the editor */}
+                            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('bold', false); }} className="p-1 px-2 hover:bg-slate-100 rounded text-slate-700 font-bold font-serif" title="Bold">B</button>
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('italic', false); }} className="p-1 px-2 hover:bg-slate-100 rounded text-slate-700 italic font-serif" title="Italic">I</button>
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('underline', false); }} className="p-1 px-2 hover:bg-slate-100 rounded text-slate-700 underline font-serif" title="Underline">U</button>
+                                <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                                <button type="button" onMouseDown={(e) => { e.preventDefault(); document.execCommand('insertUnorderedList', false); }} className="p-1 px-2 hover:bg-slate-100 rounded text-slate-700" title="Bullet List">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16M8 6h.01M8 12h.01M8 18h.01" /></svg>
+                                </button>
                             </div>
-                            {/* Actual Textarea (Transparent text via styling, caret visible) */}
-                            <textarea
-                                value={bullet}
-                                onChange={(e) => setBullet(e.target.value)}
-                                onScroll={handleScroll}
-                                className="relative w-full h-full text-sm p-4 bg-transparent outline-none resize-y z-10"
-                                style={{
-                                    color: 'transparent',
-                                    caretColor: 'rgb(15 23 42)', // slate-900
-                                }}
-                                rows={3}
+                        </div>
+                        <div className="relative rounded-xl overflow-hidden bg-slate-50 border-2 border-slate-200 focus-within:border-emerald-500 transition-colors">
+                            {/* ContentEditable Editor */}
+                            <div
+                                contentEditable
+                                suppressContentEditableWarning
+                                onInput={(e) => setBullet(e.currentTarget.innerHTML)}
+                                dangerouslySetInnerHTML={{ __html: initialText }}
+                                className="w-full text-sm p-4 bg-transparent outline-none min-h-[120px] max-h-[300px] overflow-y-auto"
+                                style={{ caretColor: 'rgb(15 23 42)' }}
+                                spellCheck={false}
                             />
                         </div>
                     </div>
@@ -150,22 +122,35 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, k
                         </div>
                     )}
 
-                    <div className="pt-2 flex justify-between items-center gap-3">
-                        {/* Apply to Preview button - shown when we have a result */}
-                        {result && onApply ? (
-                            <button
-                                onClick={() => {
-                                    onApply(initialText, result);
-                                    onClose();
-                                }}
-                                className="px-5 py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 flex items-center gap-2 transition-all hover:-translate-y-0.5 text-sm"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                Apply to Preview
-                            </button>
-                        ) : (
-                            <span />
-                        )}
+                    <div className="pt-2 flex justify-between items-center gap-3 border-t border-slate-100 mt-6 pt-4">
+                        <div className="flex gap-2">
+                            {/* Apply manually edited text directly */}
+                            {onApply && bullet !== initialText && (
+                                <button
+                                    onClick={() => {
+                                        onApply(initialText, bullet);
+                                        onClose();
+                                    }}
+                                    className="px-5 py-2.5 rounded-xl font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 shadow-sm flex items-center gap-2 transition-all text-sm"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                                    Save Edits
+                                </button>
+                            )}
+                            {/* Apply to Preview button - shown when we have an AI result */}
+                            {result && onApply && (
+                                <button
+                                    onClick={() => {
+                                        onApply(initialText, result);
+                                        onClose();
+                                    }}
+                                    className="px-5 py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 flex items-center gap-2 transition-all hover:-translate-y-0.5 text-sm"
+                                >
+                                    <svg className="w-4 h-4 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                                    Apply AI Update
+                                </button>
+                            )}
+                        </div>
                         <div className="flex gap-3">
                             <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200">
                                 Close

@@ -1,5 +1,31 @@
 export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/resume`;
 
+export interface ExperienceDTO {
+    company: string;
+    role: string;
+    dates: string;
+    summary: string;
+}
+
+export interface EducationDTO {
+    institution: string;
+    degree: string;
+    graduationDate: string;
+    details?: string;
+}
+
+export interface ParsedResumeDTO {
+    id?: number;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    summary?: string;
+    skills?: string[];
+    experiences?: ExperienceDTO[];
+    educations?: EducationDTO[];
+}
+
 export interface AnalysisResponse {
     id: number;
     resumeId: number;
@@ -14,6 +40,7 @@ export interface AnalysisResponse {
     foundKeywords?: string;
     missingKeywords?: string;
     isPartialAnalysis?: boolean;
+    parsedResume?: ParsedResumeDTO;
 }
 
 const getAuthHeaders = (): Record<string, string> => {
@@ -114,8 +141,10 @@ export const generateCoverLetter = async (resumeId: number, jobDescription?: str
 
 export interface PdfExportOptions {
     text: string;
-    template: string;
-    font: string;
+    template?: string;
+    font?: string;
+    appliedEdits?: Array<{ original: string; enhanced: string }>;
+    sectionOrder?: string[];
 }
 
 export const exportToPdf = async (resumeId: number, options: PdfExportOptions): Promise<void> => {
@@ -155,4 +184,165 @@ export const exportToPdf = async (resumeId: number, options: PdfExportOptions): 
     // Clean up
     link.parentNode?.removeChild(link);
     window.URL.revokeObjectURL(url);
+};
+
+export const exportToDocx = async (resumeId: number, options: PdfExportOptions): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/export-docx`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(options)
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to export DOCX');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = 'ElevateAI_Resume.docx';
+    if (contentDisposition && contentDisposition.includes('filename=')) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+        if (matches != null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, '');
+        }
+    }
+
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
+};
+
+export const patchParsedResume = async (
+    resumeId: number,
+    field: string,
+    value: string,
+    expIndex?: number,
+    eduIndex?: number
+): Promise<void> => {
+    const body: Record<string, unknown> = { field, value };
+    if (expIndex !== undefined) body.expIndex = expIndex;
+    if (eduIndex !== undefined) body.eduIndex = eduIndex;
+
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/parsed`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to save edit');
+    }
+};
+
+export const tailorResume = async (resumeId: number, jobDescription: string): Promise<ParsedResumeDTO> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/tailor`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription })
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to tailor resume');
+    }
+    return response.json();
+};
+
+export const importLinkedIn = async (resumeId: number, linkedInText: string): Promise<ParsedResumeDTO> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/import-linkedin`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ linkedInText })
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to import LinkedIn profile');
+    }
+    return response.json();
+};
+
+export interface GrammarIssue {
+    phrase: string;
+    type: 'cliche' | 'passive' | 'vague' | 'typo';
+    suggestion: string;
+}
+
+export const checkGrammar = async (resumeId: number): Promise<GrammarIssue[]> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/grammar-check`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        }
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to run grammar check');
+    }
+    return response.json();
+};
+
+export interface ResumeResponseDto {
+    id: number;
+    fileName: string;
+    label?: string;
+    atsScore: number;
+    uploadDate: string;
+}
+
+export const fetchMyResumes = async (): Promise<ResumeResponseDto[]> => {
+    const response = await fetch(`${API_BASE_URL}/history`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to fetch your resumes');
+    }
+
+    return response.json();
+};
+
+export const patchResumeLabel = async (resumeId: number, label: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/label`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ label }),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to update resume label');
+    }
+};
+
+export const deleteResume = async (resumeId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to delete resume');
+    }
 };

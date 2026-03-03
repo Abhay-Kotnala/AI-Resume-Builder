@@ -18,10 +18,7 @@ public class PdfGeneratorService {
         this.templateEngine = templateEngine;
     }
 
-    public byte[] generatePdfFromHtml(String templateName, Context context) throws IOException, DocumentException {
-        // Render the HTML using Thymeleaf
-        String htmlContent = templateEngine.process(templateName, context);
-
+    public byte[] generatePdfFromRawHtml(String htmlContent) throws DocumentException {
         // Convert HTML string to PDF byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ITextRenderer renderer = new ITextRenderer();
@@ -30,5 +27,11 @@ public class PdfGeneratorService {
         renderer.createPDF(outputStream);
 
         return outputStream.toByteArray();
+    }
+
+    public byte[] generatePdfFromHtml(String templateName, Context context) throws IOException, DocumentException {
+        // Render the HTML using Thymeleaf
+        String htmlContent = templateEngine.process(templateName, context);
+        return generatePdfFromRawHtml(htmlContent);
     }
 }
