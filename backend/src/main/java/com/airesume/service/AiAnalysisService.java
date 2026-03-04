@@ -447,7 +447,26 @@ public class AiAnalysisService {
 
     private com.airesume.entity.ParsedResume getMockParsedResume() {
         com.airesume.entity.ParsedResume mocked = new com.airesume.entity.ParsedResume();
+        mocked.setFullName("John Doe");
+        mocked.setEmail("john.doe@example.com");
+        mocked.setPhone("(555) 123-4567");
+        mocked.setLocation("New York, NY");
         mocked.setSummary("Mock tailored summary. API key is missing.");
+        mocked.setSkills(java.util.Arrays.asList("Java", "Spring Boot", "React", "TypeScript"));
+
+        com.airesume.entity.Experience exp = new com.airesume.entity.Experience();
+        exp.setCompany("MockTech Inc.");
+        exp.setRole("Software Engineer");
+        exp.setDates("Jan 2020 - Present");
+        exp.setSummary("Developed scalable backend services.\nLed a team of 3 engineers.");
+        mocked.setExperiences(java.util.Arrays.asList(exp));
+
+        com.airesume.entity.Education edu = new com.airesume.entity.Education();
+        edu.setInstitution("State University");
+        edu.setDegree("B.S. Computer Science");
+        edu.setGraduationDate("May 2019");
+        mocked.setEducations(java.util.Arrays.asList(edu));
+
         return mocked;
     }
 

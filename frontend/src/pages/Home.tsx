@@ -40,14 +40,12 @@ const SAMPLE_RESULT: AnalysisResponse = {
         skills: ["React", "TypeScript", "Node.js", "Java", "Spring Boot", "AWS", "Docker", "Kubernetes"],
         experiences: [
             {
-                id: 1,
                 company: "TechNova Solutions",
                 role: "Senior Frontend Engineer",
                 dates: "Jan 2021 - Present",
                 summary: "Led a team of 4 frontend engineers to architect and ship a massive migration from Angular to React, resulting in a 40% decrease in page load times.\n\nSpearheaded the integration of a unified design system that accelerated developer velocity across 3 distinct product squads."
             },
             {
-                id: 2,
                 company: "CloudData Inc",
                 role: "Software Engineer",
                 dates: "Jun 2018 - Dec 2020",
@@ -56,7 +54,6 @@ const SAMPLE_RESULT: AnalysisResponse = {
         ],
         educations: [
             {
-                id: 1,
                 institution: "University of California, Berkeley",
                 degree: "B.S. Computer Science",
                 graduationDate: "May 2018",
@@ -163,8 +160,9 @@ export const Home: React.FC = () => {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                 <button
                                     onClick={() => {
-                                        if (!isAuthenticated) openSignInModal();
-                                        else document.getElementById('resume-upload-input')?.click();
+                                        // if (!isAuthenticated) openSignInModal();
+                                        // else 
+                                        document.getElementById('resume-upload-input')?.click();
                                     }}
                                     className="px-8 py-3.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-200 hover:-translate-y-0.5 transition-all text-lg cursor-pointer"
                                 >
@@ -185,10 +183,10 @@ export const Home: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* ── Stats ticker strip ─────────────────────────────── */}
-            <div className="bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 py-8">
+            < div className="bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 py-8" >
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto px-4 text-center">
                     {STATS.map((s) => (
                         <div key={s.label}>
@@ -197,35 +195,35 @@ export const Home: React.FC = () => {
                         </div>
                     ))}
                 </div>
-            </div>
+            </div >
 
             {/* ── Testimonials ────────────────────────────────────────── */}
-            <TestimonialsSlider />
+            < TestimonialsSlider />
 
             {/* ── How It Works (scroll-in) ────────────────────────────── */}
-            <div id="how-it-works" ref={howItWorksRef} className="section-hidden">
+            < div id="how-it-works" ref={howItWorksRef} className="section-hidden" >
                 <HowItWorks />
-            </div>
+            </div >
 
             {/* ── Features (scroll-in) ────────────────────────────────── */}
-            <div id="features" ref={featuresRef} className="section-hidden">
+            < div id="features" ref={featuresRef} className="section-hidden" >
                 <BeforeAfterComparison />
                 <AnalyzerMockup />
-            </div>
+            </div >
 
             {/* ── Resources ───────────────────────────────────────────── */}
-            <ResourcesGrid />
+            < ResourcesGrid />
 
             {/* ── Checklist ───────────────────────────────────────────── */}
-            <ChecklistSection />
+            < ChecklistSection />
 
             {/* ── FAQ (scroll-in) ─────────────────────────────────────── */}
-            <div ref={faqRef} className="section-hidden">
+            < div ref={faqRef} className="section-hidden" >
                 <FAQSection />
-            </div>
+            </div >
 
             {/* ── Sticky scroll CTA ───────────────────────────────────── */}
-            <div
+            < div
                 className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ${showStickyCta
                     ? 'translate-y-0 opacity-100'
                     : 'translate-y-full opacity-0 pointer-events-none'
@@ -251,7 +249,7 @@ export const Home: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </div>
+            </div >
         </>
     );
 };

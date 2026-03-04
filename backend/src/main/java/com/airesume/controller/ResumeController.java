@@ -326,6 +326,10 @@ public class ResumeController {
                 templateFile = "resume-template-modern";
             } else if ("executive".equals(template)) {
                 templateFile = "resume-template-executive";
+            } else if ("tech-focused".equals(template)) {
+                templateFile = "resume-template-tech-focused";
+            } else if ("minimalist".equals(template)) {
+                templateFile = "resume-template-minimalist";
             }
 
             org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
@@ -626,6 +630,10 @@ public class ResumeController {
                 templateFile = "resume-template-modern";
             } else if ("executive".equals(template)) {
                 templateFile = "resume-template-executive";
+            } else if ("tech-focused".equals(template)) {
+                templateFile = "resume-template-tech-focused";
+            } else if ("minimalist".equals(template)) {
+                templateFile = "resume-template-minimalist";
             }
 
             String htmlContent = templateEngine.process(templateFile, context);

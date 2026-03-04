@@ -192,7 +192,14 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                 {[
                     { id: 'basic', label: 'Classic Layout', img: '/templates/classic.png' },
                     { id: 'modern', label: 'Modern Accent', img: '/templates/modern.png', pro: true },
-                    { id: 'executive', label: 'Executive Split', img: '/templates/executive.png', pro: true }
+                    { id: 'executive', label: 'Executive Split', img: '/templates/executive.png', pro: true },
+                    { id: 'tech-focused', label: 'Tech Dense', img: '/templates/tech-focused.png', pro: true },
+                    { id: 'minimalist', label: 'Minimalist', img: '/templates/minimalist.png', pro: true },
+                    { id: 'bold-bw', label: 'Bold Black & White', img: '/templates/bold-bw.png', pro: true },
+                    { id: 'editorial', label: 'Editorial Green', img: '/templates/editorial.png', pro: true },
+                    { id: 'olive-sidebar', label: 'Olive Sidebar', img: '/templates/olive-sidebar.png', pro: true },
+                    { id: 'orange-bold', label: 'Orange Bold', img: '/templates/orange-bold.png', pro: true },
+                    { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.png', pro: true }
                 ].map(tpl => {
                     const isSelected = exportTemplate === tpl.id;
                     const isLocked = result.isPartialAnalysis && (tpl as any).pro;
@@ -368,7 +375,14 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
         const selectedTplConfig = [
             { id: 'basic', label: 'Classic' },
             { id: 'modern', label: 'Modern', pro: true },
-            { id: 'executive', label: 'Executive', pro: true }
+            { id: 'executive', label: 'Executive', pro: true },
+            { id: 'tech-focused', label: 'Tech Dense', pro: true },
+            { id: 'minimalist', label: 'Minimalist', pro: true },
+            { id: 'bold-bw', label: 'Bold B&W', pro: true },
+            { id: 'editorial', label: 'Editorial', pro: true },
+            { id: 'olive-sidebar', label: 'Olive Sidebar', pro: true },
+            { id: 'orange-bold', label: 'Orange Bold', pro: true },
+            { id: 'blue-pro', label: 'Blue Pro', pro: true }
         ].find(t => t.id === exportTemplate);
 
         const isCurrentlyLocked = result.isPartialAnalysis && (selectedTplConfig as any)?.pro;

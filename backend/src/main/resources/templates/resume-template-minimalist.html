@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ATS Optimized Resume - Minimalist</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family:
+            /*[[${fontFamily != null ? fontFamily : 'Inter, Helvetica Neue, sans-serif'}]]*/
+            "Inter",
+            "Helvetica Neue",
+            sans-serif;
+            font-size: 10.5pt;
+            color: #4b5563;
+            line-height: 1.8;
+            margin: 0;
+            padding: 60px 80px;
+            background: #ffffff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 26pt;
+            font-weight: 400;
+            margin: 0 0 16px 0;
+            color: #111827;
+            letter-spacing: 1px;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            font-size: 9pt;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+
+        .content {
+            font-size: 10.5pt;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #4b5563;
+        }
+
+        .exp-item {
+            margin-bottom: 28px;
+        }
+
+        .exp-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .exp-role-company {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .exp-dates {
+            display: table-cell;
+            text-align: right;
+            font-size: 9pt;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            vertical-align: bottom;
+        }
+
+        .exp-role {
+            font-weight: 600;
+            font-size: 11.5pt;
+            color: #111827;
+        }
+
+        .exp-divider {
+            margin: 0 8px;
+            color: #d1d5db;
+        }
+
+        .exp-company {
+            font-size: 10.5pt;
+            color: #6b7280;
+        }
+
+        .exp-summary {
+            white-space: pre-wrap;
+            margin-top: 8px;
+        }
+
+        .edu-item {
+            display: table;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .edu-inst {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .edu-degree {
+            color: #6b7280;
+        }
+
+        .edu-date {
+            display: table-cell;
+            text-align: right;
+            color: #9ca3af;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            vertical-align: bottom;
+        }
+
+        .skills-container {
+            line-height: 2;
+        }
+
+        .skill-item {
+            font-size: 10.5pt;
+            color: #4b5563;
+            margin-right: 24px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80pt;
+            font-weight: bold;
+            color: rgba(200, 200, 200, 0.15);
+            z-index: -1;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:if="${!isPro}" class="watermark">Created with ElevateAI</div>
+
+    <div class="header">
+        <h1
+            th:text="${parsedResume != null and parsedResume.fullName != null ? parsedResume.fullName : (resumeName != null ? resumeName : 'Professional Resume')}">
+            Professional Resume</h1>
+        <div class="contact-info">
+            <span th:if="${parsedResume != null and parsedResume.email != null}"
+                th:text="${parsedResume.email}">email</span>
+            <span th:if="${parsedResume != null and parsedResume.phone != null}"> <span
+                    th:text="${parsedResume.phone}">phone</span></span>
+            <span th:if="${parsedResume != null and parsedResume.location != null}"> <span
+                    th:text="${parsedResume.location}">location</span></span>
+
+            <!-- Fallbacks -->
+            <span th:if="${parsedResume == null and email != null}" th:text="${email}">email</span>
+            <span th:if="${parsedResume == null and phone != null}"> | <span th:text="${phone}">phone</span></span>
+        </div>
+    </div>
+
+    <!-- Structured Data -->
+    <div th:if="${parsedResume != null}">
+        <th:block th:each="sectionName : ${sectionOrder}">
+
+            <!-- Summary -->
+            <div th:if="${sectionName == 'Summary' and parsedResume.summary != null}">
+                <div class="section-title">Profile</div>
+                <div class="content" th:utext="${parsedResume.summary}">Summary text</div>
+            </div>
+
+            <!-- Experience -->
+            <div
+                th:if="${sectionName == 'Experience' and parsedResume.experiences != null && !parsedResume.experiences.isEmpty()}">
+                <div class="section-title">Experience</div>
+                <div th:each="exp : ${parsedResume.experiences}" class="exp-item">
+                    <div class="exp-header">
+                        <div class="exp-role-company">
+                            <span class="exp-role" th:text="${exp.role}">Role</span>
+                            <span class="exp-divider">|</span>
+                            <span class="exp-company" th:text="${exp.company}">Company</span>
+                        </div>
+                        <div class="exp-dates" th:text="${exp.dates}">Dates</div>
+                    </div>
+                    <div class="exp-summary content" th:utext="${exp.summary}">Experience Summary</div>
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div
+                th:if="${sectionName == 'Education' and parsedResume.educations != null && !parsedResume.educations.isEmpty()}">
+                <div class="section-title">Education</div>
+                <div th:each="edu : ${parsedResume.educations}" class="edu-item">
+                    <div style="display: table-cell; text-align: left;">
+                        <span class="edu-inst" th:text="${edu.institution}">Institution</span>
+                        <span class="exp-divider">|</span>
+                        <span class="edu-degree" th:text="${edu.degree}">Degree</span>
+                    </div>
+                    <div class="edu-date" th:text="${edu.graduationDate}">Date</div>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div th:if="${sectionName == 'Skills' and parsedResume.skills != null && !parsedResume.skills.isEmpty()}">
+                <div class="section-title">Skills</div>
+                <div class="skills-container">
+                    <span th:each="skill : ${parsedResume.skills}" class="skill-item" th:utext="${skill}">Skill</span>
+                </div>
+            </div>
+
+        </th:block>
+    </div>
+
+    <!-- Fallback if there is no parsed data -->
+    <div th:if="${parsedResume == null}">
+        <div class="section-title">Professional Overview</div>
+        <div class="content" th:utext="${extractedText}">
+            [Extracted Professional Experience and Details will appear here]
+        </div>
+    </div>
+
+</body>
+
+</html>

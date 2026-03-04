@@ -15,15 +15,15 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isPaywallOpen, setIsPaywallOpen] = useState(false);
-    const { isAuthenticated, openSignInModal } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!isAuthenticated) {
-            e.preventDefault();
-            e.target.value = '';
-            openSignInModal();
-            return;
-        }
+        // if (!isAuthenticated) {
+        //     e.preventDefault();
+        //     e.target.value = '';
+        //     openSignInModal();
+        //     return;
+        // }
 
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
@@ -45,10 +45,10 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
         e.preventDefault();
         setIsDragging(false);
 
-        if (!isAuthenticated) {
-            openSignInModal();
-            return;
-        }
+        // if (!isAuthenticated) {
+        //     openSignInModal();
+        //     return;
+        // }
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             setFile(e.dataTransfer.files[0]);

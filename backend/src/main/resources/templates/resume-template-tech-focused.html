@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ATS Optimized Resume - Tech Focused</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 0;
+        }
+
+        body {
+            font-family:
+            /*[[${fontFamily != null ? fontFamily : 'Inter, Helvetica Neue, sans-serif'}]]*/
+            "Inter",
+            "Helvetica Neue",
+            sans-serif;
+            font-size: 10pt;
+            color: #334155;
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px 48px;
+            background: #ffffff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            color: #0f172a;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 9.5pt;
+            color: #475569;
+        }
+
+        .section-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .content {
+            font-size: 10pt;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .layout-container {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .left-col {
+            display: table-cell;
+            width: 32%;
+            padding-right: 32px;
+            vertical-align: top;
+        }
+
+        .right-col {
+            display: table-cell;
+            width: 68%;
+            vertical-align: top;
+        }
+
+        .skill-item {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .edu-item {
+            margin-bottom: 14px;
+        }
+
+        .edu-degree {
+            font-weight: 700;
+            color: #0f172a;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .edu-inst {
+            color: #475569;
+            font-size: 9.5pt;
+            display: block;
+        }
+
+        .edu-date {
+            color: #64748b;
+            font-size: 9pt;
+        }
+
+        .exp-item {
+            margin-bottom: 20px;
+        }
+
+        .exp-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .exp-role {
+            display: table-cell;
+            font-weight: 700;
+            font-size: 11pt;
+            color: #0f172a;
+            text-align: left;
+        }
+
+        .exp-dates {
+            display: table-cell;
+            font-size: 9pt;
+            color: #64748b;
+            text-align: right;
+            vertical-align: bottom;
+        }
+
+        .exp-company {
+            font-size: 10pt;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .exp-summary {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            padding-left: 12px;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80pt;
+            font-weight: bold;
+            color: rgba(200, 200, 200, 0.10);
+            z-index: -1;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:if="${!isPro}" class="watermark">Created with ElevateAI</div>
+
+    <div class="header">
+        <h1
+            th:text="${parsedResume != null and parsedResume.fullName != null ? parsedResume.fullName : (resumeName != null ? resumeName : 'Professional Resume')}">
+            Professional Resume</h1>
+        <div class="contact-info">
+            <span th:if="${parsedResume != null and parsedResume.email != null}"
+                th:text="${parsedResume.email}">email</span>
+            <span th:if="${parsedResume != null and parsedResume.phone != null}"> | <span
+                    th:text="${parsedResume.phone}">phone</span></span>
+            <span th:if="${parsedResume != null and parsedResume.location != null}"> | <span
+                    th:text="${parsedResume.location}">location</span></span>
+
+            <!-- Fallbacks -->
+            <span th:if="${parsedResume == null and email != null}" th:text="${email}">email</span>
+            <span th:if="${parsedResume == null and phone != null}"> | <span th:text="${phone}">phone</span></span>
+        </div>
+    </div>
+
+    <!-- Structured Data -->
+    <div th:if="${parsedResume != null}" class="layout-container">
+
+        <!-- Left Column: Skills & Education -->
+        <div class="left-col">
+            <th:block th:each="sectionName : ${sectionOrder}">
+                <!-- Skills -->
+                <div
+                    th:if="${sectionName == 'Skills' and parsedResume.skills != null && !parsedResume.skills.isEmpty()}">
+                    <div class="section-title">Technical Skills</div>
+                    <div th:each="skill : ${parsedResume.skills}" class="skill-item" th:utext="${skill}">Skill</div>
+                </div>
+
+                <!-- Education -->
+                <div th:if="${sectionName == 'Education' and parsedResume.educations != null && !parsedResume.educations.isEmpty()}"
+                    style="margin-top: 12px;">
+                    <div class="section-title">Education</div>
+                    <div th:each="edu : ${parsedResume.educations}" class="edu-item">
+                        <span class="edu-degree" th:text="${edu.degree}">Degree</span>
+                        <span class="edu-inst" th:text="${edu.institution}">Institution</span>
+                        <span class="edu-date" th:text="${edu.graduationDate}">Date</span>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Right Column: Summary & Experience -->
+        <div class="right-col">
+            <th:block th:each="sectionName : ${sectionOrder}">
+                <!-- Summary -->
+                <div th:if="${sectionName == 'Summary' and parsedResume.summary != null}">
+                    <div class="section-title">Professional Summary</div>
+                    <div class="content" th:utext="${parsedResume.summary}">Summary text</div>
+                </div>
+
+                <!-- Experience -->
+                <div
+                    th:if="${sectionName == 'Experience' and parsedResume.experiences != null && !parsedResume.experiences.isEmpty()}">
+                    <div class="section-title">Experience</div>
+                    <div th:each="exp : ${parsedResume.experiences}" class="exp-item">
+                        <div class="exp-header">
+                            <div class="exp-role" th:text="${exp.role}">Role</div>
+                            <div class="exp-dates" th:text="${exp.dates}">Dates</div>
+                        </div>
+                        <div class="exp-company" th:text="${exp.company}">Company</div>
+                        <div class="exp-summary content" th:utext="${exp.summary}">Experience Summary</div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Fallback if there is no parsed data -->
+    <div th:if="${parsedResume == null}">
+        <div class="section-title">Professional Overview</div>
+        <div class="content" th:utext="${extractedText}">
+            [Extracted Professional Experience and Details will appear here]
+        </div>
+    </div>
+
+</body>
+
+</html>
