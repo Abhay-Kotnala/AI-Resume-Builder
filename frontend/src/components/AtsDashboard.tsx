@@ -152,34 +152,102 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                 </div>
             </div>
 
-            {/* Keyword Matcher */}
+            {/* ATS Heatmap Scorecard */}
             {(foundKeywordsList.length > 0 || missingKeywordsList.length > 0) && (
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-                    <h3 className="text-sm font-bold text-slate-800 mb-3">Keywords</h3>
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                        {foundKeywordsList.map((kw, i) => (
-                            <span key={i} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-semibold rounded border border-emerald-200">{kw}</span>
-                        ))}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    {/* Heatmap toggle header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">🔥 Keyword Heatmap</span>
+                        <button
+                            onClick={() => setShowHeatmap(prev => !prev)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${showHeatmap
+                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200/50'
+                                    : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                }`}
+                        >
+                            <span className={`w-2 h-2 rounded-full ${showHeatmap ? 'bg-white' : 'bg-slate-400'}`} />
+                            {showHeatmap ? 'Live — ON' : 'OFF'}
+                        </button>
                     </div>
-                    {missingKeywordsList.length > 0 && (
-                        <div>
-                            <h4 className="text-[10px] font-bold text-rose-700 mb-2 uppercase">Missing</h4>
-                            <div className="flex flex-wrap gap-1.5 relative">
-                                <div className={`flex flex-wrap gap-1.5 ${result.isPartialAnalysis ? 'blur-[3px] select-none opacity-60' : ''}`}>
-                                    {missingKeywordsList.map((kw, i) => (
-                                        <span key={i} className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-semibold rounded border border-rose-200">{kw}</span>
+
+                    <div className="p-4 space-y-4">
+                        {/* Match score bar */}
+                        {foundKeywordsList.length > 0 && (
+                            <div>
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Keyword Match</span>
+                                    <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                                        {foundKeywordsList.length} of {foundKeywordsList.length + missingKeywordsList.length} matched
+                                    </span>
+                                </div>
+                                <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-700"
+                                        style={{ width: `${Math.round((foundKeywordsList.length / (foundKeywordsList.length + missingKeywordsList.length)) * 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Found keywords */}
+                        {foundKeywordsList.length > 0 && (
+                            <div>
+                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
+                                    Matched Keywords
+                                </h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {foundKeywordsList.map((kw, i) => (
+                                        <span key={i} className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-200 dark:border-emerald-700 flex items-center gap-1">
+                                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                                            {kw}
+                                        </span>
                                     ))}
                                 </div>
-                                {result.isPartialAnalysis && (
-                                    <div className="absolute inset-0 flex items-center justify-center z-10 w-full">
-                                        <button onClick={() => window.location.href = '/pricing'} className="px-3 py-1 bg-slate-900 text-white text-[10px] font-bold rounded shadow-lg">
-                                            Upgrade
-                                        </button>
-                                    </div>
-                                )}
                             </div>
+                        )}
+
+                        {/* Missing keywords */}
+                        {missingKeywordsList.length > 0 && (
+                            <div>
+                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" />
+                                    Missing Keywords — Add These
+                                </h4>
+                                <div className="flex flex-wrap gap-1.5 relative">
+                                    <div className={`flex flex-wrap gap-1.5 ${result.isPartialAnalysis ? 'blur-[3px] select-none opacity-60' : ''}`}>
+                                        {missingKeywordsList.map((kw, i) => (
+                                            <span key={i} className="px-2.5 py-1 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 text-[10px] font-bold rounded-lg border border-rose-200 dark:border-rose-700 flex items-center gap-1">
+                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                                                {kw}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    {result.isPartialAnalysis && (
+                                        <div className="absolute inset-0 flex items-center justify-center z-10 w-full">
+                                            <button onClick={() => window.location.href = '/pricing'} className="px-4 py-1.5 bg-slate-900 text-white text-[10px] font-extrabold rounded-xl shadow-lg hover:bg-slate-700 transition-colors">
+                                                🔒 Upgrade to See All
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Legend */}
+                        <div className="flex items-center gap-4 pt-1 border-t border-slate-100 dark:border-slate-700">
+                            <span className="text-[10px] text-slate-400 font-medium">Legend:</span>
+                            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Matched
+                            </span>
+                            <span className="flex items-center gap-1 text-[10px] text-rose-600 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" /> Missing
+                            </span>
+                            <span className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> Weak Phrase
+                            </span>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
         </div>
