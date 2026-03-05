@@ -9,12 +9,161 @@ import { JobTailor } from './JobTailor';
 import { LinkedInImport } from './LinkedInImport';
 import { GrammarChecker } from './GrammarChecker';
 import { ResumeCanvas } from './ResumeCanvas';
-// 
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 
 interface AtsDashboardProps {
     result: AnalysisResponse;
 }
+
+// ── ATS Score Overlay Badge ────────────────────────────────────────────────────
+interface ScoreOverlayBadgeProps {
+    atsScore: number;
+    impactScore: number;
+    formattingScore: number;
+    keywordsScore: number;
+}
+
+const ScoreOverlayBadge: React.FC<ScoreOverlayBadgeProps> = ({ atsScore, impactScore, formattingScore, keywordsScore }) => {
+    const radius = 22;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (circumference * atsScore) / 100;
+
+    const ringColor = atsScore >= 80 ? '#10b981' : atsScore >= 60 ? '#f59e0b' : '#f43f5e';
+    const bgGlow = atsScore >= 80 ? 'rgba(16,185,129,0.12)' : atsScore >= 60 ? 'rgba(245,158,11,0.12)' : 'rgba(244,63,94,0.12)';
+    const labelColor = atsScore >= 80 ? '#065f46' : atsScore >= 60 ? '#92400e' : '#9f1239';
+
+    const subscores = [
+        { label: 'Impact', value: impactScore, color: '#6366f1' },
+        { label: 'Format', value: formattingScore, color: '#8b5cf6' },
+        { label: 'Keywords', value: keywordsScore, color: '#f59e0b' },
+    ];
+
+    return (
+        <div className="group absolute top-4 right-4 z-20 flex flex-col items-end gap-2 select-none">
+            {/* Main ring badge */}
+            <div
+                className="flex flex-col items-center justify-center cursor-default rounded-2xl px-3 py-2.5 shadow-xl border backdrop-blur-sm transition-all duration-300 group-hover:scale-105"
+                style={{ background: bgGlow, borderColor: ringColor + '55' }}
+                title={`ATS Score: ${atsScore}/100`}
+            >
+                <div className="relative flex items-center justify-center" style={{ width: 52, height: 52 }}>
+                    <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90">
+                        {/* Track */}
+                        <circle cx="26" cy="26" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="5" />
+                        {/* Progress */}
+                        <circle
+                            cx="26" cy="26" r={radius}
+                            fill="none"
+                            stroke={ringColor}
+                            strokeWidth="5"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            style={{ transition: 'stroke-dashoffset 1s ease-out, stroke 0.5s ease' }}
+                        />
+                    </svg>
+                    <span className="absolute text-sm font-black" style={{ color: ringColor }}>{atsScore}</span>
+                </div>
+                <span className="text-[9px] font-extrabold uppercase tracking-widest mt-0.5" style={{ color: labelColor }}>ATS Score</span>
+            </div>
+
+            {/* Subscore pills — visible on hover */}
+            <div className="flex flex-col gap-1.5 items-end overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-300 ease-in-out">
+                {subscores.map(({ label, value, color }) => (
+                    <div
+                        key={label}
+                        className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-md border border-slate-100"
+                    >
+                        <span className="text-[10px] font-bold text-slate-500 w-14 text-right">{label}</span>
+                        <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full rounded-full transition-all duration-700"
+                                style={{ width: `${value}%`, background: color }}
+                            />
+                        </div>
+                        <span className="text-[10px] font-extrabold w-6" style={{ color }}>{value}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// ── Drag-and-Drop Sortable Item ────────────────────────────────────────────────
+interface SortableSectionItemProps {
+    id: string;
+    onRemove: (id: string) => void;
+}
+
+const SortableSectionItem: React.FC<SortableSectionItemProps> = ({ id, onRemove }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.45 : 1,
+        zIndex: isDragging ? 999 : undefined,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border transition-shadow ${isDragging
+                ? 'border-indigo-400 shadow-lg ring-2 ring-indigo-300'
+                : 'border-slate-200 hover:border-slate-300'
+                }`}
+        >
+            {/* Drag Handle — binds pointer/keyboard listeners so only the grip initiates drag */}
+            <div
+                {...attributes}
+                {...listeners}
+                className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-500 transition-colors touch-none select-none"
+                title="Drag to reorder"
+            >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 6a2 2 0 11-4 0 2 2 0 014 0zM8 12a2 2 0 11-4 0 2 2 0 014 0zM8 18a2 2 0 11-4 0 2 2 0 014 0zM16 6a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 11-4 0 2 2 0 014 0zM16 18a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+
+            <span className="font-semibold text-slate-700 flex-1 text-sm">{id}</span>
+
+            <button
+                onClick={() => onRemove(id)}
+                className="text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors"
+                title={`Remove ${id} section`}
+            >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+    );
+};
 
 export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
     const [tailoredResume, setTailoredResume] = useState<ParsedResumeDTO | null>(null);
@@ -50,6 +199,19 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
         });
     };
 
+    // Calculate dynamic scores based on applied edits to create a real-time reward loop (Phase 2.2)
+    const baseAtsScore = result.atsScore || 0;
+    const baseImpactScore = result.impactScore || 0;
+    const baseFormattingScore = result.formattingScore || 0;
+    const baseKeywordsScore = result.keywordsScore || 0;
+
+    // We boost Impact score slightly more than others per edit, assuming edits use the "Magic Wand" which focuses on impact
+    const scoreBoost = appliedEdits.length;
+    const dynamicAtsScore = Math.min(100, baseAtsScore + (scoreBoost * 3));
+    const dynamicImpactScore = Math.min(100, baseImpactScore + (scoreBoost * 4));
+    const dynamicFormattingScore = Math.min(100, baseFormattingScore + (scoreBoost * 1));
+    const dynamicKeywordsScore = Math.min(100, baseKeywordsScore + (scoreBoost * 2));
+
 
 
     // Determine color based on score
@@ -80,7 +242,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
 
     const renderAtsCheckPane = () => (
         <div className="p-4 sm:p-6 space-y-6">
-            <div className={`p-4 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(result.atsScore)}`}>
+            <div className={`p-4 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(dynamicAtsScore)}`}>
                 <div className="mb-4">
                     <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">ATS Analysis</h2>
                     <p className="text-slate-600 font-medium mt-1 text-xs">How your resume scored against algorithms.</p>
@@ -89,19 +251,19 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     <div className="relative flex items-center justify-center shrink-0">
                         <svg className="w-24 h-24 transform -rotate-90">
                             <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-200" />
-                            <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={264} strokeDashoffset={264 - (264 * result.atsScore) / 100} className={`${getScoreColor(result.atsScore)} transition-all duration-1000 ease-out`} strokeLinecap="round" />
+                            <circle cx="48" cy="48" r="42" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={264} strokeDashoffset={264 - (264 * dynamicAtsScore) / 100} className={`${getScoreColor(dynamicAtsScore)} transition-all duration-1000 ease-out`} strokeLinecap="round" />
                         </svg>
                         <div className="absolute flex flex-col items-center justify-center">
-                            <span className={`text-2xl font-extrabold tracking-tighter ${getScoreColor(result.atsScore)}`}>{result.atsScore}</span>
+                            <span className={`text-2xl font-extrabold tracking-tighter ${getScoreColor(dynamicAtsScore)} transition-colors duration-1000`}>{dynamicAtsScore}</span>
                         </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 w-full">
                         {[
-                            { label: 'Impact', score: result.impactScore, color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-100' },
-                            { label: 'Formatting', score: result.formattingScore, color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
-                            { label: 'Keywords', score: result.keywordsScore, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
+                            { label: 'Impact', score: dynamicImpactScore, color: 'bg-blue-500', text: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-100' },
+                            { label: 'Formatting', score: dynamicFormattingScore, color: 'bg-violet-500', text: 'text-violet-700', bg: 'bg-violet-50', border: 'border-violet-100' },
+                            { label: 'Keywords', score: dynamicKeywordsScore, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-100' }
                         ].map((item, idx) => (
-                            <div key={idx} className={`${item.bg} ${item.border} rounded-xl p-2 border shadow-sm text-center`}>
+                            <div key={idx} className={`${item.bg} ${item.border} rounded-xl p-2 border shadow-sm text-center transition-colors duration-500`}>
                                 <div className={`text-lg font-extrabold ${item.text}`}>{item.score}</div>
                                 <div className={`text-[10px] font-bold ${item.text} opacity-80 mt-0.5`}>{item.label}</div>
                             </div>
@@ -161,8 +323,8 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                         <button
                             onClick={() => setShowHeatmap(prev => !prev)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${showHeatmap
-                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200/50'
-                                    : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200/50'
+                                : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
                                 }`}
                         >
                             <span className={`w-2 h-2 rounded-full ${showHeatmap ? 'bg-white' : 'bg-slate-400'}`} />
@@ -261,13 +423,13 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     { id: 'basic', label: 'Classic Layout', img: '/templates/classic.png' },
                     { id: 'modern', label: 'Modern Accent', img: '/templates/modern.png', pro: true },
                     { id: 'executive', label: 'Executive Split', img: '/templates/executive.png', pro: true },
-                    { id: 'tech-focused', label: 'Tech Dense', img: '/templates/tech-focused.png', pro: true },
-                    { id: 'minimalist', label: 'Minimalist', img: '/templates/minimalist.png', pro: true },
-                    { id: 'bold-bw', label: 'Bold Black & White', img: '/templates/bold-bw.png', pro: true },
-                    { id: 'editorial', label: 'Editorial Green', img: '/templates/editorial.png', pro: true },
-                    { id: 'olive-sidebar', label: 'Olive Sidebar', img: '/templates/olive-sidebar.png', pro: true },
-                    { id: 'orange-bold', label: 'Orange Bold', img: '/templates/orange-bold.png', pro: true },
-                    { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.png', pro: true }
+                    { id: 'tech-focused', label: 'Tech Dense', img: '/templates/tech-focused.svg', pro: true },
+                    { id: 'minimalist', label: 'Minimalist', img: '/templates/minimalist.svg', pro: true },
+                    { id: 'bold-bw', label: 'Bold Black & White', img: '/templates/bold-bw.svg', pro: true },
+                    { id: 'editorial', label: 'Editorial Green', img: '/templates/editorial.svg', pro: true },
+                    { id: 'olive-sidebar', label: 'Olive Sidebar', img: '/templates/olive-sidebar.svg', pro: true },
+                    { id: 'orange-bold', label: 'Orange Bold', img: '/templates/orange-bold.svg', pro: true },
+                    { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.svg', pro: true }
                 ].map(tpl => {
                     const isSelected = exportTemplate === tpl.id;
                     const isLocked = result.isPartialAnalysis && (tpl as any).pro;
@@ -379,27 +541,25 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
         </div>
     );
 
-    const handleMoveUp = (index: number) => {
-        if (index === 0) return;
-        setSectionOrder(prev => {
-            const arr = [...prev];
-            [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-            return arr;
-        });
-    };
-
-    const handleMoveDown = (index: number) => {
-        if (index === sectionOrder.length - 1) return;
-        setSectionOrder(prev => {
-            const arr = [...prev];
-            [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
-            return arr;
-        });
-    };
-
     const handleRemove = (secTitle: string) => {
         setSectionOrder(prev => prev.filter(s => s !== secTitle));
     };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            setSectionOrder(prev => {
+                const oldIndex = prev.indexOf(active.id as string);
+                const newIndex = prev.indexOf(over.id as string);
+                return arrayMove(prev, oldIndex, newIndex);
+            });
+        }
+    };
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
 
     const renderRearrangePane = () => (
         <div className="p-4 sm:p-6 bg-slate-50 min-h-full">
@@ -407,32 +567,18 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                 <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" /></svg>
                 Rearrange Layout
             </h2>
-            <p className="text-slate-500 text-sm mb-6">Reorder how sections appear on your final PDF.</p>
+            <p className="text-slate-500 text-sm mb-6">Drag the ⠿ handle to reorder resume sections.</p>
 
-            <div className="space-y-3">
-                {sectionOrder.map((sec, index) => (
-                    <div key={sec} className="flex items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-200 group relative">
-                        {/* Drag Handle Mock */}
-                        <div className="cursor-grab text-slate-400 hover:text-slate-600">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 11-4 0 2 2 0 014 0zM8 12a2 2 0 11-4 0 2 2 0 014 0zM8 18a2 2 0 11-4 0 2 2 0 014 0zM16 6a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 11-4 0 2 2 0 014 0zM16 18a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        </div>
-                        <span className="font-bold text-slate-700 flex-1">{sec}</span>
-
-                        <div className="flex flex-col gap-1 hidden group-hover:flex absolute right-12">
-                            <button onClick={() => handleMoveUp(index)} disabled={index === 0} className="text-slate-400 hover:text-indigo-600 disabled:opacity-30">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
-                            </button>
-                            <button onClick={() => handleMoveDown(index)} disabled={index === sectionOrder.length - 1} className="text-slate-400 hover:text-indigo-600 disabled:opacity-30">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
-                            </button>
-                        </div>
-
-                        <button onClick={() => handleRemove(sec)} className="text-slate-300 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors ml-auto z-10">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-3">
+                        {sectionOrder.map(sec => (
+                            <SortableSectionItem key={sec} id={sec} onRemove={handleRemove} />
+                        ))}
                     </div>
-                ))}
-            </div>
+                </SortableContext>
+            </DndContext>
+
             {sectionOrder.length === 0 && (
                 <div className="text-center text-slate-400 mt-8 font-medium">No sections added yet.<br />Go to Add Section!</div>
             )}
@@ -600,6 +746,13 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                 </div>
 
                 <div className="w-full max-w-[800px] bg-white shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] border border-slate-200 relative shrink-0 transition-transform duration-500" style={{ height: 'min-content', minHeight: '1130px', aspectRatio: '1 / 1.414' }}>
+                    {/* Phase 2.2: Floating ATS Score Badge */}
+                    <ScoreOverlayBadge
+                        atsScore={dynamicAtsScore}
+                        impactScore={dynamicImpactScore}
+                        formattingScore={dynamicFormattingScore}
+                        keywordsScore={dynamicKeywordsScore}
+                    />
                     {appliedEdits.length > 0 && (
                         <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
