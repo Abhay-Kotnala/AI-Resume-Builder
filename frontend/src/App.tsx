@@ -9,6 +9,8 @@ import OAuth2Callback from './pages/OAuth2Callback';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Dashboard } from './pages/Dashboard';
+import { JobTracker } from './pages/JobTracker';
+import { Builder } from './pages/Builder';
 import { Profile } from './pages/Profile';
 import { AboutUs } from './pages/AboutUs';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
@@ -44,6 +46,8 @@ function App() {
             <Route path="/oauth2/callback" element={<OAuth2Callback />} />
             {/* Protected routes — redirects to home if not authenticated */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/tracker" element={<ProtectedRoute><JobTracker /></ProtectedRoute>} />
+            <Route path="/builder/:id" element={<ProtectedRoute><Builder /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
         </Router>

@@ -1,5 +1,44 @@
 export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/resume`;
 
+export type JobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+
+export interface JobResponse<T = any> {
+    jobId: string;
+    status: JobStatus;
+    result?: T;
+    error?: string;
+}
+
+export const pollJob = async <T>(jobId: string, onProgress?: (status: string) => void): Promise<T> => {
+    while (true) {
+        // We use the base URL for jobs because the backend maps it to /api/jobs, not /api/resume/jobs
+        const JOBS_API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/jobs`;
+        const response = await fetch(`${JOBS_API_URL}/${jobId}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to poll job ${jobId}`);
+        }
+
+        const data: JobResponse<T> = await response.json();
+        if (data.status === 'COMPLETED') {
+            return data.result as T;
+        } else if (data.status === 'FAILED') {
+            throw new Error(data.error || 'Job failed');
+        }
+
+        if (onProgress) {
+            onProgress(data.status);
+        }
+
+        // Wait 2 seconds before polling again
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+};
+
+
 export interface ExperienceDTO {
     company: string;
     role: string;
@@ -88,7 +127,7 @@ export const uploadResume = async (file: File): Promise<{ resumeId: number, mess
     return response.json();
 };
 
-export const analyzeResume = async (resumeId: number, jobDescription?: string): Promise<AnalysisResponse> => {
+export const analyzeResume = async (resumeId: number, jobDescription?: string, onProgress?: (status: string) => void): Promise<AnalysisResponse> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/analyze`, {
         method: 'POST',
         headers: {
@@ -102,10 +141,24 @@ export const analyzeResume = async (resumeId: number, jobDescription?: string): 
         await handleApiError(response, 'Failed to analyze resume');
     }
 
+    const { jobId } = await response.json();
+    return pollJob<AnalysisResponse>(jobId, onProgress);
+};
+
+export const fetchResumeResult = async (resumeId: number): Promise<AnalysisResponse> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/result`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to fetch resume result');
+    }
+
     return response.json();
 };
 
-export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string, tone?: string): Promise<{ enhancedBulletPoint: string }> => {
+export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string, tone?: string, onProgress?: (status: string) => void): Promise<{ enhancedBulletPoint: string }> => {
     const response = await fetch(`${API_BASE_URL}/enhance`, {
         method: 'POST',
         headers: {
@@ -119,10 +172,11 @@ export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string
         await handleApiError(response, 'Failed to enhance bullet point');
     }
 
-    return response.json();
+    const { jobId } = await response.json();
+    return pollJob<{ enhancedBulletPoint: string }>(jobId, onProgress);
 };
 
-export const generateCoverLetter = async (resumeId: number, jobDescription?: string): Promise<{ coverLetter: string }> => {
+export const generateCoverLetter = async (resumeId: number, jobDescription?: string, onProgress?: (status: string) => void): Promise<{ coverLetter: string }> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/cover-letter`, {
         method: 'POST',
         headers: {
@@ -136,7 +190,8 @@ export const generateCoverLetter = async (resumeId: number, jobDescription?: str
         await handleApiError(response, 'Failed to generate cover letter');
     }
 
-    return response.json();
+    const { jobId } = await response.json();
+    return pollJob<{ coverLetter: string }>(jobId, onProgress);
 };
 
 export interface PdfExportOptions {
@@ -247,7 +302,7 @@ export const patchParsedResume = async (
     }
 };
 
-export const tailorResume = async (resumeId: number, jobDescription: string): Promise<ParsedResumeDTO> => {
+export const tailorResume = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<ParsedResumeDTO> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/tailor`, {
         method: 'POST',
         headers: {
@@ -260,7 +315,8 @@ export const tailorResume = async (resumeId: number, jobDescription: string): Pr
     if (!response.ok) {
         await handleApiError(response, 'Failed to tailor resume');
     }
-    return response.json();
+    const { jobId } = await response.json();
+    return pollJob<ParsedResumeDTO>(jobId, onProgress);
 };
 
 export const importLinkedIn = async (resumeId: number, linkedInText: string): Promise<ParsedResumeDTO> => {
@@ -285,7 +341,7 @@ export interface GrammarIssue {
     suggestion: string;
 }
 
-export const checkGrammar = async (resumeId: number): Promise<GrammarIssue[]> => {
+export const checkGrammar = async (resumeId: number, onProgress?: (status: string) => void): Promise<GrammarIssue[]> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/grammar-check`, {
         method: 'POST',
         headers: {
@@ -297,7 +353,9 @@ export const checkGrammar = async (resumeId: number): Promise<GrammarIssue[]> =>
     if (!response.ok) {
         await handleApiError(response, 'Failed to run grammar check');
     }
-    return response.json();
+    const { jobId } = await response.json();
+    const resultString = await pollJob<string>(jobId, onProgress);
+    return JSON.parse(resultString);
 };
 
 export interface ResumeResponseDto {
@@ -346,3 +404,77 @@ export const deleteResume = async (resumeId: number): Promise<void> => {
         await handleApiError(response, 'Failed to delete resume');
     }
 };
+
+// --- Job Tracker APIs ---
+
+export interface JobApplicationDTO {
+    id?: number;
+    companyName: string;
+    jobTitle: string;
+    jobUrl?: string;
+    status: string; // WISHLIST, APPLIED, INTERVIEWING, OFFER, REJECTED
+    salaryRange?: string;
+    notes?: string;
+    appliedDate?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export const fetchApplications = async (): Promise<JobApplicationDTO[]> => {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/applications`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to fetch job applications');
+    }
+
+    return response.json();
+};
+
+export const createApplication = async (application: JobApplicationDTO): Promise<JobApplicationDTO> => {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/applications`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(application),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to create job application');
+    }
+
+    return response.json();
+};
+
+export const updateApplication = async (id: number, application: JobApplicationDTO): Promise<JobApplicationDTO> => {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/applications/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(application),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to update job application');
+    }
+
+    return response.json();
+};
+
+export const deleteApplication = async (id: number): Promise<void> => {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/applications/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to delete job application');
+    }
+};
+

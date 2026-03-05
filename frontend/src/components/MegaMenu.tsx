@@ -89,60 +89,58 @@ export const MegaMenu: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Column 2 */}
-                        <div className="flex-1 space-y-6 pr-4">
-                            <div>
-                                <div className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                                    Resume Guides
-                                </div>
-                                <div className="space-y-5 pl-7">
-                                    <a href="/article/writing" className="block group">
-                                        <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Writing a Resume</div>
-                                        <p className="text-xs text-slate-500 mt-1">The most comprehensive guide on writing.</p>
-                                    </a>
-                                    <a href="/article/summary" className="block group">
-                                        <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Resume Summary</div>
-                                        <p className="text-xs text-slate-500 mt-1">How to write a summary that gets attention.</p>
-                                    </a>
-                                    <a href="/article/formats" className="block group">
-                                        <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Formats & Templates</div>
-                                        <p className="text-xs text-slate-500 mt-1">Which format is best for your use case.</p>
-                                    </a>
-                                </div>
+                        <div>
+                            <div className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                Resume Guides
                             </div>
-                        </div>
-
-                    </div>
-
-                    {/* Right Promotional Column */}
-                    <div className="col-span-4 bg-emerald-50 p-8 relative overflow-hidden flex flex-col items-start justify-center">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200 rounded-full blur-3xl opacity-50 translate-x-1/2 -translate-y-1/2"></div>
-                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-300 rounded-full blur-3xl opacity-30 -translate-x-1/2 translate-y-1/2"></div>
-
-                        <div className="relative z-10 w-full">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">ATS-friendly resume builder</h3>
-                            <p className="text-slate-600 text-sm mb-6">Build a stunning, tailored resume in minutes and double your interview chances.</p>
-
-                            <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 hover:shadow-lg transition-all text-center">
-                                Try ElevateAI Now
-                            </button>
-
-                            {/* Decorative mock resume */}
-                            <div className="mt-8 bg-white p-3 rounded shadow-md w-full max-w-[200px] mx-auto opacity-90 rotate-2 hover:rotate-0 transition-transform duration-300">
-                                <div className="w-1/2 h-2 bg-slate-800 rounded mb-2"></div>
-                                <div className="w-1/3 h-1.5 bg-indigo-500 rounded mb-4"></div>
-                                <div className="space-y-1.5 border-t border-slate-100 pt-2">
-                                    <div className="w-3/4 h-1.5 bg-slate-200 rounded"></div>
-                                    <div className="w-full h-1.5 bg-slate-200 rounded"></div>
-                                    <div className="w-5/6 h-1.5 bg-slate-200 rounded"></div>
-                                </div>
+                            <div className="space-y-5 pl-7">
+                                <a href="/article/writing" className="block group">
+                                    <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Writing a Resume</div>
+                                    <p className="text-xs text-slate-500 mt-1">The most comprehensive guide on writing.</p>
+                                </a>
+                                <a href="/article/summary" className="block group">
+                                    <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Resume Summary</div>
+                                    <p className="text-xs text-slate-500 mt-1">How to write a summary that gets attention.</p>
+                                </a>
+                                <a href="/tracker" className="block group">
+                                    <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600 bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block mb-1 text-[10px] uppercase tracking-wider">New</div>
+                                    <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Job Board Tracker</div>
+                                    <p className="text-xs text-slate-500 mt-1">Organize your job hunt in a Kanban board.</p>
+                                </a>
                             </div>
                         </div>
                     </div>
 
                 </div>
+
+                {/* Right Promotional Column */}
+                <div className="col-span-4 bg-emerald-50 p-8 relative overflow-hidden flex flex-col items-start justify-center">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200 rounded-full blur-3xl opacity-50 translate-x-1/2 -translate-y-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-300 rounded-full blur-3xl opacity-30 -translate-x-1/2 translate-y-1/2"></div>
+
+                    <div className="relative z-10 w-full">
+                        <h3 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">ATS-friendly resume builder</h3>
+                        <p className="text-slate-600 text-sm mb-6">Build a stunning, tailored resume in minutes and double your interview chances.</p>
+
+                        <button onClick={() => document.getElementById('resume-upload-input')?.click()} className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 hover:shadow-lg transition-all text-center">
+                            Try ElevateAI Now
+                        </button>
+
+                        {/* Decorative mock resume */}
+                        <div className="mt-8 bg-white p-3 rounded shadow-md w-full max-w-[200px] mx-auto opacity-90 rotate-2 hover:rotate-0 transition-transform duration-300">
+                            <div className="w-1/2 h-2 bg-slate-800 rounded mb-2"></div>
+                            <div className="w-1/3 h-1.5 bg-indigo-500 rounded mb-4"></div>
+                            <div className="space-y-1.5 border-t border-slate-100 pt-2">
+                                <div className="w-3/4 h-1.5 bg-slate-200 rounded"></div>
+                                <div className="w-full h-1.5 bg-slate-200 rounded"></div>
+                                <div className="w-5/6 h-1.5 bg-slate-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     );
 };
