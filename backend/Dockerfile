@@ -18,9 +18,9 @@ COPY src ./src
 RUN ./mvnw package -DskipTests -q
 
 # ============================================================
-# Stage 2: Run on a lean JRE image (much smaller final image)
+# Stage 2: Run on Playwright Java image (contains all Chromium OS dependencies)
 # ============================================================
-FROM eclipse-temurin:17-jre AS runner
+FROM mcr.microsoft.com/playwright/java:v1.41.2-jammy AS runner
 WORKDIR /app
 
 # Copy only the built artifact from Stage 1
