@@ -98,22 +98,21 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     .referredBy(referredByCode)
                     .build();
 
-            // Handle referral 7-day bonus
+            // Handle Launch Promotion: Give every new user 7 days of Pro for free
+            user.setProEndDate(LocalDateTime.now().plusDays(7));
+
+            // Handle referral 7-day bonus for the referrer
             if (referredByCode != null) {
                 Optional<User> referrerOpt = userRepository.findByReferralCode(referredByCode);
                 if (referrerOpt.isPresent()) {
                     User referrer = referrerOpt.get();
-                    // Set both users to have +7 days of Pro
-                    LocalDateTime bonusEnd = LocalDateTime.now().plusDays(7);
-
-                    user.setProEndDate(bonusEnd);
 
                     referrer.setReferralCount(referrer.getReferralCount() + 1);
                     // Extend referrer's proEndDate if they already have one, or set a new one
                     if (referrer.getProEndDate() != null && referrer.getProEndDate().isAfter(LocalDateTime.now())) {
                         referrer.setProEndDate(referrer.getProEndDate().plusDays(7));
                     } else {
-                        referrer.setProEndDate(bonusEnd);
+                        referrer.setProEndDate(LocalDateTime.now().plusDays(7));
                     }
                     userRepository.save(referrer);
 

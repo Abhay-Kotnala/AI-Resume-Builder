@@ -131,7 +131,7 @@ export const Pricing: React.FC = () => {
                             <span className="text-slate-400 mb-1">/month</span>
                         </div>
                         {annual && (
-                            <p className="text-emerald-400 text-sm font-semibold mb-6">Billed as ${annualPrice * 12}/year — save $24</p>
+                            <p className="text-emerald-400 text-sm font-semibold mb-6">Billed as ${annualPrice * 12}/year after 7 days</p>
                         )}
                         {!annual && <div className="mb-6" />}
                         <ul className="space-y-3 flex-1">
@@ -142,8 +142,8 @@ export const Pricing: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Link to={`/checkout?plan=${annual ? 'annual' : 'monthly'}`} className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
-                            Upgrade to Pro →
+                        <Link to="/" className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
+                            Get Premium Free for 7 Days →
                         </Link>
 
                         {/* Money-back badge */}

@@ -67,7 +67,7 @@ export const JobMatch: React.FC<JobMatchProps> = ({ resumeId, isPro }) => {
                         <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {error}
                         {error.includes('Pro feature') && (
-                            <button onClick={() => window.location.href = '/pricing'} className="ml-auto px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 transition-colors">Upgrade</button>
+                            <button onClick={() => window.location.href = '/pricing'} className="ml-auto px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 transition-colors">Get 7 Days Free</button>
                         )}
                     </div>
                 )}

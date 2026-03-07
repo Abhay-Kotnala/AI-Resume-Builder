@@ -48,7 +48,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose }) =
                 <div className="text-center space-y-3 mb-8 relative z-10">
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Free Limit Reached</h2>
                     <p className="text-slate-600 font-medium leading-relaxed">
-                        You have used all your free AI resume scans. Upgrade to <span className="text-emerald-600 font-bold">ElevateAI Pro</span> to continue optimizing your career!
+                        You have used all your free AI resume scans. <span className="text-emerald-600 font-bold">Get 7 Days of ElevateAI Pro for FREE</span> to continue optimizing your career!
                     </p>
                 </div>
 
@@ -72,7 +72,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({ isOpen, onClose }) =
                         onClick={handleUpgrade}
                         className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
-                        Unlock Unlimited Access
+                        Get 7 Days Free
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </button>
                     <button

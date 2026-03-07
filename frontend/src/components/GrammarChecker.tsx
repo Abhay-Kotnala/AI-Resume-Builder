@@ -136,7 +136,7 @@ export const GrammarChecker: React.FC<GrammarCheckerProps> = ({ resumeId, isPro,
                                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm1 16h-2v-2h2v2zm0-4h-2V8h2v6z" /></svg>
                                     </div>
                                     <h4 className="text-white font-bold mb-1">{issues.length - 3} more issues found</h4>
-                                    <p className="text-slate-400 text-xs font-medium mb-4">You've reached the free limit. Upgrade to view and fix all writing mistakes.</p>
+                                    <p className="text-slate-400 text-xs font-medium mb-4">You've reached the free limit. Get 7 Days Free to fix all mistakes.</p>
                                     <button
                                         onClick={() => {
                                             trackUpgradeClicked('grammar_checker_limit');

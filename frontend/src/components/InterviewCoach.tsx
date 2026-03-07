@@ -90,9 +90,9 @@ export const InterviewCoach: React.FC<Props> = ({ resumeId, isPro }) => {
                 <div className="text-sm text-rose-600 font-bold bg-rose-50 p-3 rounded-xl border border-rose-100 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {error}
-                    {error.includes('Pro feature') && (
-                        <button onClick={() => window.location.href = '/pricing'} className="ml-auto px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 transition-colors">Upgrade</button>
-                    )}
+                    <div className="absolute top-0 right-0 p-4">
+                        <button onClick={() => window.location.href = '/pricing'} className="ml-auto px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 transition-colors">Get 7 Days Free</button>
+                    </div>
                 </div>
             )}
 
