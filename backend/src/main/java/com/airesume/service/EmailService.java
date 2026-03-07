@@ -409,7 +409,7 @@ public class EmailService {
         String subject = "New Feedback Received! ⭐ " + rating + "/5";
 
         // We'll send it to the admin (you can change this to your actual email)
-        String adminEmail = "support@elevateai.com";
+        String adminEmail = "knightking2905@gmail.com";
 
         String htmlBody = String.format(
                 "<!DOCTYPE html>" +
