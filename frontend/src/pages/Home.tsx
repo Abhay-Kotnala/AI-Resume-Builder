@@ -115,14 +115,13 @@ export const Home: React.FC = () => {
                         <div className="lg:col-span-5 text-center lg:text-left mb-16 lg:mb-0">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/50 text-emerald-700 text-sm font-semibold mb-6 border border-emerald-200">
                                 <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-                                Free ATS Resume Checker
+                                Built by Job Seekers, Free for Job Seekers
                             </div>
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
-                                Is your resume <span className="text-emerald-500">good enough?</span>
+                                Upload your resume.<br className="hidden lg:block" />Get your ATS score in <span className="text-emerald-500">30 seconds.</span>
                             </h1>
                             <p className="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                                Our free and fast resume checker analyzes your resume against top ATS
-                                algorithms and provides actionable feedback within seconds.
+                                Stop getting filtered out by invisible ATS algorithms. Our free AI checker grades your resume, identifies missing skills, and rewrites your bullet points to help you get hired.
                             </p>
 
                             {/* Trust avatars + rating */}
@@ -131,7 +130,7 @@ export const Home: React.FC = () => {
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=33" alt="User" />
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=47" alt="User" />
                                     <img className="w-10 h-10 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?img=12" alt="User" />
-                                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">+10k</div>
+                                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-700 bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400">+50</div>
                                 </div>
                                 <div className="text-center sm:text-left">
                                     <div className="flex items-center gap-1 justify-center sm:justify-start text-amber-400">
@@ -142,7 +141,7 @@ export const Home: React.FC = () => {
                                         ))}
                                     </div>
                                     <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                                        <span className="font-bold text-slate-800 dark:text-white">4.9/5</span> from 10,000+ reviews
+                                        <span className="font-bold text-slate-800 dark:text-white">Loved by</span> our first 50 early beta users!
                                     </div>
                                 </div>
                             </div>
@@ -150,20 +149,30 @@ export const Home: React.FC = () => {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                                 <button
                                     onClick={() => {
-                                        // if (!isAuthenticated) openSignInModal();
-                                        // else 
                                         document.getElementById('resume-upload-input')?.click();
                                     }}
-                                    className="px-8 py-3.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-200 hover:-translate-y-0.5 transition-all text-lg cursor-pointer"
+                                    className="px-8 py-3.5 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 hover:-translate-y-1 transition-all text-lg cursor-pointer shadow-[0_0_25px_rgba(16,185,129,0.4)]"
                                 >
-                                    Upload Your Resume
+                                    Grade My Resume (Free)
                                 </button>
                                 <button
                                     onClick={() => setAnalysisResult(SAMPLE_RESULT)}
-                                    className="px-8 py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-lg cursor-pointer"
+                                    className="px-8 py-3.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-lg cursor-pointer flex items-center justify-center gap-2"
                                 >
+                                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                     View Sample Report
                                 </button>
+                            </div>
+
+                            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[13px] font-bold text-slate-500 dark:text-slate-400 justify-center lg:justify-start">
+                                <div className="flex items-center gap-1.5">
+                                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    JD Match Score & Missing Skills
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    AI Bullet Rewriter
+                                </div>
                             </div>
                         </div>
 

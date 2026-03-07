@@ -217,9 +217,9 @@ export const HowItWorks: React.FC = () => {
                                         <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-2xl"></div>
                                     )}
                                     <div className="flex items-start gap-5">
-                                        <div className={`mt-0.5 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300
+                                        <div className={`mt-0.5 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-300 font-extrabold text-xl
                                             ${isActive ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>
-                                            {step.icon}
+                                            {index + 1}
                                         </div>
                                         <div>
                                             <h4 className={`text-xl font-bold mb-2 transition-colors duration-300 
@@ -252,6 +252,18 @@ export const HowItWorks: React.FC = () => {
                         ))}
                     </div>
 
+                </div>
+
+                <div className="mt-16 text-center animate-fade-in-up">
+                    <button
+                        onClick={() => {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            setTimeout(() => document.getElementById('resume-upload-input')?.click(), 600);
+                        }}
+                        className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:-translate-y-1 transition-all text-lg shadow-xl"
+                    >
+                        Try it on your resume now →
+                    </button>
                 </div>
             </div>
         </section>

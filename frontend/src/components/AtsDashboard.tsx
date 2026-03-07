@@ -781,10 +781,10 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         {onCheckAnother && (
                             <button
                                 onClick={onCheckAnother}
-                                className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold transition-colors px-3 py-1.5 rounded-lg border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 text-sm"
+                                className="flex items-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 font-extrabold transition-all px-5 py-2 rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.23)] hover:-translate-y-0.5 text-sm"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                Check Another Resume
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                                Start New Scan
                             </button>
                         )}
                         <div className="flex items-center gap-1.5">
