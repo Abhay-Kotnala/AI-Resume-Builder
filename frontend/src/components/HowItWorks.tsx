@@ -10,16 +10,37 @@ const steps = [
         ),
         visual: (
             <div className="w-full h-full bg-slate-50 flex items-center justify-center p-8 relative overflow-hidden group">
-                <div className="w-48 h-64 bg-white rounded-lg shadow-xl border border-slate-200 p-4 transform transition-transform group-hover:-translate-y-2 relative z-10 flex flex-col gap-2">
-                    <div className="w-full h-4 bg-slate-200 rounded"></div>
-                    <div className="w-3/4 h-3 bg-slate-100 rounded"></div>
-                    <div className="w-5/6 h-3 bg-slate-100 rounded"></div>
-                    <div className="w-full h-3 bg-slate-100 rounded"></div>
-                    <div className="mt-4 w-full h-px bg-slate-100"></div>
-                    <div className="w-2/3 h-3 bg-slate-100 rounded mt-2"></div>
+                {/* Miniature Realistic Resume */}
+                <div className="w-48 h-64 bg-white rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200 p-4 transform transition-transform group-hover:-translate-y-2 relative z-10 flex flex-col gap-2 overflow-hidden">
+                    {/* Header */}
+                    <div className="text-center border-b border-slate-100 pb-2 mb-1">
+                        <div className="h-2 w-16 bg-slate-800 rounded mx-auto mb-1"></div>
+                        <div className="h-1 w-24 bg-slate-400 rounded mx-auto"></div>
+                    </div>
+                    {/* Body */}
+                    <div className="space-y-3">
+                        <div>
+                            <div className="h-1 w-12 bg-emerald-500 rounded mb-1"></div>
+                            <div className="h-1.5 w-full bg-slate-200 rounded mb-1"></div>
+                            <div className="h-1.5 w-5/6 bg-slate-200 rounded mb-1"></div>
+                            <div className="h-1.5 w-4/5 bg-slate-200 rounded"></div>
+                        </div>
+                        <div>
+                            <div className="h-1 w-16 bg-emerald-500 rounded mb-1"></div>
+                            <div className="h-1.5 w-full bg-slate-200 rounded mb-1"></div>
+                            <div className="h-1.5 w-11/12 bg-slate-200 rounded mb-1"></div>
+                        </div>
+                    </div>
+                    {/* Floating Upload Icon */}
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        </div>
+                    </div>
                 </div>
                 {/* Decorative background elements */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-100 rounded-full blur-3xl opacity-50 z-0"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-400 rounded-full blur-[80px] opacity-20 z-0"></div>
+                <div className="absolute bottom-0 right-0 w-40 h-40 bg-blue-400 rounded-full blur-[60px] opacity-20 z-0"></div>
             </div>
         )
     },
@@ -32,22 +53,47 @@ const steps = [
         ),
         visual: (
             <div className="w-full h-full bg-slate-50 flex items-center justify-center p-8 relative overflow-hidden">
-                <div className="w-full max-w-sm bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-10">
-                    <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-rose-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                        <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                    </div>
-                    <div className="p-4 space-y-3">
-                        <div className="w-1/2 h-4 bg-slate-800 rounded"></div>
-                        <div className="w-1/3 h-3 bg-emerald-500 rounded"></div>
-                        <div className="space-y-2 mt-4">
-                            <div className="w-full h-2 bg-slate-200 rounded"></div>
-                            <div className="w-full h-2 bg-slate-200 rounded"></div>
-                            <div className="w-4/5 h-2 bg-slate-200 rounded"></div>
+                <div className="w-full max-w-sm bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200 overflow-hidden z-10 flex flex-col h-full max-h-64">
+                    {/* Browser-like Header */}
+                    <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-rose-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                            <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
                         </div>
+                        <div className="text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">linkedin.com/jobs/...</div>
+                    </div>
+                    {/* Job Description Content */}
+                    <div className="p-5 overflow-hidden relative flex-1 text-left">
+                        <div className="animate-fade-in-up">
+                            <h4 className="text-sm font-bold text-slate-800 mb-1">Senior Software Engineer</h4>
+                            <p className="text-xs text-emerald-600 font-medium mb-4">TechCorp Inc. • San Francisco, CA</p>
+
+                            <h5 className="text-[10px] font-bold text-slate-700 uppercase tracking-wide mb-2">Requirements</h5>
+                            <div className="space-y-2 mt-2">
+                                <div className="flex gap-2 items-start opacity-70">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>
+                                    <div className="h-2.5 w-full bg-slate-200 rounded"></div>
+                                </div>
+                                <div className="flex gap-2 items-start">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1 shrink-0"></div>
+                                    <div className="text-[10px] text-slate-600 leading-tight">5+ years experience building highly scalable microservices with <span className="text-emerald-500 font-bold bg-emerald-50 px-1 rounded">Node.js</span> and <span className="text-emerald-500 font-bold bg-emerald-50 px-1 rounded">React</span>.</div>
+                                </div>
+                                <div className="flex gap-2 items-start opacity-70">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>
+                                    <div className="h-2.5 w-4/5 bg-slate-200 rounded"></div>
+                                </div>
+                                <div className="flex gap-2 items-start">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1 shrink-0"></div>
+                                    <div className="text-[10px] text-slate-600 leading-tight">Strong understanding of cloud infrastructure, specifically <span className="text-emerald-500 font-bold bg-emerald-50 px-1 rounded">AWS</span> and <span className="text-emerald-500 font-bold bg-emerald-50 px-1 rounded">Docker</span>.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
                     </div>
                 </div>
+                {/* Decorative background */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-slate-200 rounded-full blur-[80px] opacity-50 z-0"></div>
             </div>
         )
     },
@@ -77,22 +123,53 @@ const steps = [
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
         ),
         visual: (
-            <div className="w-full h-full bg-slate-900 flex items-center justify-center p-8 relative overflow-hidden">
-                <div className="w-full max-w-sm bg-slate-800 rounded-xl shadow-2xl border border-slate-700 p-6 z-10 grid grid-cols-2 gap-4">
-                    <div className="col-span-2 flex items-end justify-between border-b border-slate-700 pb-4 mb-2">
+            <div className="w-full h-full bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden group text-left">
+                <div className="w-full max-w-sm bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-5 z-10 grid grid-cols-2 flex-col gap-3 transform transition-transform group-hover:scale-[1.02]">
+                    <div className="col-span-2 flex items-center justify-between border-b border-slate-700 pb-3 mb-1">
                         <div>
-                            <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ATS Match</div>
-                            <div className="text-4xl font-extrabold text-emerald-400">85%</div>
+                            <div className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1 flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]"></span>
+                                Match Score
+                            </div>
+                            <div className="text-4xl font-black text-white flex items-baseline gap-1">85<span className="text-emerald-400 text-2xl">%</span></div>
                         </div>
-                        <div className="w-16 h-16 rounded-full border-4 border-emerald-500 border-r-slate-700 rotate-45"></div>
+                        {/* Donut Chart Mockup */}
+                        <div className="relative w-14 h-14">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path className="text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path className="text-emerald-500 animate-[dash_1s_ease-out_forwards]" strokeDasharray="85, 100" strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">85</div>
+                        </div>
                     </div>
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                        <div className="w-1/2 h-2 bg-slate-500 rounded mb-2"></div>
-                        <div className="w-full h-8 bg-slate-600 rounded"></div>
+                    {/* Subscores */}
+                    <div className="bg-slate-700/50 rounded-xl p-3 border border-slate-600/50">
+                        <div className="text-slate-400 text-[10px] font-bold uppercase mb-1">Impact</div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-slate-600 rounded-full overflow-hidden">
+                                <div className="w-[65%] h-full bg-amber-400"></div>
+                            </div>
+                            <span className="text-white text-xs font-bold">65%</span>
+                        </div>
                     </div>
-                    <div className="bg-slate-700/50 rounded-lg p-3">
-                        <div className="w-2/3 h-2 bg-slate-500 rounded mb-2"></div>
-                        <div className="w-full h-8 bg-slate-600 rounded"></div>
+                    <div className="bg-slate-700/50 rounded-xl p-3 border border-slate-600/50">
+                        <div className="text-slate-400 text-[10px] font-bold uppercase mb-1">Formatting</div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-slate-600 rounded-full overflow-hidden">
+                                <div className="w-[90%] h-full bg-emerald-400"></div>
+                            </div>
+                            <span className="text-white text-xs font-bold">90%</span>
+                        </div>
+                    </div>
+                    {/* Fixes Mockup */}
+                    <div className="col-span-2 bg-rose-500/10 rounded-xl p-3 border border-rose-500/20 mt-1 flex items-start gap-2">
+                        <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <div>
+                            <div className="text-rose-400 text-xs font-bold mb-0.5">3 Weak Bullet Points</div>
+                            <div className="text-slate-300 text-[10px] leading-tight opacity-80">Click the magic wand to rewrite them with metrics.</div>
+                        </div>
                     </div>
                 </div>
                 {/* Glow effect */}

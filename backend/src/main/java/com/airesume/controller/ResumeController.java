@@ -7,6 +7,7 @@ import com.airesume.repository.AnalysisResultRepository;
 import com.airesume.repository.ResumeRepository;
 import com.airesume.repository.UserRepository;
 import com.airesume.service.AiAnalysisService;
+import com.airesume.service.BackgroundJobService;
 import com.airesume.service.PdfParserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,8 @@ import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/resume")
-@CrossOrigin(origins = "*") // Allow requests from our frontend
+// Allow simple CORS matching for local dev
+@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174" }, allowCredentials = "true")
 public class ResumeController {
 
     private static final Logger logger = LoggerFactory.getLogger(ResumeController.class);
@@ -36,6 +38,7 @@ public class ResumeController {
     private final com.airesume.service.DocxGeneratorService docxGeneratorService;
     private final UserRepository userRepository;
     private final TemplateEngine templateEngine;
+    private final BackgroundJobService backgroundJobService;
 
     public ResumeController(PdfParserService pdfParserService,
             AiAnalysisService aiAnalysisService,
@@ -44,7 +47,8 @@ public class ResumeController {
             com.airesume.service.PdfGeneratorService pdfGeneratorService,
             com.airesume.service.DocxGeneratorService docxGeneratorService,
             UserRepository userRepository,
-            TemplateEngine templateEngine) {
+            TemplateEngine templateEngine,
+            BackgroundJobService backgroundJobService) {
         this.pdfParserService = pdfParserService;
         this.aiAnalysisService = aiAnalysisService;
         this.resumeRepository = resumeRepository;
@@ -53,6 +57,7 @@ public class ResumeController {
         this.docxGeneratorService = docxGeneratorService;
         this.userRepository = userRepository;
         this.templateEngine = templateEngine;
+        this.backgroundJobService = backgroundJobService;
     }
 
     @PostMapping("/upload")
@@ -159,11 +164,73 @@ public class ResumeController {
         }
     }
 
+    @PostMapping("/{resumeId}/clone")
+    public ResponseEntity<?> cloneResume(@PathVariable Long resumeId) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+
+            User user = userRepository.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            Resume original = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+            // Verify ownership
+            if (original.getUser() != null && !original.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(403).body(Map.of("error", "You do not own this resume"));
+            }
+
+            Resume cloned = new Resume();
+            cloned.setUser(user);
+            cloned.setFileName(original.getFileName() != null ? original.getFileName() : "Resume");
+            String originalLabel = original.getLabel() != null && !original.getLabel().isBlank() ? original.getLabel()
+                    : "Unnamed Version";
+            cloned.setLabel(originalLabel + " (Copy)");
+            cloned.setExtractedText(original.getExtractedText());
+            cloned.setUploadDate(java.time.LocalDateTime.now());
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+            mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            // Clone ParsedResume
+            if (original.getParsedResume() != null) {
+                String parsedJson = mapper.writeValueAsString(original.getParsedResume());
+                com.airesume.entity.ParsedResume clonedParsed = mapper.readValue(parsedJson,
+                        com.airesume.entity.ParsedResume.class);
+                clonedParsed.setId(null);
+                clonedParsed.setResume(cloned);
+                cloned.setParsedResume(clonedParsed);
+            }
+
+            Resume savedCloned = resumeRepository.save(cloned);
+
+            // Clone AnalysisResult if exists
+            java.util.Optional<AnalysisResult> optResult = analysisResultRepository.findByResumeId(resumeId);
+            if (optResult.isPresent()) {
+                String resultJson = mapper.writeValueAsString(optResult.get());
+                AnalysisResult clonedResult = mapper.readValue(resultJson, AnalysisResult.class);
+                clonedResult.setId(null);
+                clonedResult.setResumeId(savedCloned.getId());
+                analysisResultRepository.save(clonedResult);
+            }
+
+            return ResponseEntity
+                    .ok(Map.of("message", "Resume cloned successfully", "newResumeId", savedCloned.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to clone resume: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/{resumeId}/analyze")
     public ResponseEntity<?> analyzeResume(@PathVariable Long resumeId,
             @RequestBody(required = false) Map<String, String> request,
             HttpSession session) {
         try {
+            // ... (keep original logic) ...
             Resume resume = resumeRepository.findById(resumeId)
                     .orElseThrow(() -> new RuntimeException("Resume not found"));
 
@@ -187,19 +254,62 @@ public class ResumeController {
                 }
             }
 
-            AnalysisResult result = aiAnalysisService.analyzeResume(resume.getExtractedText(), jobDescription,
-                    isProUser);
-            result.setResumeId(resume.getId());
+            final boolean finalIsProUser = isProUser;
+            final User finalUser = user;
+            final String finalJobDescription = jobDescription;
 
-            AnalysisResult savedResult = analysisResultRepository.save(result);
+            String jobId = backgroundJobService.submitJob(() -> {
+                AnalysisResult result = aiAnalysisService.analyzeResume(resume.getExtractedText(), finalJobDescription,
+                        finalIsProUser);
+                result.setResumeId(resume.getId());
 
-            // Increment quota on successful processing if they are free
-            if (user != null && !isProUser) {
-                user.setScansUsed(user.getScansUsed() + 1);
-                userRepository.save(user);
-            }
+                AnalysisResult savedResult = analysisResultRepository.save(result);
 
-            // Build response map: all AnalysisResult fields + parsedResume for the canvas
+                // Increment quota on successful processing if they are free
+                if (finalUser != null && !finalIsProUser) {
+                    finalUser.setScansUsed(finalUser.getScansUsed() + 1);
+                    userRepository.save(finalUser);
+                }
+
+                // Build response map: all AnalysisResult fields + parsedResume for the canvas
+                java.util.Map<String, Object> responseMap = new java.util.LinkedHashMap<>();
+                responseMap.put("id", savedResult.getId());
+                responseMap.put("resumeId", savedResult.getResumeId());
+                responseMap.put("atsScore", savedResult.getAtsScore());
+                responseMap.put("impactScore", savedResult.getImpactScore());
+                responseMap.put("formattingScore", savedResult.getFormattingScore());
+                responseMap.put("keywordsScore", savedResult.getKeywordsScore());
+                responseMap.put("summary", savedResult.getSummary());
+                responseMap.put("strengths", savedResult.getStrengths());
+                responseMap.put("weaknesses", savedResult.getWeaknesses());
+                responseMap.put("suggestedImprovements", savedResult.getSuggestedImprovements());
+                responseMap.put("foundKeywords", savedResult.getFoundKeywords());
+                responseMap.put("missingKeywords", savedResult.getMissingKeywords());
+                responseMap.put("isPartialAnalysis", savedResult.isPartialAnalysis());
+                if (resume.getParsedResume() != null) {
+                    responseMap.put("parsedResume", resume.getParsedResume());
+                }
+                return responseMap;
+            });
+
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ── GET /api/resume/{resumeId}/result (Session Recovery) ───────────────
+    @GetMapping("/{resumeId}/result")
+    public ResponseEntity<?> getResumeResult(@PathVariable Long resumeId) {
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+            AnalysisResult savedResult = analysisResultRepository.findByResumeId(resumeId)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Analysis result not found for this resume. Please analyze it first."));
+
+            // Build response map identical to /analyze, but without calling AI service
             java.util.Map<String, Object> responseMap = new java.util.LinkedHashMap<>();
             responseMap.put("id", savedResult.getId());
             responseMap.put("resumeId", savedResult.getResumeId());
@@ -233,8 +343,11 @@ public class ResumeController {
             if (bulletPoint == null || bulletPoint.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Bullet point is required"));
             }
-            String enhanced = aiAnalysisService.enhanceBulletPoint(bulletPoint, targetJob, tone);
-            return ResponseEntity.ok(Map.of("enhancedBulletPoint", enhanced));
+            String jobId = backgroundJobService.submitJob(() -> {
+                String enhanced = aiAnalysisService.enhanceBulletPoint(bulletPoint, targetJob, tone);
+                return Map.of("enhancedBulletPoint", enhanced);
+            });
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -244,6 +357,16 @@ public class ResumeController {
     public ResponseEntity<?> generateCoverLetter(@PathVariable Long resumeId,
             @RequestBody(required = false) Map<String, String> request) {
         try {
+            boolean isProUser = false;
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+            }
+            if (!isProUser) {
+                return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
+                        "Cover letter generation is an ElevateAI Pro feature. Please upgrade to continue."));
+            }
+
             String extractedText = "";
             if (resumeId == 0) {
                 extractedText = "Sample Resume content for the mocked frontend report.";
@@ -255,8 +378,13 @@ public class ResumeController {
 
             String jobDescription = request != null ? request.get("jobDescription") : "";
 
-            String coverLetter = aiAnalysisService.generateCoverLetter(extractedText, jobDescription);
-            return ResponseEntity.ok(Map.of("coverLetter", coverLetter));
+            final String finalExtractedText = extractedText;
+            final String finalJobDescription = jobDescription;
+            String jobId = backgroundJobService.submitJob(() -> {
+                String coverLetter = aiAnalysisService.generateCoverLetter(finalExtractedText, finalJobDescription);
+                return Map.of("coverLetter", coverLetter);
+            });
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -266,22 +394,80 @@ public class ResumeController {
     public ResponseEntity<?> generateInterviewQuestions(@PathVariable Long resumeId,
             @RequestBody(required = false) Map<String, String> request) {
         try {
+            boolean isProUser = false;
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+            }
+            if (!isProUser) {
+                return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
+                        "AI Interview Prep is an ElevateAI Pro feature. Please upgrade to continue."));
+            }
+
             String extractedText = resumeRepository.findById(resumeId)
                     .map(Resume::getExtractedText)
                     .orElse("");
             String jobDescription = request != null ? request.get("jobDescription") : "";
-            String questionsJson = aiAnalysisService.generateInterviewQuestions(extractedText, jobDescription);
+            final String finalExtractedText = extractedText;
+            final String finalJobDescription = jobDescription;
+            String jobId = backgroundJobService.submitJob(() -> {
+                String questionsJson = aiAnalysisService.generateInterviewQuestions(finalExtractedText,
+                        finalJobDescription);
 
-            // Clean up any markdown fences Gemini might add
-            questionsJson = questionsJson.trim();
-            if (questionsJson.startsWith("```json"))
-                questionsJson = questionsJson.substring(7);
-            if (questionsJson.startsWith("```"))
-                questionsJson = questionsJson.substring(3);
-            if (questionsJson.endsWith("```"))
-                questionsJson = questionsJson.substring(0, questionsJson.length() - 3);
+                // Clean up any markdown fences Gemini might add
+                questionsJson = questionsJson.trim();
+                if (questionsJson.startsWith("```json"))
+                    questionsJson = questionsJson.substring(7);
+                if (questionsJson.startsWith("```"))
+                    questionsJson = questionsJson.substring(3);
+                if (questionsJson.endsWith("```"))
+                    questionsJson = questionsJson.substring(0, questionsJson.length() - 3);
 
-            return ResponseEntity.ok(Map.of("questions", questionsJson.trim()));
+                return Map.of("questions", questionsJson.trim());
+            });
+
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{resumeId}/match")
+    public ResponseEntity<?> analyzeJobMatch(@PathVariable Long resumeId,
+            @RequestBody Map<String, String> request) {
+        try {
+            boolean isProUser = false;
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+            }
+            if (!isProUser) {
+                return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
+                        "Job Match Engine is an ElevateAI Pro feature. Please upgrade to continue."));
+            }
+
+            String extractedText = "";
+            if (resumeId == 0) {
+                extractedText = "Sample Resume";
+            } else {
+                Resume resume = resumeRepository.findById(resumeId)
+                        .orElseThrow(() -> new RuntimeException("Resume not found"));
+                extractedText = resume.getExtractedText();
+            }
+
+            String jobDescription = request.get("jobDescription");
+            if (jobDescription == null || jobDescription.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "jobDescription is required"));
+            }
+
+            final String finalExtractedText = extractedText;
+            final String finalJobDescription = jobDescription;
+            String jobId = backgroundJobService.submitJob(() -> {
+                String matchJson = aiAnalysisService.analyzeJobMatch(finalExtractedText, finalJobDescription);
+                return Map.of("matchResult", matchJson);
+            });
+
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -289,10 +475,36 @@ public class ResumeController {
 
     @PostMapping(value = "/{resumeId}/export-pdf", produces = org.springframework.http.MediaType.APPLICATION_PDF_VALUE)
     @ResponseBody
-    public ResponseEntity<byte[]> exportToPdf(
+    public ResponseEntity<?> exportToPdf(
             @PathVariable Long resumeId,
             @RequestBody(required = false) Map<String, Object> options) {
         try {
+            // Determine if user is Pro
+            boolean isPro = false;
+            try {
+                org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext()
+                        .getAuthentication();
+                if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                    String email = auth.getName();
+                    isPro = userRepository.findByEmail(email)
+                            .map(u -> u.isPro())
+                            .orElse(false);
+                }
+            } catch (Exception ignored) {
+            }
+
+            String template = options != null && options.containsKey("template") ? (String) options.get("template")
+                    : "basic";
+
+            // Phase 3.1: Enforce Dynamic Paywall
+            // Users cannot export a non-basic template unless they are Pro
+            if (!isPro && !template.equals("basic") && !template.equals("classic")) {
+                return ResponseEntity.status(403)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body(Map.of("error", "QuotaExceeded", "message",
+                                "This premium template requires ElevateAI Pro."));
+            }
+
             String fileName = "My Resume";
             String extractedText = "";
             Resume resume = null;
@@ -307,8 +519,6 @@ public class ResumeController {
                 extractedText = resume.getExtractedText();
             }
 
-            String template = options != null && options.containsKey("template") ? (String) options.get("template")
-                    : "basic";
             String font = options != null && options.containsKey("font") ? (String) options.get("font") : "Helvetica";
 
             @SuppressWarnings("unchecked")
@@ -341,6 +551,8 @@ public class ResumeController {
             }
             context.setVariable("sectionOrder", sectionOrder);
 
+            context.setVariable("isPro", isPro);
+
             String htmlContent = templateEngine.process(templateFile, context);
 
             if (appliedEdits != null) {
@@ -362,6 +574,62 @@ public class ResumeController {
         } catch (Exception e) {
             logger.error("Failed to generate PDF", e);
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // ── POST /api/resume/{resumeId}/export-docx ───────────────────────────────
+    @PostMapping(value = "/{resumeId}/export-docx", produces = "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    @ResponseBody
+    public ResponseEntity<?> exportToDocx(
+            @PathVariable Long resumeId,
+            @RequestBody(required = false) Map<String, Object> options) {
+        try {
+            // Determine if user is Pro
+            boolean isPro = false;
+            try {
+                org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext()
+                        .getAuthentication();
+                if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                    String email = auth.getName();
+                    isPro = userRepository.findByEmail(email)
+                            .map(u -> u.isPro())
+                            .orElse(false);
+                }
+            } catch (Exception ignored) {
+            }
+
+            String template = options != null && options.containsKey("template") ? (String) options.get("template")
+                    : "basic";
+
+            // Phase 3.1: Enforce Dynamic Paywall
+            // Users cannot export a non-basic DOCX template unless they are Pro
+            if (!isPro && !template.equals("basic") && !template.equals("classic")) {
+                return ResponseEntity.status(403)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body(Map.of("error", "QuotaExceeded", "message",
+                                "This premium template requires ElevateAI Pro."));
+            }
+
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new RuntimeException("Resume not found for DOCX export"));
+
+            if (resume.getParsedResume() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error",
+                        "Parsed resume data is required to export to DOCX. Please ensure the resume is analyzed first."));
+            }
+
+            String font = options != null && options.containsKey("font") ? (String) options.get("font") : "Helvetica";
+
+            byte[] docxBytes = docxGeneratorService.generateDocx(resume.getParsedResume(), template, font);
+
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"ElevateAI_Resume.docx\"")
+                    .body(docxBytes);
+
+        } catch (Exception e) {
+            logger.error("Failed to generate DOCX", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -472,27 +740,31 @@ public class ResumeController {
             if (existing == null)
                 return ResponseEntity.badRequest().body(Map.of("error", "No parsed resume found. Upload first."));
 
-            com.airesume.entity.ParsedResume tailored = aiAnalysisService.tailorResumeToJob(
-                    resume.getExtractedText(), jobDescription);
-            if (tailored == null)
-                return ResponseEntity.status(500).body(Map.of("error", "AI tailoring failed"));
+            final String finalJobDescription = jobDescription;
+            String jobId = backgroundJobService.submitJob(() -> {
+                com.airesume.entity.ParsedResume tailored = aiAnalysisService.tailorResumeToJob(
+                        resume.getExtractedText(), finalJobDescription);
+                if (tailored == null)
+                    throw new RuntimeException("AI tailoring failed");
 
-            // Merge: update summary and experience bullet summaries only
-            if (tailored.getSummary() != null && !tailored.getSummary().isBlank())
-                existing.setSummary(tailored.getSummary());
-            if (tailored.getExperiences() != null) {
-                java.util.List<com.airesume.entity.Experience> existExps = existing.getExperiences();
-                java.util.List<com.airesume.entity.Experience> tailExps = tailored.getExperiences();
-                if (existExps != null) {
-                    for (int i = 0; i < Math.min(existExps.size(), tailExps.size()); i++) {
-                        String s = tailExps.get(i).getSummary();
-                        if (s != null && !s.isBlank())
-                            existExps.get(i).setSummary(s);
+                // Merge: update summary and experience bullet summaries only
+                if (tailored.getSummary() != null && !tailored.getSummary().isBlank())
+                    existing.setSummary(tailored.getSummary());
+                if (tailored.getExperiences() != null) {
+                    java.util.List<com.airesume.entity.Experience> existExps = existing.getExperiences();
+                    java.util.List<com.airesume.entity.Experience> tailExps = tailored.getExperiences();
+                    if (existExps != null) {
+                        for (int i = 0; i < Math.min(existExps.size(), tailExps.size()); i++) {
+                            String s = tailExps.get(i).getSummary();
+                            if (s != null && !s.isBlank())
+                                existExps.get(i).setSummary(s);
+                        }
                     }
                 }
-            }
-            resumeRepository.save(resume);
-            return ResponseEntity.ok(existing);
+                resumeRepository.save(resume);
+                return existing;
+            });
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
         } catch (Exception e) {
             logger.error("Failed to tailor resume", e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
@@ -551,10 +823,10 @@ public class ResumeController {
         try {
             Resume resume = resumeRepository.findById(resumeId)
                     .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
-            String result = aiAnalysisService.detectGrammarAndCliches(resume.getExtractedText());
-            return ResponseEntity.ok()
-                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                    .body(result);
+            String jobId = backgroundJobService.submitJob(() -> {
+                return aiAnalysisService.detectGrammarAndCliches(resume.getExtractedText());
+            });
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
         } catch (Exception e) {
             logger.error("Failed grammar check", e);
             return ResponseEntity.status(500).body("[]");

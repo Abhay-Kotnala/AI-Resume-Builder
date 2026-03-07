@@ -22,7 +22,7 @@ interface ResumeCanvasProps {
     missingKeywords?: string;
     showHeatmap?: boolean;
     isPro?: boolean;
-    onFieldChange?: (field: string, value: string, expIndex?: number, eduIndex?: number) => void;
+    onFieldChange?: (field: string, value: string, expIndex?: number, eduIndex?: number, sectionName?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }
 
@@ -40,7 +40,30 @@ const Editable: React.FC<EditableProps> = ({ tag = 'span', value, onBlur, classN
     const ref = useRef<HTMLElement>(null);
     const Tag = tag as any;
 
+    // ── Debounced Autosave (Phase 1.1) ─────────────────────────────────────────
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleInput = useCallback(() => {
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+        debounceTimer.current = setTimeout(() => {
+            if (ref.current) {
+                // If the user's focus is still here, they might still be typing slowly, but we save anyway!
+                onBlur(ref.current.innerHTML);
+            }
+        }, 1500); // 1.5s debounce for a snappy feel without too many requests
+    }, [onBlur]);
+
+    // Clean up timer unmount
+    React.useEffect(() => {
+        return () => {
+            if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        };
+    }, []);
+
     const handleBlur = useCallback(() => {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
         if (ref.current) {
             onBlur(ref.current.innerHTML);
         }
@@ -51,6 +74,7 @@ const Editable: React.FC<EditableProps> = ({ tag = 'span', value, onBlur, classN
             ref={ref}
             contentEditable
             suppressContentEditableWarning
+            onInput={handleInput}
             onBlur={handleBlur}
             dangerouslySetInnerHTML={{ __html: value || '' }}
             data-placeholder={placeholder}
@@ -130,7 +154,7 @@ const ClassicCanvas: React.FC<{
     weaknesses: string;
     foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -222,6 +246,21 @@ const ClassicCanvas: React.FC<{
                     </div>
                 );
 
+
+                if (!['Summary', 'Experience', 'Education', 'Skills'].includes(sec)) {
+                    const customText = pr.customSections?.[sec];
+                    if (customText) {
+                        return (
+                            <div key={sec} style={{ marginBottom: 16 }}>
+                                {sectionTitle(sec)}
+                                <Editable tag="div"
+                                    value={hl(customText)}
+                                    onBlur={v => onPatch('customSection', v, undefined, undefined, sec)}
+                                    style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }} />
+                            </div>
+                        );
+                    }
+                }
                 return null;
             })}
         </div>
@@ -239,7 +278,7 @@ const ModernCanvas: React.FC<{
     weaknesses: string;
     foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const accentColor = '#10b981';
@@ -344,7 +383,7 @@ const ExecutiveCanvas: React.FC<{
     weaknesses: string;
     foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -434,6 +473,21 @@ const ExecutiveCanvas: React.FC<{
                         </div>
                     );
 
+
+                    if (!['Summary', 'Experience', 'Education', 'Skills'].includes(sec)) {
+                        const customText = pr.customSections?.[sec];
+                        if (customText) {
+                            return (
+                                <div key={sec} style={{ marginBottom: 16 }}>
+                                    {heading(sec)}
+                                    <Editable tag="div"
+                                        value={hl(customText)}
+                                        onBlur={v => onPatch('customSection', v, undefined, undefined, sec)}
+                                        style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }} />
+                                </div>
+                            );
+                        }
+                    }
                     return null;
                 })}
             </div>
@@ -452,7 +506,7 @@ const TechFocusedCanvas: React.FC<{
     weaknesses: string;
     foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -555,7 +609,7 @@ const MinimalistCanvas: React.FC<{
     weaknesses: string;
     foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -640,6 +694,21 @@ const MinimalistCanvas: React.FC<{
                     </div>
                 );
 
+
+                if (!['Summary', 'Experience', 'Education', 'Skills'].includes(sec)) {
+                    const customText = pr.customSections?.[sec];
+                    if (customText) {
+                        return (
+                            <div key={sec} style={{ marginBottom: 16 }}>
+                                {heading(sec)}
+                                <Editable tag="div"
+                                    value={hl(customText)}
+                                    onBlur={v => onPatch('customSection', v, undefined, undefined, sec)}
+                                    style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }} />
+                            </div>
+                        );
+                    }
+                }
                 return null;
             })}
         </div>
@@ -653,7 +722,7 @@ const BoldBwCanvas: React.FC<{
     pr: ParsedResumeDTO; font: string; edits: AppliedEdit[];
     heatmap: boolean; weaknesses: string; foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -734,7 +803,7 @@ const EditorialCanvas: React.FC<{
     pr: ParsedResumeDTO; font: string; edits: AppliedEdit[];
     heatmap: boolean; weaknesses: string; foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const hl = (t: string) => heatmap ? highlightAllPhrases(applyEdits(t, edits), weaknesses, foundKeywords, onPhraseClick) : applyEdits(t, edits);
@@ -809,7 +878,7 @@ const OliveSidebarCanvas: React.FC<{
     pr: ParsedResumeDTO; font: string; edits: AppliedEdit[];
     heatmap: boolean; weaknesses: string; foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const gold = '#8B7535';
@@ -891,7 +960,7 @@ const OrangeBoldCanvas: React.FC<{
     pr: ParsedResumeDTO; font: string; edits: AppliedEdit[];
     heatmap: boolean; weaknesses: string; foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const orange = '#e85e00';
@@ -974,7 +1043,7 @@ const BlueProCanvas: React.FC<{
     pr: ParsedResumeDTO; font: string; edits: AppliedEdit[];
     heatmap: boolean; weaknesses: string; foundKeywords: string;
     sectionOrder: string[];
-    onPatch: (f: string, v: string, ei?: number, di?: number) => void;
+    onPatch: (f: string, v: string, ei?: number, di?: number, sec?: string) => void;
     onPhraseClick?: (phrase: string) => void;
 }> = ({ pr, font, edits, heatmap, weaknesses, foundKeywords, sectionOrder, onPatch, onPhraseClick }) => {
     const blue = '#1a56a0';
@@ -1075,6 +1144,8 @@ export const ResumeCanvas: React.FC<ResumeCanvasProps> = ({
 }) => {
     const handlePatch = useCallback(async (field: string, value: string, expIndex?: number, eduIndex?: number) => {
         onFieldChange?.(field, value, expIndex, eduIndex);
+        if (!resumeId || resumeId === 0) return; // Do not patch the dummy sample resume
+
         try {
             await patchParsedResume(resumeId, field, value, expIndex, eduIndex);
         } catch (err) {
@@ -1116,7 +1187,7 @@ export const ResumeCanvas: React.FC<ResumeCanvasProps> = ({
                     transform: 'translate(-50%, -50%) rotate(-45deg)',
                     fontSize: 80, fontWeight: 900, color: 'rgba(200,200,200,0.18)',
                     zIndex: 0, whiteSpace: 'nowrap', pointerEvents: 'none', userSelect: 'none'
-                }}>Created with ElevateAI</div>
+                }}>ElevateAI</div>
             )}
 
             {/* Canvas hint */}

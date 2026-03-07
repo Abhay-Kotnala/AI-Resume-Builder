@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnalysisResponse, exportToPdf, exportToDocx, ParsedResumeDTO } from '../services/api';
 import { MagicWandEditor } from './MagicWandEditor';
 import { CoverLetterGenerator } from './CoverLetterGenerator';
@@ -6,6 +6,7 @@ import { InterviewCoach } from './InterviewCoach';
 import { trackPdfExported, trackAiRewriteUsed, trackUpgradeClicked } from '../services/analytics';
 import { BuilderSidebar, BuilderTab } from './BuilderSidebar';
 import { JobTailor } from './JobTailor';
+import { JobMatch } from './JobMatch';
 import { LinkedInImport } from './LinkedInImport';
 import { GrammarChecker } from './GrammarChecker';
 import { ResumeCanvas } from './ResumeCanvas';
@@ -30,6 +31,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 interface AtsDashboardProps {
     result: AnalysisResponse;
+    onCheckAnother?: () => void;
 }
 
 // ── ATS Score Overlay Badge ────────────────────────────────────────────────────
@@ -56,7 +58,7 @@ const ScoreOverlayBadge: React.FC<ScoreOverlayBadgeProps> = ({ atsScore, impactS
     ];
 
     return (
-        <div className="group absolute top-4 right-4 z-20 flex flex-col items-end gap-2 select-none">
+        <div className="group absolute top-4 right-4 z-20 flex flex-col items-end gap-2 select-none transform origin-top-right scale-90 hover:scale-100 transition-transform">
             {/* Main ring badge */}
             <div
                 className="flex flex-col items-center justify-center cursor-default rounded-2xl px-3 py-2.5 shadow-xl border backdrop-blur-sm transition-all duration-300 group-hover:scale-105"
@@ -165,11 +167,38 @@ const SortableSectionItem: React.FC<SortableSectionItemProps> = ({ id, onRemove 
     );
 };
 
-export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
+export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnother }) => {
     const [tailoredResume, setTailoredResume] = useState<ParsedResumeDTO | null>(null);
     const [editingBullet, setEditingBullet] = useState<string | null>(null);
     const [isLinkedInModalOpen, setIsLinkedInModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<BuilderTab>('ats');
+    const containerRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLDivElement>(null);
+    const [canvasScale, setCanvasScale] = useState(1);
+
+    // Responsive canvas scaling
+    useEffect(() => {
+        const updateScale = () => {
+            if (containerRef.current && canvasRef.current) {
+                // The canvas has a fixed width of 800px logic in ResumeCanvas.
+                // We want to scale it down if the container is smaller than 800px + padding.
+                const containerWidth = containerRef.current.clientWidth;
+                const padding = 32; // 16px each side min padding
+                const targetWidth = containerWidth - padding;
+                const baseWidth = 800;
+
+                if (targetWidth < baseWidth) {
+                    setCanvasScale(targetWidth / baseWidth);
+                } else {
+                    setCanvasScale(1);
+                }
+            }
+        };
+
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, []);
 
     // Export Settings State
     const [exportTemplate, setExportTemplate] = useState('basic');
@@ -423,13 +452,13 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     { id: 'basic', label: 'Classic Layout', img: '/templates/classic.png' },
                     { id: 'modern', label: 'Modern Accent', img: '/templates/modern.png', pro: true },
                     { id: 'executive', label: 'Executive Split', img: '/templates/executive.png', pro: true },
-                    { id: 'tech-focused', label: 'Tech Dense', img: '/templates/tech-focused.svg', pro: true },
-                    { id: 'minimalist', label: 'Minimalist', img: '/templates/minimalist.svg', pro: true },
-                    { id: 'bold-bw', label: 'Bold Black & White', img: '/templates/bold-bw.svg', pro: true },
-                    { id: 'editorial', label: 'Editorial Green', img: '/templates/editorial.svg', pro: true },
-                    { id: 'olive-sidebar', label: 'Olive Sidebar', img: '/templates/olive-sidebar.svg', pro: true },
-                    { id: 'orange-bold', label: 'Orange Bold', img: '/templates/orange-bold.svg', pro: true },
-                    { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.svg', pro: true }
+                    { id: 'tech-focused', label: 'Tech Dense', img: '/templates/tech-focused.png', pro: true },
+                    { id: 'minimalist', label: 'Minimalist', img: '/templates/minimalist.png', pro: true },
+                    { id: 'bold-bw', label: 'Bold Black & White', img: '/templates/bold-bw.png', pro: true },
+                    { id: 'editorial', label: 'Editorial Green', img: '/templates/editorial.png', pro: true },
+                    { id: 'olive-sidebar', label: 'Olive Sidebar', img: '/templates/olive-sidebar.png', pro: true },
+                    { id: 'orange-bold', label: 'Orange Bold', img: '/templates/orange-bold.png', pro: true },
+                    { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.png', pro: true }
                 ].map(tpl => {
                     const isSelected = exportTemplate === tpl.id;
                     const isLocked = result.isPartialAnalysis && (tpl as any).pro;
@@ -442,7 +471,22 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                                 ${isSelected ? 'border-indigo-500 bg-indigo-50/30 shadow-indigo-100/50 shadow-lg' : 'border-slate-200 bg-white hover:border-indigo-300'}`}
                         >
                             <div className="w-full h-40 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 relative">
-                                <img src={tpl.img} alt={tpl.label} className="w-full h-full object-cover object-top" />
+                                <img
+                                    src={tpl.img}
+                                    alt={tpl.label}
+                                    className="w-full h-full object-cover object-top"
+                                    onError={(e) => {
+                                        const target = e.currentTarget;
+                                        target.style.display = 'none';
+                                        const parent = target.parentElement;
+                                        if (parent && !parent.querySelector('.tpl-placeholder')) {
+                                            const ph = document.createElement('div');
+                                            ph.className = 'tpl-placeholder absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-50 to-slate-100';
+                                            ph.innerHTML = `<svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><span style="font-size:11px;font-weight:700;color:#94a3b8">${tpl.label}</span>`;
+                                            parent.appendChild(ph);
+                                        }
+                                    }}
+                                />
                                 {isLocked && (
                                     <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center backdrop-blur-[1px]">
                                         <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5">
@@ -503,7 +547,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
 
             <div className="pt-6 border-t border-slate-100 space-y-4">
                 <CoverLetterGenerator resumeId={result.resumeId} />
-                <InterviewCoach resumeId={result.resumeId} />
+                <InterviewCoach resumeId={result.resumeId} isPro={!result.isPartialAnalysis} />
             </div>
         </div>
     );
@@ -700,14 +744,15 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
     };
 
     return (
-        <div className="flex bg-slate-100 overflow-hidden relative w-full h-full" style={{ height: 'calc(100vh - 64px)' }}>
+        <div className="flex flex-col lg:flex-row bg-slate-100 overflow-hidden relative w-full h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)]">
 
-            {/* 1. Thin Left Sidebar Nav */}
+            {/* 1. Thin Left Sidebar Nav (Mobile: Bottom bar) */}
             <BuilderSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
             {/* 2. Context Pane (Middle) */}
-            <div className="w-80 lg:w-96 border-r border-slate-200 bg-white shadow-xl flex flex-col h-full z-10 overflow-y-auto shrink-0 relative">
+            <div className="w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-slate-200 bg-white shadow-xl flex flex-col z-30 lg:z-10 overflow-y-auto shrink-0 relative lg:h-full max-h-[50vh] lg:max-h-none order-first lg:order-none">
                 {activeTab === 'ats' && renderAtsCheckPane()}
+                {activeTab === 'match' && <JobMatch resumeId={result.resumeId} isPro={!result.isPartialAnalysis} />}
                 {activeTab === 'tailor' && (
                     <JobTailor
                         resumeId={result.resumeId}
@@ -730,11 +775,22 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
             </div>
 
             {/* 3. Live Canvas (Right) */}
-            <div className="flex-1 relative h-full flex flex-col items-center justify-start p-4 md:p-8 lg:p-12 overflow-y-auto w-full z-0">
-                <div className="w-full max-w-[800px] flex justify-between items-center mb-4 text-slate-500 text-sm font-medium shrink-0">
-                    <div className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
-                        Click any bullet point or field to rewrite it
+            <div ref={containerRef} className="flex-1 relative h-full flex flex-col items-center justify-start p-2 sm:p-4 lg:p-8 xl:p-12 overflow-y-auto w-full z-0 overflow-x-hidden order-1 lg:order-none">
+                <div className="w-full max-w-[800px] flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-4 text-slate-500 text-sm font-medium shrink-0">
+                    <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
+                        {onCheckAnother && (
+                            <button
+                                onClick={onCheckAnother}
+                                className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold transition-colors px-3 py-1.5 rounded-lg border border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 text-sm"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                Check Another Resume
+                            </button>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+                            Click any bullet point or field to rewrite it
+                        </div>
                     </div>
                     <button
                         onClick={() => setIsLinkedInModalOpen(true)}
@@ -745,7 +801,17 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     </button>
                 </div>
 
-                <div className="w-full max-w-[800px] bg-white shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] border border-slate-200 relative shrink-0 transition-transform duration-500" style={{ height: 'min-content', minHeight: '1130px', aspectRatio: '1 / 1.414' }}>
+                <div
+                    ref={canvasRef}
+                    className="w-full max-w-[800px] bg-white shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] border border-slate-200 relative shrink-0"
+                    style={{
+                        height: 'min-content',
+                        minHeight: '1130px',
+                        transform: `scale(${canvasScale})`,
+                        transformOrigin: 'top center',
+                        marginBottom: `-${(1 - canvasScale) * 1130}px` // Compensate for scaled shrink
+                    }}
+                >
                     {/* Phase 2.2: Floating ATS Score Badge */}
                     <ScoreOverlayBadge
                         atsScore={dynamicAtsScore}
@@ -775,8 +841,8 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result }) => {
                     />
                     {result.isPartialAnalysis && exportTemplate !== 'basic' && (
                         <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 overflow-hidden">
-                            <div className="transform -rotate-45 text-slate-900/[0.03] text-[150px] font-black tracking-tighter select-none">
-                                LOCKED
+                            <div className="transform -rotate-45 text-slate-900/[0.04] text-[100px] font-black tracking-tighter select-none whitespace-nowrap">
+                                ElevateAI
                             </div>
                         </div>
                     )}

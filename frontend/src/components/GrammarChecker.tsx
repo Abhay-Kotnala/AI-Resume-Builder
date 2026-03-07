@@ -12,19 +12,22 @@ interface GrammarCheckerProps {
 export const GrammarChecker: React.FC<GrammarCheckerProps> = ({ resumeId, isPro, onFixPhrase }) => {
     const [issues, setIssues] = useState<GrammarIssue[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingStatus, setLoadingStatus] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [showPaywall, setShowPaywall] = useState(false);
 
     const runCheck = async () => {
         try {
             setIsLoading(true);
+            setLoadingStatus('Initializing AI Scan...');
             setError(null);
-            const foundIssues = await checkGrammar(resumeId);
+            const foundIssues = await checkGrammar(resumeId, (status) => setLoadingStatus(`Job Status: ${status}`));
             setIssues(foundIssues);
         } catch (err: any) {
             setError(err.message || 'Failed to run grammar check.');
         } finally {
             setIsLoading(false);
+            setLoadingStatus('');
         }
     };
 
@@ -68,7 +71,10 @@ export const GrammarChecker: React.FC<GrammarCheckerProps> = ({ resumeId, isPro,
                     className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all shadow-lg hover:-translate-y-0.5 shadow-purple-600/30 flex items-center justify-center gap-2"
                 >
                     {isLoading ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            {loadingStatus || 'Scanning...'}
+                        </>
                     ) : (
                         <>
                             Run Content Scan

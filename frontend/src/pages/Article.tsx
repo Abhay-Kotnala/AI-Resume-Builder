@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 export const Article: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -32,6 +33,12 @@ export const Article: React.FC = () => {
             <p class="mb-6">Stick to a clean, single-column design with standard, clear headings like "Experience", "Education", and "Skills".</p>
         `
     };
+
+    useSEO({
+        title: `${article.title} | ElevateAI Resume Blog`,
+        description: `${article.title} — Expert resume tips and ATS advice from ElevateAI's team of career coaches and senior recruiters.`,
+        canonical: `https://elevateai.app/article/${id}`,
+    });
 
     return (
         <article className="bg-white min-h-screen pb-24">

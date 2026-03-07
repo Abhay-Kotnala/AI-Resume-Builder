@@ -20,7 +20,8 @@ public class StripeController {
     }
 
     @PostMapping("/create-checkout-session")
-    public ResponseEntity<Map<String, String>> createCheckoutSession() {
+    public ResponseEntity<Map<String, String>> createCheckoutSession(
+            @RequestParam(defaultValue = "monthly") String plan) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
@@ -28,8 +29,23 @@ public class StripeController {
             }
             String userEmail = auth.getName();
 
-            String checkoutUrl = stripeService.createCheckoutSession(userEmail);
+            String checkoutUrl = stripeService.createCheckoutSession(userEmail, plan);
             return ResponseEntity.ok(Map.of("url", checkoutUrl));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/create-portal-session")
+    public ResponseEntity<Map<String, String>> createPortalSession() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+            }
+            String userEmail = auth.getName();
+            String portalUrl = stripeService.createPortalSession(userEmail);
+            return ResponseEntity.ok(Map.of("url", portalUrl));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
@@ -42,8 +58,12 @@ public class StripeController {
         try {
             stripeService.handleWebhook(payload, sigHeader);
             return ResponseEntity.ok("Webhook processed successfully");
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            // Bad signature or payload - do not retry
             return ResponseEntity.badRequest().body("Webhook error: " + e.getMessage());
+        } catch (Exception e) {
+            // System error (e.g., DB down) - return 500 so Stripe explicitly retries later
+            return ResponseEntity.internalServerError().body("Internal Webhook error: " + e.getMessage());
         }
     }
 }

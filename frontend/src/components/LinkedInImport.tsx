@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { importLinkedIn, ParsedResumeDTO } from '../services/api';
 import { PaywallModal } from './PaywallModal';
+import { useAuth } from '../context/AuthContext';
 
 interface LinkedInImportProps {
     isOpen: boolean;
@@ -15,11 +16,13 @@ export const LinkedInImport: React.FC<LinkedInImportProps> = ({ isOpen, onClose,
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPaywall, setShowPaywall] = useState(false);
+    const { user } = useAuth();
+    const activeIsPro = user?.isPro || isPro;
 
     if (!isOpen) return null;
 
     const handleImport = async () => {
-        if (!isPro) {
+        if (!activeIsPro) {
             setShowPaywall(true);
             return;
         }
@@ -61,7 +64,7 @@ export const LinkedInImport: React.FC<LinkedInImportProps> = ({ isOpen, onClose,
 
                 <div className="flex-1 overflow-y-auto mb-6">
                     <textarea
-                        className="w-full h-64 p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] resize-none font-sans text-sm outline-none"
+                        className="w-full h-64 p-4 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] resize-none font-sans text-sm outline-none"
                         placeholder="Paste your LinkedIn text here... (Ctrl+V or Cmd+V)&#10;&#10;E.g.,&#10;Software Engineer at Google&#10;Jan 2020 - Present&#10;- Built scalable microservices...&#10;&#10;Education:&#10;B.S. Computer Science, Stanford University"
                         value={linkedInText}
                         onChange={(e) => setLinkedInText(e.target.value)}
@@ -96,7 +99,7 @@ export const LinkedInImport: React.FC<LinkedInImportProps> = ({ isOpen, onClose,
                         ) : (
                             <>
                                 Import Profile
-                                {!isPro && (
+                                {!activeIsPro && (
                                     <svg className="w-3.5 h-3.5 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
                                 )}
                             </>

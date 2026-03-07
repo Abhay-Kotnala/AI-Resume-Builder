@@ -90,18 +90,8 @@ export const Home: React.FC = () => {
     if (analysisResult) {
         return (
             <div className="w-full animate-fade-in-up">
-                {/* slim top bar with back button */}
-                <div className="px-4 sm:px-6 lg:px-8 py-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <button
-                        onClick={() => setAnalysisResult(null)}
-                        className="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-bold rounded-xl text-slate-600 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 focus:outline-none"
-                    >
-                        <span className="transform group-hover:-translate-x-1 transition-transform duration-300">←</span>
-                        Check Another Resume
-                    </button>
-                </div>
                 {/* full-width dashboard — no wrapper constraints */}
-                <AtsDashboard result={analysisResult} />
+                <AtsDashboard result={analysisResult} onCheckAnother={() => setAnalysisResult(null)} />
             </div>
         );
     }

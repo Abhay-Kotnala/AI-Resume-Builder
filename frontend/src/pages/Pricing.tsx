@@ -40,8 +40,8 @@ export const Pricing: React.FC = () => {
     const tableRef = useInView();
     const faqRef = useInView();
 
-    const monthlyPrice = 19;
-    const annualPrice = 15;
+    const monthlyPrice = 10;
+    const annualPrice = 8;
     const displayPrice = annual ? annualPrice : monthlyPrice;
 
     return (
@@ -90,7 +90,7 @@ export const Pricing: React.FC = () => {
                             className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${annual ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
                         >
                             Annual
-                            <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Save 21%</span>
+                            <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Save 20%</span>
                         </button>
                     </div>
                 </div>
@@ -131,7 +131,7 @@ export const Pricing: React.FC = () => {
                             <span className="text-slate-400 mb-1">/month</span>
                         </div>
                         {annual && (
-                            <p className="text-emerald-400 text-sm font-semibold mb-6">Billed as ${annualPrice * 12}/year — save $48</p>
+                            <p className="text-emerald-400 text-sm font-semibold mb-6">Billed as ${annualPrice * 12}/year — save $24</p>
                         )}
                         {!annual && <div className="mb-6" />}
                         <ul className="space-y-3 flex-1">
@@ -142,7 +142,7 @@ export const Pricing: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Link to="/checkout" className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
+                        <Link to={`/checkout?plan=${annual ? 'annual' : 'monthly'}`} className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
                             Upgrade to Pro →
                         </Link>
 

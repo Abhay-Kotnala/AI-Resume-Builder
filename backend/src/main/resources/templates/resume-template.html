@@ -74,7 +74,7 @@
 </head>
 
 <body>
-    <div th:if="${!isPro}" class="watermark">Created with ElevateAI</div>
+    <div th:if="${isPro == null or !isPro}" class="watermark">Created with ElevateAI</div>
 
     <h1 th:text="${resumeName != null ? resumeName : 'Professional Resume'}">Professional Resume</h1>
 

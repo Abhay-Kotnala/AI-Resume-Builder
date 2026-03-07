@@ -12,6 +12,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
     const [file, setFile] = useState<File | null>(null);
     const [jobDescription, setJobDescription] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [loadingStatus, setLoadingStatus] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -60,11 +61,13 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
         if (!file) return;
 
         setLoading(true);
+        setLoadingStatus('Uploading document...');
         setError(null);
 
         try {
             const uploadResult = await uploadResume(file);
-            const analysisResult = await analyzeResume(uploadResult.resumeId, jobDescription);
+            setLoadingStatus('Initializing AI scan...');
+            const analysisResult = await analyzeResume(uploadResult.resumeId, jobDescription, (s) => setLoadingStatus(`Job Status: ${s}`));
             trackResumeAnalyzed(analysisResult.atsScore, !!jobDescription.trim());
             onAnalysisComplete(analysisResult);
         } catch (err: any) {
@@ -75,6 +78,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
             }
         } finally {
             setLoading(false);
+            setLoadingStatus('');
         }
     };
 
@@ -168,7 +172,7 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Analyzing Resume...
+                                {loadingStatus || 'Analyzing Resume...'}
                             </>
                         ) : 'Scan My Resume'}
                     </span>

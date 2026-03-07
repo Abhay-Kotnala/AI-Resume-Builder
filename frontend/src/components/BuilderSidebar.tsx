@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type BuilderTab = 'templates' | 'design' | 'ats' | 'tailor' | 'grammar' | 'addSection' | 'rearrange' | 'download';
+export type BuilderTab = 'templates' | 'design' | 'ats' | 'match' | 'tailor' | 'grammar' | 'addSection' | 'rearrange' | 'download';
 
 interface BuilderSidebarProps {
     activeTab: BuilderTab;
@@ -55,6 +55,17 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ activeTab, setAc
             )
         },
         {
+            id: 'match',
+            label: 'Match Engine',
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804" />
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2} />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth={2} />
+                </svg>
+            )
+        },
+        {
             id: 'tailor',
             label: 'Job Tailor',
             icon: (
@@ -84,8 +95,8 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ activeTab, setAc
     ];
 
     return (
-        <div className="w-24 bg-white border-r border-slate-200 shadow-sm flex flex-col items-center py-6 h-full z-20 shrink-0">
-            <div className="flex flex-col gap-4 w-full px-3">
+        <div className="w-full lg:w-24 bg-white border-t lg:border-t-0 lg:border-r border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:shadow-sm flex flex-row lg:flex-col items-center py-2 lg:py-6 h-auto lg:h-full z-40 shrink-0 overflow-x-auto lg:overflow-y-auto hide-scrollbar order-last lg:order-first">
+            <div className="flex flex-row lg:flex-col gap-2 lg:gap-4 w-full px-2 lg:px-3 min-w-max lg:min-w-0">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -102,7 +113,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ activeTab, setAc
                             <div className={`${isActive ? 'scale-110' : 'group-hover:scale-110'} transition-transform duration-200`}>
                                 {tab.icon}
                             </div>
-                            <span className={`text-[10px] font-bold text-center tracking-wide ${isActive ? 'text-emerald-700' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                            <span className={`text-[10px] font-bold text-center tracking-wide mt-1 lg:mt-0 ${isActive ? 'text-emerald-700' : 'text-slate-500 group-hover:text-slate-700'}`}>
                                 {tab.label}
                             </span>
                         </button>

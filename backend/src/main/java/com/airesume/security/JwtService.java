@@ -35,6 +35,12 @@ public class JwtService {
         return generateToken(new HashMap<>(), username);
     }
 
+    public String generateToken(com.airesume.entity.User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole().name());
+        return generateToken(claims, user.getEmail());
+    }
+
     public String generateToken(Map<String, Object> extraClaims, String username) {
         return buildToken(extraClaims, username, jwtExpiration);
     }

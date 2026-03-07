@@ -162,7 +162,7 @@
 </head>
 
 <body>
-    <div th:if="${!isPro}" class="watermark">Created with ElevateAI</div>
+    <div th:if="${isPro == null or !isPro}" class="watermark">Created with ElevateAI</div>
 
     <div class="header">
         <h1

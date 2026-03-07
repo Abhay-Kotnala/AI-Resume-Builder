@@ -38,16 +38,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
         try {
             userEmail = jwtService.extractUsername(jwt);
+            String roleStr = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+            if (roleStr == null) {
+                roleStr = "ROLE_USER"; // fallback
+            }
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // If the token is valid, we construct an authentication token and set it in the
                 // context
-                // We default to an empty authorities list since we aren't using strict
-                // role-based access for the MVP
+                org.springframework.security.core.authority.SimpleGrantedAuthority authority = new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        roleStr);
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userEmail,
                         null,
-                        Collections.emptyList());
+                        Collections.singletonList(authority));
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);

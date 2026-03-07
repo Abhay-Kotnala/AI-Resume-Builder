@@ -14,17 +14,23 @@ public class AiAnalysisService {
     private final RestClient restClient;
     private final String apiKey;
     private final ObjectMapper objectMapper;
+    private final AnalyticsService analyticsService;
 
     public AiAnalysisService(RestClient.Builder restClientBuilder,
-            @Value("${gemini.api.key:}") String apiKey,
-            ObjectMapper objectMapper) {
+            @Value("${gemini.api.key}") String apiKey,
+            ObjectMapper objectMapper,
+            AnalyticsService analyticsService) {
         this.restClient = restClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build();
         this.apiKey = apiKey;
         this.objectMapper = objectMapper;
+        this.analyticsService = analyticsService;
     }
 
     public AnalysisResult analyzeResume(String resumeText, String jobDescription, boolean isPro) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+        // Log AI Action
+        analyticsService.logEvent(null, "AI_ACTION", "Feature: Analyze Resume");
+
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
             return getMockResult(isPro);
         }
 
@@ -39,7 +45,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-pro:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -69,8 +75,8 @@ public class AiAnalysisService {
     }
 
     public com.airesume.entity.ParsedResume parseStructuredResume(String resumeText, boolean isPro) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return getMockParsedResume();
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
+            return getMockParsedResume(resumeText);
         }
 
         try {
@@ -90,8 +96,14 @@ public class AiAnalysisService {
                     "  ],\n" +
                     "  \"educations\": [\n" +
                     "    { \"institution\": \"\", \"degree\": \"\", \"graduationDate\": \"\", \"details\": \"\" }\n" +
-                    "  ]\n" +
+                    "  ],\n" +
+                    "  \"customSections\": {\n" +
+                    "    \"Projects\": \"• Example Project 1\\n• Example Project 2\",\n" +
+                    "    \"Languages\": \"English, Spanish\"\n" +
+                    "  }\n" +
                     "}\n\n" +
+                    "NOTE: Extract any additional resume sections (e.g., Projects, Certifications, Awards, Languages, Publications, Volunteering) into the customSections map. The keys must be the section header as a string, and the value must be the section text as a single string, using • for list items and \\n for newlines.\n\n"
+                    +
                     "RESUME TEXT TO PARSE:\n" + resumeText;
 
             Map<String, Object> requestBody = Map.of(
@@ -108,23 +120,25 @@ public class AiAnalysisService {
                     .body(String.class);
 
             String text = extractTextFromGeminiResponse(response);
-            if (text.startsWith("```json"))
-                text = text.substring(7);
-            else if (text.startsWith("```"))
-                text = text.substring(3);
-            if (text.endsWith("```"))
-                text = text.substring(0, text.length() - 3);
+            int startIndex = text.indexOf('{');
+            int endIndex = text.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
+            }
 
-            return objectMapper.readValue(text.trim(), com.airesume.entity.ParsedResume.class);
+            return objectMapper.readValue(text, com.airesume.entity.ParsedResume.class);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockParsedResume();
+            return getMockParsedResume(resumeText);
         }
     }
 
     public String enhanceBulletPoint(String bulletPoint, String targetJob, String tone) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+        // Log AI Action
+        analyticsService.logEvent(null, "AI_ACTION", "Feature: Magic Wand Enhance");
+
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
             return "Accomplished [X] as measured by [Y], by doing [Z]. (Mocked test feature with tone: " + tone + ")";
         }
         try {
@@ -170,7 +184,10 @@ public class AiAnalysisService {
     }
 
     public String generateCoverLetter(String resumeText, String jobDescription) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
+        // Log AI Action
+        analyticsService.logEvent(null, "AI_ACTION", "Feature: Cover Letter Generation");
+
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
             return "Dear Hiring Manager,\n\nI am writing to express my strong interest in the open position. Please find my resume attached.\n\nSincerely,\nCandidate (Mocked)";
         }
         try {
@@ -247,6 +264,53 @@ public class AiAnalysisService {
         }
     }
 
+    public String analyzeJobMatch(String resumeText, String jobDescription) {
+        // Log AI Action
+        analyticsService.logEvent(null, "AI_ACTION", "Feature: Job Match Engine");
+
+        if (apiKey == null || apiKey.isEmpty() || "your_gemini_api_key_here".equals(apiKey)
+                || "YOUR_KEY_HERE".equals(apiKey)) {
+            return "{\"matchScore\": 85, \"missingKeywords\": [\"Docker\", \"Kubernetes\"], \"matchingKeywords\": [\"Java\", \"Spring Boot\", \"React\"], \"tailoredAdvice\": \"MOCK: You have a strong foundation but are missing some cloud deployment skills. Consider adding Docker experience if you have it.\"}";
+        }
+        try {
+            String prompt = "You are an expert technical recruiter and ATS ranking algorithm. "
+                    + "Analyze the candidate's resume against the provided job description and calculate a precise match score based on keyword intersection, semantic relevance, and experience level. "
+                    + "Return ONLY a valid JSON object with the exact following structure. Do NOT include markdown tags like ```json:\n"
+                    + "{\n"
+                    + "  \"matchScore\": 85,\n"
+                    + "  \"missingKeywords\": [\"keyword1\", \"keyword2\"],\n"
+                    + "  \"matchingKeywords\": [\"keyword3\", \"keyword4\"],\n"
+                    + "  \"tailoredAdvice\": \"A 2-3 sentence paragraph offering specific, actionable advice on how to improve the match rate for this specific job.\"\n"
+                    + "}\n\n"
+                    + "JOB DESCRIPTION:\n" + jobDescription + "\n\n"
+                    + "CANDIDATE RESUME:\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = restClient.post()
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(String.class);
+
+            String text = extractTextFromGeminiResponse(response);
+            int startIndex = text.indexOf('{');
+            int endIndex = text.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
+            }
+            return text;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"matchScore\": 0, \"missingKeywords\": [], \"matchingKeywords\": [], \"tailoredAdvice\": \"Error performing match analysis.\"}";
+        }
+    }
+
     private String buildPrompt(String resumeText, String jobDescription) {
         String base = "You are an elite executive career coach and a ruthless Applicant Tracking System (ATS) algorithm for top-tier tech companies. "
                 +
@@ -285,16 +349,12 @@ public class AiAnalysisService {
     private AnalysisResult parseResponse(String rawResponse) {
         try {
             String text = extractTextFromGeminiResponse(rawResponse);
-            // Clean up Markdown JSON blocks if present
-            if (text.startsWith("```json")) {
-                text = text.substring(7);
-            } else if (text.startsWith("```")) {
-                text = text.substring(3);
+            int startIndex = text.indexOf('{');
+            int endIndex = text.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
             }
-            if (text.endsWith("```")) {
-                text = text.substring(0, text.length() - 3);
-            }
-            return objectMapper.readValue(text.trim(), AnalysisResult.class);
+            return objectMapper.readValue(text, AnalysisResult.class);
         } catch (Exception e) {
             e.printStackTrace();
             return getMockResult(false);
@@ -341,7 +401,7 @@ public class AiAnalysisService {
 
     public com.airesume.entity.ParsedResume tailorResumeToJob(String resumeText, String jobDescription) {
         if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return getMockParsedResume();
+            return getMockParsedResume(resumeText);
         }
         try {
             String prompt = "You are an expert resume tailoring AI. Given the candidate's current resume and a target job description, "
@@ -373,21 +433,20 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-pro:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
 
             String text = extractTextFromGeminiResponse(response);
-            if (text.startsWith("```json"))
-                text = text.substring(7);
-            else if (text.startsWith("```"))
-                text = text.substring(3);
-            if (text.endsWith("```"))
-                text = text.substring(0, text.length() - 3);
+            int startIndex = text.indexOf('{');
+            int endIndex = text.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
+            }
 
             // Parse the partial update and return it as a ParsedResume for merging
-            com.airesume.entity.ParsedResume tailored = objectMapper.readValue(text.trim(),
+            com.airesume.entity.ParsedResume tailored = objectMapper.readValue(text,
                     com.airesume.entity.ParsedResume.class);
             return tailored;
 
@@ -431,13 +490,12 @@ public class AiAnalysisService {
                     .body(String.class);
 
             String text = extractTextFromGeminiResponse(response);
-            if (text.startsWith("```json"))
-                text = text.substring(7);
-            else if (text.startsWith("```"))
-                text = text.substring(3);
-            if (text.endsWith("```"))
-                text = text.substring(0, text.length() - 3);
-            return text.trim();
+            int startIndex = text.indexOf('[');
+            int endIndex = text.lastIndexOf(']');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
+            }
+            return text;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -445,26 +503,34 @@ public class AiAnalysisService {
         }
     }
 
-    private com.airesume.entity.ParsedResume getMockParsedResume() {
+    private com.airesume.entity.ParsedResume getMockParsedResume(String rawText) {
         com.airesume.entity.ParsedResume mocked = new com.airesume.entity.ParsedResume();
-        mocked.setFullName("John Doe");
-        mocked.setEmail("john.doe@example.com");
-        mocked.setPhone("(555) 123-4567");
-        mocked.setLocation("New York, NY");
-        mocked.setSummary("Mock tailored summary. API key is missing.");
-        mocked.setSkills(java.util.Arrays.asList("Java", "Spring Boot", "React", "TypeScript"));
+        mocked.setFullName("Your Name");
+        mocked.setEmail("email@example.com");
+        mocked.setPhone("(555) 555-5555");
+        mocked.setLocation("City, State");
+
+        // If we have raw text, dump it into the summary so it's not lost
+        if (rawText != null && !rawText.isEmpty()) {
+            mocked.setSummary(
+                    "System notice: AI parsing was unavailable. Here is your raw text to edit manually:\n\n" + rawText);
+        } else {
+            mocked.setSummary("System notice: AI parsing was unavailable. Please enter your summary manually.");
+        }
+
+        mocked.setSkills(java.util.Arrays.asList("Skill 1", "Skill 2"));
 
         com.airesume.entity.Experience exp = new com.airesume.entity.Experience();
-        exp.setCompany("MockTech Inc.");
-        exp.setRole("Software Engineer");
-        exp.setDates("Jan 2020 - Present");
-        exp.setSummary("Developed scalable backend services.\nLed a team of 3 engineers.");
+        exp.setCompany("Company Name");
+        exp.setRole("Job Title");
+        exp.setDates("Dates");
+        exp.setSummary("• Describe your achievements here.");
         mocked.setExperiences(java.util.Arrays.asList(exp));
 
         com.airesume.entity.Education edu = new com.airesume.entity.Education();
-        edu.setInstitution("State University");
-        edu.setDegree("B.S. Computer Science");
-        edu.setGraduationDate("May 2019");
+        edu.setInstitution("University Name");
+        edu.setDegree("Degree Name");
+        edu.setGraduationDate("Graduation Year");
         mocked.setEducations(java.util.Arrays.asList(edu));
 
         return mocked;

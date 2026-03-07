@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { trackLoginStarted } from '../services/analytics';
 
+
 export const Layout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,31 +49,45 @@ export const Layout: React.FC = () => {
                             <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer">How it works</a>
 
                             {/* Tools Dropdown */}
-                            <div className="relative group" onMouseEnter={() => setIsToolsOpen(true)} onMouseLeave={() => setIsToolsOpen(false)}>
-                                <button className="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer flex items-center gap-1">
+                            <div className="relative group h-full flex items-center" onMouseEnter={() => setIsToolsOpen(true)} onMouseLeave={() => setIsToolsOpen(false)}>
+                                <button className="h-full flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer">
                                     Tools
                                     <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </button>
                                 {isToolsOpen && (
-                                    <div className="absolute top-full left-0 mt-4 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 dark:border-slate-700 py-3 z-50 animate-fade-in-up">
-                                        <div className="absolute -top-2 left-6 w-4 h-4 bg-white dark:bg-slate-900 border-t border-l border-slate-100 dark:border-slate-700 transform rotate-45"></div>
-                                        <Link to="/" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                                            <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                            </div>
-                                            AI Resume Scanner
-                                        </Link>
-                                        <Link to="/dashboard" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
-                                            </div>
-                                            Template Selector
-                                        </Link>
+                                    <div className="absolute top-full left-0 pt-0 z-50">
+                                        <div className="w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 dark:border-slate-700 py-3 relative animate-fade-in-up">
+                                            <div className="absolute -top-2 left-6 w-4 h-4 bg-white dark:bg-slate-900 border-t border-l border-slate-100 dark:border-slate-700 transform rotate-45"></div>
+                                            <Link to="/" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                </div>
+                                                AI Resume Scanner
+                                            </Link>
+                                            <Link to="/dashboard" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                                <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                                                </div>
+                                                Template Selector
+                                            </Link>
+                                            <div className="mx-4 my-1 border-t border-slate-100 dark:border-slate-700" />
+                                            <Link to="/resume-tips" onClick={() => setIsToolsOpen(false)} className="relative flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                                <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                                                </div>
+                                                Resume Guides
+                                            </Link>
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             <Link to="/pricing" className="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer">Pricing</Link>
+                            {user?.role === 'ROLE_ADMIN' && (
+                                <Link to="/admin" className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:bg-emerald-500/20 transition-all">
+                                    Admin
+                                </Link>
+                            )}
                         </div>
                         <div className="flex items-center gap-2 sm:gap-4">
                             {/* Dark mode toggle */}
@@ -107,12 +122,25 @@ export const Layout: React.FC = () => {
                                     <Link to="/dashboard" className="hidden md:block text-slate-600 dark:text-slate-300 font-medium text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors mr-2">Dashboard</Link>
                                     <Link to="/profile" className="hidden md:flex items-center gap-2.5 px-4 py-1.5 border border-slate-200 dark:border-slate-700 rounded-full hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all cursor-pointer group">
                                         {user?.picture ? (
-                                            <img src={user.picture} alt={firstName} className="w-7 h-7 rounded-full object-cover ring-2 ring-white" />
-                                        ) : (
-                                            <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
-                                                {firstName[0]?.toUpperCase()}
-                                            </div>
-                                        )}
+                                            <img
+                                                src={user.picture}
+                                                alt={firstName}
+                                                className="w-7 h-7 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-600"
+                                                referrerPolicy="no-referrer"
+                                                onError={(e) => {
+                                                    const target = e.currentTarget;
+                                                    target.style.display = 'none';
+                                                    const sibling = target.nextElementSibling as HTMLElement;
+                                                    if (sibling) sibling.style.display = 'flex';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <div
+                                            className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs"
+                                            style={{ display: user?.picture ? 'none' : 'flex' }}
+                                        >
+                                            {firstName[0]?.toUpperCase()}
+                                        </div>
                                         <span className="text-slate-700 group-hover:text-indigo-700 font-medium text-sm">{firstName}</span>
                                         <svg className="w-3 h-3 text-slate-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                     </Link>
@@ -138,12 +166,17 @@ export const Layout: React.FC = () => {
                                 <a href="/#features" onClick={(e) => handleNavClick(e, '#features')} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Features</a>
                                 <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">How it works</a>
                                 <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Pricing</Link>
+                                <Link to="/tracker" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Job Tracker</Link>
+                                <Link to="/resume-tips" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Resume Guides</Link>
                                 {!isAuthenticated && (
                                     <button onClick={() => { trackLoginStarted(); openSignInModal(); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Sign in</button>
                                 )}
                                 {isAuthenticated && (
                                     <>
                                         <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Dashboard</Link>
+                                        {user?.role === 'ROLE_ADMIN' && (
+                                            <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-500">Admin Dashboard</Link>
+                                        )}
                                         <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-indigo-600 dark:hover:text-indigo-400">My Profile</Link>
                                         <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Sign out</button>
                                     </>
@@ -165,8 +198,8 @@ export const Layout: React.FC = () => {
                 <Outlet />
             </main>
 
-            {/* Footer */}
-            <MegaFooter />
+            {/* Footer — hidden on dashboard and builder pages */}
+            {!location.pathname.startsWith('/dashboard') && !location.pathname.startsWith('/builder') && <MegaFooter />}
         </div>
     );
 };

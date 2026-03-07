@@ -63,6 +63,7 @@ export interface ParsedResumeDTO {
     skills?: string[];
     experiences?: ExperienceDTO[];
     educations?: EducationDTO[];
+    customSections?: Record<string, string>;
 }
 
 export interface AnalysisResponse {
@@ -192,6 +193,54 @@ export const generateCoverLetter = async (resumeId: number, jobDescription?: str
 
     const { jobId } = await response.json();
     return pollJob<{ coverLetter: string }>(jobId, onProgress);
+};
+
+export const generateInterviewQuestions = async (resumeId: number, jobDescription?: string, onProgress?: (status: string) => void): Promise<{ questions: string }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/interview-questions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription }),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to generate interview questions');
+    }
+
+    const { jobId } = await response.json();
+    return pollJob<{ questions: string }>(jobId, onProgress);
+};
+
+export interface JobMatchResult {
+    matchScore: number;
+    missingKeywords: string[];
+    matchingKeywords: string[];
+    tailoredAdvice: string;
+}
+
+export const analyzeJobMatch = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<JobMatchResult> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/match`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription }),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to analyze job match');
+    }
+
+    const { jobId } = await response.json();
+    const resultString = await pollJob<string>(jobId, onProgress);
+    try {
+        return JSON.parse(resultString);
+    } catch (e) {
+        return { matchScore: 0, missingKeywords: [], matchingKeywords: [], tailoredAdvice: resultString };
+    }
 };
 
 export interface PdfExportOptions {
@@ -403,6 +452,19 @@ export const deleteResume = async (resumeId: number): Promise<void> => {
     if (!response.ok) {
         await handleApiError(response, 'Failed to delete resume');
     }
+};
+
+export const cloneResume = async (resumeId: number): Promise<{ message: string, newResumeId: number }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/clone`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to duplicate resume');
+    }
+
+    return response.json();
 };
 
 // --- Job Tracker APIs ---

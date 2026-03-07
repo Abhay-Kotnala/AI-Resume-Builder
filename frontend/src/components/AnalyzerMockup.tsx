@@ -39,23 +39,49 @@ export const AnalyzerMockup: React.FC = () => {
                         {/* Inner Container to scale nicely */}
                         <div className="relative w-full max-w-[400px] aspect-[8.5/11] bg-white rounded-xl shadow-2xl p-6 sm:p-8 transform rotate-2">
 
-                            {/* Mock Resume Lines */}
-                            <div className="space-y-4 opacity-30">
-                                <div className="h-6 bg-slate-400 w-1/2 mx-auto rounded"></div>
-                                <div className="h-3 bg-slate-300 w-3/4 mx-auto rounded"></div>
-                                <div className="h-0.5 w-full bg-slate-300 my-4"></div>
-
-                                <div className="h-4 bg-slate-400 w-1/3 rounded"></div>
-                                <div className="space-y-2 mt-2">
-                                    <div className="h-2 bg-slate-300 w-[90%] rounded"></div>
-                                    <div className="h-2 bg-slate-300 w-[85%] rounded"></div>
-                                    <div className="h-2 bg-slate-300 w-[95%] rounded"></div>
+                            {/* Real-looking miniature resume content */}
+                            <div className="flex flex-col gap-3 text-[7px] sm:text-[9px] text-slate-300 leading-normal font-sans opacity-80 overflow-hidden h-full">
+                                <div className="text-center mb-1 pb-2 border-b-2 border-slate-100">
+                                    <div className="text-sm font-extrabold text-slate-800 tracking-tight mb-1">JANE DOE</div>
+                                    <div className="text-slate-500 font-medium">jane.doe@example.com | (555) 123-4567 | San Francisco, CA</div>
                                 </div>
 
-                                <div className="h-4 bg-slate-400 w-1/4 rounded mt-6"></div>
-                                <div className="space-y-2 mt-2">
-                                    <div className="h-2 bg-slate-300 w-[80%] rounded"></div>
-                                    <div className="h-2 bg-slate-300 w-[88%] rounded"></div>
+                                <div className="mt-1">
+                                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-1 mb-2">Experience</div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="flex justify-between text-slate-800 font-bold">
+                                                <span>Senior Software Engineer</span>
+                                                <span className="text-slate-500">2020 - Present</span>
+                                            </div>
+                                            <div className="text-slate-500 font-medium italic mb-1">TechCorp Inc.</div>
+                                            <ul className="list-disc pl-3 space-y-1 text-slate-600">
+                                                <li>Architected scalable microservices using <span className="bg-emerald-100 text-emerald-700 font-bold px-1 rounded">Node.js</span> and <span className="bg-emerald-100 text-emerald-700 font-bold px-1 rounded">React</span>, serving 1M+ users.</li>
+                                                <li>Led a team of 4 engineers to reduce DB query times by 40% using Redis caching.</li>
+                                                <li className="bg-rose-50 text-rose-600 rounded px-1 -ml-1">Responsible for managing deployment pipelines and fixing server bugs daily.</li>
+                                            </ul>
+                                        </div>
+                                        <div className="mt-2">
+                                            <div className="flex justify-between text-slate-800 font-bold">
+                                                <span>Software Developer</span>
+                                                <span className="text-slate-500">2018 - 2020</span>
+                                            </div>
+                                            <div className="text-slate-500 font-medium italic mb-1">Startup X</div>
+                                            <ul className="list-disc pl-3 space-y-1 text-slate-600">
+                                                <li>Built the initial MVP of the flagship product leading to a $2M seed round.</li>
+                                                <li className="bg-amber-50 text-amber-600 rounded px-1 -ml-1">Implemented new designs for the dashboard and created a new login flow.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-1">
+                                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-1 mb-2">Education</div>
+                                    <div className="flex justify-between text-slate-800 font-bold">
+                                        <span>University of California, Berkeley</span>
+                                        <span className="text-slate-500">May 2018</span>
+                                    </div>
+                                    <div className="text-slate-600">B.S. Computer Science | GPA: 3.8/4.0</div>
                                 </div>
                             </div>
 

@@ -43,10 +43,13 @@ export const ResourcesGrid: React.FC = () => {
                             Expert advice on resume writing, passing the ATS, and negotiating your next offer.
                         </p>
                     </div>
-                    <button className="hidden md:inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors group px-4 py-2 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100">
-                        View all articles
+                    <Link
+                        to="/resume-tips"
+                        className="hidden md:inline-flex items-center gap-2 text-emerald-600 font-bold hover:text-emerald-700 transition-colors group px-4 py-2 rounded-lg hover:bg-emerald-50 border border-transparent hover:border-emerald-100"
+                    >
+                        View all guides
                         <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Grid */}
@@ -96,10 +99,13 @@ export const ResourcesGrid: React.FC = () => {
                 </div>
 
                 <div className="mt-10 text-center md:hidden">
-                    <button className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors group px-6 py-3 rounded-xl bg-indigo-50 border border-indigo-100 w-full justify-center">
-                        View all articles
+                    <Link
+                        to="/resume-tips"
+                        className="inline-flex items-center gap-2 text-emerald-600 font-bold hover:text-emerald-700 transition-colors group px-6 py-3 rounded-xl bg-emerald-50 border border-emerald-100 w-full justify-center"
+                    >
+                        View all guides
                         <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </button>
+                    </Link>
                 </div>
 
             </div>

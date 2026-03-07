@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +39,7 @@ public class JobApplicationService {
     }
 
     public JobApplicationDTO updateApplication(String email, Long id, JobApplicationDTO dto) {
+        Objects.requireNonNull(id, "ID must not be null");
         JobApplication app = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
@@ -50,6 +52,7 @@ public class JobApplicationService {
     }
 
     public void deleteApplication(String email, Long id) {
+        Objects.requireNonNull(id, "ID must not be null");
         JobApplication app = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 

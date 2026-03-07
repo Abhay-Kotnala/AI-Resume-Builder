@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { API_BASE_URL } from '../services/api';
 import { trackCheckoutStarted } from '../services/analytics';
@@ -8,6 +8,7 @@ import { trackCheckoutStarted } from '../services/analytics';
 export const Checkout: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const location = useLocation();
 
     // Instead of a fake form, we immediately generate a Stripe session when they click "Checkout"
     const handleStripeCheckout = async () => {
@@ -18,7 +19,9 @@ export const Checkout: React.FC = () => {
         try {
             // Call our new Spring Boot endpoint
             const token = localStorage.getItem('elevateAI_token');
-            const response = await fetch(`${API_BASE_URL.replace('/resume', '/stripe')}/create-checkout-session`, {
+            const queryParams = new URLSearchParams(location.search);
+            const plan = queryParams.get('plan') || 'monthly';
+            const response = await fetch(`${API_BASE_URL.replace('/resume', '/stripe')}/create-checkout-session?plan=${plan}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

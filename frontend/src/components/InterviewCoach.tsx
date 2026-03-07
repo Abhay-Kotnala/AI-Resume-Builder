@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { API_BASE_URL } from '../services/api';
+import { generateInterviewQuestions } from '../services/api';
 
 interface Question {
     question: string;
@@ -9,6 +9,7 @@ interface Question {
 
 interface Props {
     resumeId: number;
+    isPro: boolean;
 }
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
@@ -17,12 +18,7 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string; dot: string }>
     Career: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400' },
 };
 
-const getAuthHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem('elevateAI_token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-export const InterviewCoach: React.FC<Props> = ({ resumeId }) => {
+export const InterviewCoach: React.FC<Props> = ({ resumeId, isPro }) => {
     const [jobDescription, setJobDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [questions, setQuestions] = useState<Question[] | null>(null);
@@ -31,19 +27,18 @@ export const InterviewCoach: React.FC<Props> = ({ resumeId }) => {
     const [error, setError] = useState<string | null>(null);
 
     const handleGenerate = async () => {
+        if (!isPro) {
+            setError('AI Interview Prep is an ElevateAI Pro feature. Please upgrade to continue.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setQuestions(null);
         setCurrent(0);
         setFlipped(false);
         try {
-            const res = await fetch(`${API_BASE_URL}/${resumeId}/interview-questions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-                body: JSON.stringify({ jobDescription }),
-            });
-            if (!res.ok) throw new Error('Failed to generate questions');
-            const data = await res.json();
+            const data = await generateInterviewQuestions(resumeId, jobDescription);
             const parsed: Question[] = JSON.parse(data.questions);
             setQuestions(parsed);
         } catch (e: any) {
@@ -69,7 +64,12 @@ export const InterviewCoach: React.FC<Props> = ({ resumeId }) => {
                     </svg>
                 </div>
                 <div>
-                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">AI Mock Interview Coach</h3>
+                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                        AI Mock Interview Coach
+                        {!isPro && (
+                            <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">Pro</span>
+                        )}
+                    </h3>
                     <p className="text-sm text-slate-500 font-medium mt-0.5">5 targeted questions drawn from your resume</p>
                 </div>
             </div>
@@ -87,8 +87,12 @@ export const InterviewCoach: React.FC<Props> = ({ resumeId }) => {
             />
 
             {error && (
-                <div className="text-sm text-rose-600 font-bold bg-rose-50 p-3 rounded-xl border border-rose-100 mb-4">
+                <div className="text-sm text-rose-600 font-bold bg-rose-50 p-3 rounded-xl border border-rose-100 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {error}
+                    {error.includes('Pro feature') && (
+                        <button onClick={() => window.location.href = '/pricing'} className="ml-auto px-3 py-1 bg-amber-500 text-white rounded text-xs hover:bg-amber-600 transition-colors">Upgrade</button>
+                    )}
                 </div>
             )}
 

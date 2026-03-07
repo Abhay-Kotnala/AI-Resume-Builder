@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/Logo';
 
-import { patchResumeLabel, deleteResume } from '../services/api';
+import { patchResumeLabel, deleteResume, cloneResume } from '../services/api';
 
 interface ResumeHistoryItem {
     id: number;
@@ -76,6 +76,25 @@ export const Dashboard: React.FC = () => {
             setResumes(prev => prev.filter(r => r.id !== resumeId));
         } catch (err) {
             console.error('Failed to delete resume', err);
+        }
+    };
+
+    const handleDuplicate = async (resumeId: number) => {
+        try {
+            setLoading(true);
+            await cloneResume(resumeId);
+            const r = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/resume/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (r.ok) {
+                const data = await r.json();
+                setResumes(Array.isArray(data) ? data : []);
+            }
+        } catch (err: any) {
+            console.error('Failed to duplicate resume', err);
+            alert(err.message || 'Failed to duplicate resume');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -197,8 +216,16 @@ export const Dashboard: React.FC = () => {
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <button
+                                                    onClick={(e) => { e.preventDefault(); handleDuplicate(resume.id); }}
+                                                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-emerald-500 transition-all p-1.5 rounded-md hover:bg-emerald-50"
+                                                    title="Duplicate Resume"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                                                </button>
+                                                <button
                                                     onClick={() => handleDelete(resume.id)}
                                                     className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all p-1.5 rounded-md hover:bg-red-50"
+                                                    title="Delete Resume"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>

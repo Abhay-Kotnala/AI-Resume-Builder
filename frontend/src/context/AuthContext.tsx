@@ -5,12 +5,16 @@ interface UserProfile {
     email: string;
     picture: string;
     provider: string;
+    role: string;
+    isPro: boolean;
+    scansUsed: number;
 }
 
 interface AuthContextType {
     token: string | null;
     user: UserProfile | null;
     isAuthenticated: boolean;
+    isLoading: boolean;
     login: (token: string) => void;
     logout: () => void;
     isSignInModalOpen: boolean;
@@ -35,13 +39,18 @@ const fetchUserProfile = async (token: string): Promise<UserProfile | null> => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(null);
     const [user, setUser] = useState<UserProfile | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('elevateAI_token');
         if (storedToken) {
             setToken(storedToken);
-            fetchUserProfile(storedToken).then(setUser);
+            fetchUserProfile(storedToken)
+                .then(setUser)
+                .finally(() => setIsLoading(false));
+        } else {
+            setIsLoading(false);
         }
     }, []);
 
@@ -61,6 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         token,
         user,
         isAuthenticated: !!token,
+        isLoading,
         login,
         logout,
         isSignInModalOpen,

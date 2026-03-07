@@ -43,4 +43,10 @@ public class ParsedResume {
 
     @ElementCollection
     private List<Education> educations;
+
+    @ElementCollection
+    @jakarta.persistence.CollectionTable(name = "parsed_resume_custom_sections", joinColumns = @JoinColumn(name = "parsed_resume_id"))
+    @jakarta.persistence.MapKeyColumn(name = "section_name")
+    @Column(columnDefinition = "TEXT", name = "section_content")
+    private Map<String, String> customSections = new java.util.HashMap<>();
 }

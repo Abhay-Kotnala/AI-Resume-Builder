@@ -4,8 +4,8 @@ import com.airesume.entity.JobApplicationDTO;
 import com.airesume.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,34 +17,37 @@ public class JobApplicationController {
 
     private final JobApplicationService service;
 
+    private String getAuthenticatedEmail() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            throw new RuntimeException("Unauthorized");
+        }
+        return auth.getName();
+    }
+
     @GetMapping
-    public ResponseEntity<List<JobApplicationDTO>> getApplications(@AuthenticationPrincipal OAuth2User principal) {
-        String email = principal.getAttribute("email");
+    public ResponseEntity<List<JobApplicationDTO>> getApplications() {
+        String email = getAuthenticatedEmail();
         return ResponseEntity.ok(service.getUserApplications(email));
     }
 
     @PostMapping
-    public ResponseEntity<JobApplicationDTO> createApplication(
-            @AuthenticationPrincipal OAuth2User principal,
-            @RequestBody JobApplicationDTO dto) {
-        String email = principal.getAttribute("email");
+    public ResponseEntity<JobApplicationDTO> createApplication(@RequestBody JobApplicationDTO dto) {
+        String email = getAuthenticatedEmail();
         return ResponseEntity.ok(service.createApplication(email, dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<JobApplicationDTO> updateApplication(
-            @AuthenticationPrincipal OAuth2User principal,
             @PathVariable Long id,
             @RequestBody JobApplicationDTO dto) {
-        String email = principal.getAttribute("email");
+        String email = getAuthenticatedEmail();
         return ResponseEntity.ok(service.updateApplication(email, id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteApplication(
-            @AuthenticationPrincipal OAuth2User principal,
-            @PathVariable Long id) {
-        String email = principal.getAttribute("email");
+    public ResponseEntity<Void> deleteApplication(@PathVariable Long id) {
+        String email = getAuthenticatedEmail();
         service.deleteApplication(email, id);
         return ResponseEntity.noContent().build();
     }
