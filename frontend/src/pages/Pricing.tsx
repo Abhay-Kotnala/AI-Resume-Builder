@@ -47,21 +47,6 @@ export const Pricing: React.FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
 
-            {/* ── Stats Bar ─────────────────────────────────────────────── */}
-            <div className="bg-emerald-500 text-white py-2.5 text-sm font-semibold overflow-hidden">
-                <div className="flex gap-16 animate-marquee whitespace-nowrap">
-                    {[...Array(2)].map((_, i) => (
-                        <div key={i} className="flex gap-16 shrink-0">
-                            <span>🎉 10,000+ resumes analysed</span>
-                            <span>⭐ 4.9 / 5 average rating</span>
-                            <span>⚡ Results in under 2 minutes</span>
-                            <span>🔒 7-day money-back guarantee</span>
-                            <span>🚀 Used by candidates at Google, Meta & Stripe</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 
                 {/* ── Heading ────────────────────────────────────────────── */}

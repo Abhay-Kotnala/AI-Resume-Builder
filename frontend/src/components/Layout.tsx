@@ -6,7 +6,7 @@ import { SignInModal } from './SignInModal';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { trackLoginStarted } from '../services/analytics';
-
+import { FeedbackWidget } from './FeedbackWidget';
 
 export const Layout: React.FC = () => {
     const navigate = useNavigate();
@@ -192,6 +192,7 @@ export const Layout: React.FC = () => {
             </nav>
 
             <SignInModal isOpen={isSignInModalOpen} onClose={closeSignInModal} />
+            <FeedbackWidget />
 
             {/* Main Content Area */}
             <main className="flex-grow">

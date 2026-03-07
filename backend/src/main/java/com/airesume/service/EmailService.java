@@ -399,6 +399,36 @@ public class EmailService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    @Async
+    public void sendFeedbackEmail(String userEmail, String message, Integer rating) {
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
+            logger.warn("Resend API key missing. Mocking Feedback Email from {}", userEmail);
+            return;
+        }
+
+        String subject = "New Feedback Received! ⭐ " + rating + "/5";
+
+        // We'll send it to the admin (you can change this to your actual email)
+        String adminEmail = "support@elevateai.com";
+
+        String htmlBody = String.format(
+                "<!DOCTYPE html>" +
+                        "<html>" +
+                        "<body style=\"font-family:sans-serif;color:#333;line-height:1.6;\">" +
+                        "  <h2>New Feedback Submission</h2>" +
+                        "  <p><strong>From:</strong> %s</p>" +
+                        "  <p><strong>Rating:</strong> %d / 5</p>" +
+                        "  <div style=\"background-color:#f4f4f4;padding:15px;border-left:4px solid #10b981;margin-top:20px;\">"
+                        +
+                        "    <p style=\"margin:0;\">%s</p>" +
+                        "  </div>" +
+                        "</body>" +
+                        "</html>",
+                userEmail, rating, message.replace("\n", "<br>"));
+
+        sendEmail(adminEmail, subject, htmlBody);
+    }
+
     private void sendEmail(String to, String subject, String html) {
         try {
             HttpHeaders headers = new HttpHeaders();
