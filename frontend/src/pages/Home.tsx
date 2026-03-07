@@ -12,12 +12,7 @@ import { AnalysisResponse } from '../services/api';
 import { useInView } from '../hooks/useInView';
 import { useAuth } from '../context/AuthContext';
 
-const STATS = [
-    { value: '10,000+', label: 'Resumes analysed' },
-    { value: '4.9 ★', label: 'Average rating' },
-    { value: '< 2 min', label: 'Analysis time' },
-    { value: '92%', label: 'Interview rate lift' },
-];
+
 
 const SAMPLE_RESULT: AnalysisResponse = {
     id: 0,
@@ -184,17 +179,6 @@ export const Home: React.FC = () => {
                 </div>
             </section >
 
-            {/* ── Stats ticker strip ─────────────────────────────── */}
-            < div className="bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 py-8" >
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto px-4 text-center">
-                    {STATS.map((s) => (
-                        <div key={s.label}>
-                            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{s.value}</div>
-                            <div className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{s.label}</div>
-                        </div>
-                    ))}
-                </div>
-            </div >
 
             {/* ── Testimonials ────────────────────────────────────────── */}
             < TestimonialsSlider />
