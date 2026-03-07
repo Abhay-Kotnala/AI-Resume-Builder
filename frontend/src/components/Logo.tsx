@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Logo: React.FC<{ className?: string, showText?: boolean }> = ({ className = "h-8", showText = true }) => (
+export const Logo: React.FC<{ className?: string, showText?: boolean, textClassName?: string }> = ({ className = "h-8", showText = true, textClassName = "text-slate-800 dark:text-slate-200" }) => (
     <div className="flex items-center gap-2">
         <img
             src="/favicon.png"
@@ -8,7 +8,7 @@ export const Logo: React.FC<{ className?: string, showText?: boolean }> = ({ cla
             className={`${className} object-contain`}
         />
         {showText && (
-            <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
+            <span className={`text-xl font-bold tracking-tight ${textClassName}`}>
                 Elevate <span className="text-emerald-500">AI</span>
             </span>
         )}
