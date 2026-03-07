@@ -5,7 +5,6 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
-import com.stripe.model.checkout.Session;
 import com.stripe.model.CustomerCollection;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -63,6 +62,9 @@ public class StripeService {
                 .setSuccessUrl(frontendUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendUrl + "/pricing")
                 .setPaymentMethodCollection(SessionCreateParams.PaymentMethodCollection.ALWAYS)
+                .setSubscriptionData(SessionCreateParams.SubscriptionData.builder()
+                        .setTrialPeriodDays(7L)
+                        .build())
                 .setCustomText(SessionCreateParams.CustomText.builder()
                         .setSubmit(SessionCreateParams.CustomText.Submit.builder()
                                 .setMessage("Unlock Unlimited Resume AI & Pro Cover Letters Today")

@@ -127,7 +127,7 @@ export const Pricing: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Link to="/" className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
+                        <Link to={`/checkout?plan=${annual ? 'annual' : 'monthly'}`} className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
                             Get Premium Free for 7 Days →
                         </Link>
 
