@@ -132,16 +132,19 @@ export const JobMatch: React.FC<JobMatchProps> = ({ resumeId, isPro }) => {
 
                         {/* Keywords Columns */}
                         <div className="grid grid-cols-1 gap-4">
-                            {/* Missing Keywords (Actionable!) */}
+                            {/* Missing Keywords (Actionable!) - MOVED TO TOP */}
                             {result.missingKeywords && result.missingKeywords.length > 0 && (
-                                <div className="bg-rose-50/30 dark:bg-rose-900/10 p-4 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                                    <h4 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                                        Missing Keywords
+                                <div className="bg-rose-50/30 dark:bg-rose-900/10 p-5 rounded-xl border-2 border-rose-200 dark:border-rose-900/50 shadow-sm relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                                    <h4 className="text-sm font-extrabold text-rose-700 dark:text-rose-400 mb-1 flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        Top missing keywords from this job description
                                     </h4>
+                                    <p className="text-xs text-rose-600/80 mb-4">Adding these to your resume will significantly boost your interview chances.</p>
                                     <div className="flex flex-wrap gap-2">
                                         {result.missingKeywords.map(kw => (
-                                            <span key={kw} className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs font-bold rounded-lg shadow-sm">
+                                            <span key={kw} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-sm font-bold rounded-lg shadow-sm flex items-center gap-1.5">
+                                                <svg className="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
                                                 {kw}
                                             </span>
                                         ))}
@@ -158,7 +161,7 @@ export const JobMatch: React.FC<JobMatchProps> = ({ resumeId, isPro }) => {
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
                                         {result.matchingKeywords.map(kw => (
-                                            <span key={kw} className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg shadow-sm">
+                                            <span key={kw} className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-lg shadow-sm">
                                                 {kw}
                                             </span>
                                         ))}

@@ -272,9 +272,25 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
     const renderAtsCheckPane = () => (
         <div className="p-4 sm:p-6 space-y-6">
             <div className={`p-4 rounded-3xl border transition-colors duration-500 ${getScoreLightBg(dynamicAtsScore)}`}>
-                <div className="mb-4">
-                    <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">ATS Analysis</h2>
-                    <p className="text-slate-600 font-medium mt-1 text-xs">How your resume scored against algorithms.</p>
+                <div className="mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+                            ATS Analysis
+                            <div className="group relative z-50">
+                                <svg className="w-4 h-4 text-slate-400 cursor-help hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                {/* Tooltip */}
+                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 bg-slate-900 text-white text-[11px] leading-relaxed p-3 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                    <div className="font-bold mb-1 text-emerald-400">Score Breakdown:</div>
+                                    This score calculates how well your resume matches the job description and passes parsing software. <br /><br />
+                                    • <strong className="text-emerald-300">80+</strong> (Good) - Ready to apply<br />
+                                    • <strong className="text-amber-300">60-79</strong> (Okay) - Needs minor tweaks<br />
+                                    • <strong className="text-rose-300">&lt;60</strong> (Poor) - Needs major rewrite
+                                    <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45"></div>
+                                </div>
+                            </div>
+                        </h2>
+                        <p className="text-slate-600 font-medium mt-1 text-xs">How your resume scored against algorithms.</p>
+                    </div>
                 </div>
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative flex items-center justify-center shrink-0">
@@ -308,37 +324,58 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         Strengths
                     </h3>
-                    <ul className="space-y-2">
-                        {strengthsList.map((strength, index) => (
-                            <li key={index} className="flex gap-2 text-emerald-700 text-xs">
-                                <span className="text-emerald-400 mt-0.5 flex-shrink-0">•</span>
-                                <span className="leading-relaxed">{strength}</span>
-                            </li>
-                        ))}
+                    <ul className="space-y-3">
+                        {strengthsList.map((strength, index) => {
+                            const ltext = strength.toLowerCase();
+                            const type = ltext.includes('metric') || ltext.includes('quantif') || ltext.includes('impact') || ltext.includes('verb') ? 'Impact' :
+                                ltext.includes('keyword') || ltext.includes('skill') || ltext.includes('match') ? 'Keywords' : 'Formatting';
+                            const tColor = type === 'Impact' ? 'text-blue-600 bg-blue-50 border-blue-200' : type === 'Keywords' ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-violet-600 bg-violet-50 border-violet-200';
+
+                            return (
+                                <li key={index} className="flex gap-2 text-emerald-700 text-xs items-start">
+                                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">•</span>
+                                    <div className="flex-1 flex flex-col gap-1.5">
+                                        <span className="leading-relaxed">{strength}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${tColor}`}>{type}</span>
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
-                <div className="bg-rose-50/50 rounded-2xl p-4 border border-rose-100 shadow-sm">
-                    <h3 className="text-sm font-bold text-rose-800 mb-3 flex items-center gap-2">
-                        <svg className="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                        Weaknesses
+                <div className="bg-amber-50/40 rounded-2xl p-4 border border-amber-100 shadow-sm">
+                    <h3 className="text-sm font-bold text-amber-800 mb-3 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Opportunities to Improve
                     </h3>
-                    <ul className="space-y-2">
-                        {weaknessesList.map((weakness, index) => (
-                            <li key={index} className="flex gap-2 text-rose-700 items-start group text-xs">
-                                <span className="text-rose-400 mt-0.5 flex-shrink-0">•</span>
-                                <div className="flex-1 pb-2">
-                                    <span className="leading-relaxed">{weakness}</span>
-                                    <div className="mt-1.5 opacity-0 group-hover:opacity-100 h-0 group-hover:h-auto overflow-hidden transition-all duration-300">
-                                        <button
-                                            onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
-                                            className="text-[10px] uppercase font-extrabold inline-flex items-center gap-1.5 px-2 py-1 bg-white text-emerald-600 hover:bg-emerald-50 rounded border border-emerald-200"
-                                        >
-                                            ✨ Fix
-                                        </button>
+                    <ul className="space-y-4">
+                        {weaknessesList.map((weakness, index) => {
+                            const ltext = weakness.toLowerCase();
+                            const type = ltext.includes('metric') || ltext.includes('quantif') || ltext.includes('impact') || ltext.includes('verb') ? 'Impact' :
+                                ltext.includes('keyword') || ltext.includes('skill') || ltext.includes('match') ? 'Keywords' : 'Formatting';
+                            const tColor = type === 'Impact' ? 'text-blue-600 bg-blue-50 border-blue-200' : type === 'Keywords' ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-violet-600 bg-violet-50 border-violet-200';
+
+                            return (
+                                <li key={index} className="flex gap-2 text-amber-800 items-start text-xs border-b border-amber-100/50 pb-3 last:border-0 last:pb-0">
+                                    <span className="text-amber-400 mt-0.5 flex-shrink-0">•</span>
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <span className="leading-relaxed">{weakness}</span>
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mt-0.5">
+                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${tColor}`}>{type}</span>
+
+                                            <button
+                                                onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
+                                                className="text-[10px] font-bold inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg border border-indigo-200 shadow-sm transition-colors shrink-0 whitespace-nowrap"
+                                            >
+                                                ✨ Fix with AI
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                        ))}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             </div>
