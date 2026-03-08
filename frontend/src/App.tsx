@@ -17,7 +17,6 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
 import { HelpFAQ } from './pages/HelpFAQ';
 import { Contact } from './pages/Contact';
-import { ResumeGuides } from './pages/ResumeGuides';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -58,7 +57,6 @@ function App() {
               <Route path="terms" element={<TermsOfService />} />
               <Route path="help" element={<HelpFAQ />} />
               <Route path="contact" element={<Contact />} />
-              <Route path="resume-tips" element={<ResumeGuides />} />
             </Route>
             {/* Full screen routes without the main Layout (Navbar/Footer) */}
             <Route path="/checkout" element={<Checkout />} />

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 
 export const MegaMenu: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -111,18 +111,6 @@ export const MegaMenu: React.FC = () => {
                                         <div className="font-semibold text-sm text-slate-800 group-hover:text-emerald-600">Job Board Tracker</div>
                                         <p className="text-xs text-slate-500 mt-1">Organize your job hunt in a Kanban board.</p>
                                     </a>
-                                    <div className="pt-4 border-t border-slate-100">
-                                        <Link
-                                            to="/resume-tips"
-                                            className="inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
-                                            onClick={() => setIsOpen(false)}
-                                        >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 10h16M4 14h10" />
-                                            </svg>
-                                            View all resume guides →
-                                        </Link>
-                                    </div>
                                 </div>
                             </div>
                         </div>
