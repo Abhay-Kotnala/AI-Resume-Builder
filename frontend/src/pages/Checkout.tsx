@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { API_BASE_URL } from '../services/api';
 import { trackCheckoutStarted } from '../services/analytics';
+import { useAuth } from '../context/AuthContext';
+import { SignInModal } from '../components/SignInModal';
 
 
 export const Checkout: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const location = useLocation();
+    const navigate = useNavigate();
+    const { isAuthenticated, openSignInModal, isSignInModalOpen, closeSignInModal } = useAuth();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            openSignInModal();
+        }
+    }, [isAuthenticated, openSignInModal]);
 
     // Instead of a fake form, we immediately generate a Stripe session when they click "Checkout"
     const handleStripeCheckout = async () => {
@@ -109,7 +119,7 @@ export const Checkout: React.FC = () => {
                     )}
 
                     <button
-                        onClick={handleStripeCheckout}
+                        onClick={isAuthenticated ? handleStripeCheckout : openSignInModal}
                         disabled={isProcessing}
                         className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${isProcessing
                             ? 'bg-indigo-400 cursor-not-allowed text-white shadow-none transform-none'
@@ -120,6 +130,10 @@ export const Checkout: React.FC = () => {
                             <>
                                 <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 Connecting to Stripe...
+                            </>
+                        ) : !isAuthenticated ? (
+                            <>
+                                Sign In Required to Proceed
                             </>
                         ) : (
                             <>
@@ -136,6 +150,7 @@ export const Checkout: React.FC = () => {
                 </div>
 
             </div>
+            <SignInModal isOpen={isSignInModalOpen} onClose={() => { closeSignInModal(); if (!isAuthenticated) navigate('/pricing'); }} />
         </div>
     );
 };

@@ -166,7 +166,6 @@ export const Layout: React.FC = () => {
                                 <a href="/#features" onClick={(e) => handleNavClick(e, '#features')} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Features</a>
                                 <a href="/#how-it-works" onClick={(e) => handleNavClick(e, '#how-it-works')} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">How it works</a>
                                 <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Pricing</Link>
-                                <Link to="/tracker" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Job Tracker</Link>
                                 <Link to="/resume-tips" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Resume Guides</Link>
                                 {!isAuthenticated && (
                                     <button onClick={() => { trackLoginStarted(); openSignInModal(); setIsMobileMenuOpen(false); }} className="text-left text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400">Sign in</button>

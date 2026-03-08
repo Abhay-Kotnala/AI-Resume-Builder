@@ -177,71 +177,7 @@ export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string
     return pollJob<{ enhancedBulletPoint: string }>(jobId, onProgress);
 };
 
-export const generateCoverLetter = async (resumeId: number, jobDescription?: string, onProgress?: (status: string) => void): Promise<{ coverLetter: string }> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/cover-letter`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ jobDescription }),
-    });
 
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to generate cover letter');
-    }
-
-    const { jobId } = await response.json();
-    return pollJob<{ coverLetter: string }>(jobId, onProgress);
-};
-
-export const generateInterviewQuestions = async (resumeId: number, jobDescription?: string, onProgress?: (status: string) => void): Promise<{ questions: string }> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/interview-questions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ jobDescription }),
-    });
-
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to generate interview questions');
-    }
-
-    const { jobId } = await response.json();
-    return pollJob<{ questions: string }>(jobId, onProgress);
-};
-
-export interface JobMatchResult {
-    matchScore: number;
-    missingKeywords: string[];
-    matchingKeywords: string[];
-    tailoredAdvice: string;
-}
-
-export const analyzeJobMatch = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<JobMatchResult> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/match`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ jobDescription }),
-    });
-
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to analyze job match');
-    }
-
-    const { jobId } = await response.json();
-    const resultString = await pollJob<string>(jobId, onProgress);
-    try {
-        return JSON.parse(resultString);
-    } catch (e) {
-        return { matchScore: 0, missingKeywords: [], matchingKeywords: [], tailoredAdvice: resultString };
-    }
-};
 
 export interface PdfExportOptions {
     text: string;
@@ -351,61 +287,7 @@ export const patchParsedResume = async (
     }
 };
 
-export const tailorResume = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<ParsedResumeDTO> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/tailor`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ jobDescription })
-    });
 
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to tailor resume');
-    }
-    const { jobId } = await response.json();
-    return pollJob<ParsedResumeDTO>(jobId, onProgress);
-};
-
-export const importLinkedIn = async (resumeId: number, linkedInText: string): Promise<ParsedResumeDTO> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/import-linkedin`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        },
-        body: JSON.stringify({ linkedInText })
-    });
-
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to import LinkedIn profile');
-    }
-    return response.json();
-};
-
-export interface GrammarIssue {
-    phrase: string;
-    type: 'cliche' | 'passive' | 'vague' | 'typo';
-    suggestion: string;
-}
-
-export const checkGrammar = async (resumeId: number, onProgress?: (status: string) => void): Promise<GrammarIssue[]> => {
-    const response = await fetch(`${API_BASE_URL}/${resumeId}/grammar-check`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-        }
-    });
-
-    if (!response.ok) {
-        await handleApiError(response, 'Failed to run grammar check');
-    }
-    const { jobId } = await response.json();
-    const resultString = await pollJob<string>(jobId, onProgress);
-    return JSON.parse(resultString);
-};
 
 export interface ResumeResponseDto {
     id: number;

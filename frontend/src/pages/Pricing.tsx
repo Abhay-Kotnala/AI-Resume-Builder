@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useInView } from '../hooks/useInView';
+import { useAuth } from '../context/AuthContext';
 
 const FREE_FEATURES = [
     '3 resume scans per month',
@@ -39,10 +40,30 @@ export const Pricing: React.FC = () => {
     const heroRef = useInView();
     const tableRef = useInView();
     const faqRef = useInView();
+    const { isAuthenticated, openSignInModal } = useAuth();
+    const navigate = useNavigate();
 
     const monthlyPrice = 10;
     const annualPrice = 8;
     const displayPrice = annual ? annualPrice : monthlyPrice;
+
+    const handleCheckoutClick = (e: React.MouseEvent, plan: string) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            openSignInModal();
+        } else {
+            navigate(`/checkout?plan=${plan}`);
+        }
+    };
+
+    const handleFreeStartClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            openSignInModal();
+        } else {
+            navigate('/');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -99,9 +120,9 @@ export const Pricing: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Link to="/" className="w-full py-4 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors text-center">
+                        <button onClick={handleFreeStartClick} className="w-full py-4 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors text-center">
                             Get Started Free
-                        </Link>
+                        </button>
                     </div>
 
                     {/* Pro Plan */}
@@ -127,9 +148,9 @@ export const Pricing: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                        <Link to={`/checkout?plan=${annual ? 'annual' : 'monthly'}`} className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
+                        <button onClick={(e) => handleCheckoutClick(e, annual ? 'annual' : 'monthly')} className="mt-8 w-full py-4 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/30 text-center hover:-translate-y-0.5 inline-block">
                             Get Premium Free for 7 Days →
-                        </Link>
+                        </button>
 
                         {/* Money-back badge */}
                         <p className="text-center text-slate-500 text-xs mt-4 flex items-center justify-center gap-1.5">

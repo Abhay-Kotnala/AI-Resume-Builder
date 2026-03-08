@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnalysisResponse, exportToPdf, exportToDocx, ParsedResumeDTO } from '../services/api';
+import { AnalysisResponse, exportToPdf, exportToDocx } from '../services/api';
 import { MagicWandEditor } from './MagicWandEditor';
-import { CoverLetterGenerator } from './CoverLetterGenerator';
-import { InterviewCoach } from './InterviewCoach';
-import { trackPdfExported, trackAiRewriteUsed, trackUpgradeClicked } from '../services/analytics';
 import { BuilderSidebar, BuilderTab } from './BuilderSidebar';
-import { JobTailor } from './JobTailor';
-import { JobMatch } from './JobMatch';
-import { LinkedInImport } from './LinkedInImport';
-import { GrammarChecker } from './GrammarChecker';
 import { ResumeCanvas } from './ResumeCanvas';
+import { trackPdfExported, trackAiRewriteUsed, trackUpgradeClicked } from '../services/analytics';
 import {
     DndContext,
     closestCenter,
@@ -168,9 +162,7 @@ const SortableSectionItem: React.FC<SortableSectionItemProps> = ({ id, onRemove 
 };
 
 export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnother }) => {
-    const [tailoredResume, setTailoredResume] = useState<ParsedResumeDTO | null>(null);
     const [editingBullet, setEditingBullet] = useState<string | null>(null);
-    const [isLinkedInModalOpen, setIsLinkedInModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<BuilderTab>('ats');
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLDivElement>(null);
@@ -583,8 +575,6 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
             </div>
 
             <div className="pt-6 border-t border-slate-100 space-y-4">
-                <CoverLetterGenerator resumeId={result.resumeId} />
-                <InterviewCoach resumeId={result.resumeId} isPro={!result.isPartialAnalysis} />
             </div>
         </div>
     );
@@ -789,21 +779,6 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
             {/* 2. Context Pane (Middle) */}
             <div className="w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-slate-200 bg-white shadow-xl flex flex-col z-30 lg:z-10 overflow-y-auto shrink-0 relative lg:h-full max-h-[50vh] lg:max-h-none order-first lg:order-none">
                 {activeTab === 'ats' && renderAtsCheckPane()}
-                {activeTab === 'match' && <JobMatch resumeId={result.resumeId} isPro={!result.isPartialAnalysis} />}
-                {activeTab === 'tailor' && (
-                    <JobTailor
-                        resumeId={result.resumeId}
-                        isPro={!result.isPartialAnalysis}
-                        onTailored={(parsedResume) => setTailoredResume(parsedResume)}
-                    />
-                )}
-                {activeTab === 'grammar' && (
-                    <GrammarChecker
-                        resumeId={result.resumeId}
-                        isPro={!result.isPartialAnalysis}
-                        onFixPhrase={(phrase) => { trackAiRewriteUsed(); setEditingBullet(phrase); }}
-                    />
-                )}
                 {activeTab === 'templates' && renderTemplatesPane()}
                 {activeTab === 'design' && renderDesignPane()}
                 {activeTab === 'addSection' && renderAddSectionPane()}
@@ -829,13 +804,6 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                             Click any bullet point or field to rewrite it
                         </div>
                     </div>
-                    <button
-                        onClick={() => setIsLinkedInModalOpen(true)}
-                        className="flex items-center gap-1.5 text-[#0A66C2] hover:text-[#004182] font-bold transition-colors px-3 py-1.5 rounded-lg border border-transparent hover:border-[#0A66C2]/20 hover:bg-[#0A66C2]/5"
-                    >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>
-                        Import LinkedIn Text
-                    </button>
                 </div>
 
                 <div
@@ -864,7 +832,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                     )}
                     <ResumeCanvas
                         resumeId={result.resumeId}
-                        parsedResume={tailoredResume || result.parsedResume}
+                        parsedResume={result.parsedResume}
                         template={exportTemplate as any}
                         font={exportFont}
                         appliedEdits={appliedEdits}
@@ -889,13 +857,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                 <div className="h-16 w-full shrink-0"></div>
             </div>
 
-            <LinkedInImport
-                isOpen={isLinkedInModalOpen}
-                onClose={() => setIsLinkedInModalOpen(false)}
-                resumeId={result.resumeId}
-                isPro={!result.isPartialAnalysis}
-                onImported={(parsedResume) => setTailoredResume(parsedResume)}
-            />
+
 
             {/* Editing Overlay Global Context */}
             {editingBullet && (

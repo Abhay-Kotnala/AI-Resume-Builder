@@ -10,7 +10,6 @@ import OAuth2Callback from './pages/OAuth2Callback';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Dashboard } from './pages/Dashboard';
-import { JobTracker } from './pages/JobTracker';
 import { Builder } from './pages/Builder';
 import { Profile } from './pages/Profile';
 import { AboutUs } from './pages/AboutUs';
@@ -19,7 +18,6 @@ import { TermsOfService } from './pages/TermsOfService';
 import { HelpFAQ } from './pages/HelpFAQ';
 import { Contact } from './pages/Contact';
 import { ResumeGuides } from './pages/ResumeGuides';
-import { SeoLandingPage } from './pages/SeoLandingPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -61,7 +59,6 @@ function App() {
               <Route path="help" element={<HelpFAQ />} />
               <Route path="contact" element={<Contact />} />
               <Route path="resume-tips" element={<ResumeGuides />} />
-              <Route path="resume-tips/:slug" element={<SeoLandingPage />} />
             </Route>
             {/* Full screen routes without the main Layout (Navbar/Footer) */}
             <Route path="/checkout" element={<Checkout />} />
@@ -70,7 +67,6 @@ function App() {
             <Route path="/p/:referralCode" element={<PublicProfile />} />
             {/* Protected routes — redirects to home if not authenticated */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/tracker" element={<ProtectedRoute><JobTracker /></ProtectedRoute>} />
             <Route path="/builder/:id" element={<ProtectedRoute><Builder /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
