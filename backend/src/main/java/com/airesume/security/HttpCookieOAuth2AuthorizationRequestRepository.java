@@ -34,11 +34,11 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         }
 
         String serializedRequest = serialize(authorizationRequest);
-        addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serializedRequest, cookieExpireSeconds);
+        addCookie(response, request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serializedRequest, cookieExpireSeconds);
 
         String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         if (redirectUriAfterLogin != null && !redirectUriAfterLogin.isBlank()) {
-            addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, cookieExpireSeconds);
+            addCookie(response, request, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, cookieExpireSeconds);
         }
     }
 
@@ -65,13 +65,30 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         return java.util.Optional.empty();
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+    /** Returns true when the request comes from localhost (local development). */
+    private boolean isLocalhost(HttpServletRequest request) {
+        String host = request.getServerName();
+        return host != null && (host.equals("localhost") || host.equals("127.0.0.1"));
+    }
+
+    private void addCookie(HttpServletResponse response, HttpServletRequest request, String name, String value,
+            int maxAge) {
+        boolean local = isLocalhost(request);
         Cookie cookie = new Cookie(name, value);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
-        cookie.setSecure(true); // REQUIRED for cross-site cookies
-        cookie.setAttribute("SameSite", "None"); // REQUIRED for cross-site (Vercel -> Railway)
+        if (!local) {
+            // Production (HTTPS Vercel -> Railway): cross-site cookie requires Secure +
+            // SameSite=None
+            cookie.setSecure(true);
+            cookie.setAttribute("SameSite", "None");
+        } else {
+            // Local dev (HTTP localhost): browsers reject Secure cookies on plain HTTP, use
+            // Lax
+            cookie.setSecure(false);
+            cookie.setAttribute("SameSite", "Lax");
+        }
         response.addCookie(cookie);
     }
 
@@ -80,11 +97,17 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         if (cookies != null && cookies.length > 0) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(name)) {
+                    boolean local = isLocalhost(request);
                     cookie.setValue("");
                     cookie.setPath("/");
                     cookie.setMaxAge(0);
-                    cookie.setSecure(true);
-                    cookie.setAttribute("SameSite", "None");
+                    if (!local) {
+                        cookie.setSecure(true);
+                        cookie.setAttribute("SameSite", "None");
+                    } else {
+                        cookie.setSecure(false);
+                        cookie.setAttribute("SameSite", "Lax");
+                    }
                     response.addCookie(cookie);
                 }
             }

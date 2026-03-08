@@ -67,7 +67,11 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, o
             const unique = [...new Set(results)]; // deduplicate exact matches
             setAlternatives(unique);
         } catch (err: any) {
-            setError(err.message || 'Failed to enhance bullet point.');
+            if (err.message?.includes('High Demand') || err.message?.includes('Service Unavailable') || err.message?.includes('API Key is missing')) {
+                setError('Servers are currently experiencing high demand. Please try again in 60 seconds.');
+            } else {
+                setError(err.message || 'Failed to enhance bullet point.');
+            }
         } finally {
             setLoading(false);
         }
@@ -119,8 +123,8 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, o
                                         if (t.value === 'STAR') setShowStarTemplate(true);
                                     }}
                                     className={`flex flex-col items-start gap-0.5 p-3 rounded-xl border-2 text-left transition-all ${tone === t.value
-                                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30'
-                                            : 'border-slate-200 dark:border-slate-600 hover:border-emerald-300 bg-white dark:bg-slate-700'
+                                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30'
+                                        : 'border-slate-200 dark:border-slate-600 hover:border-emerald-300 bg-white dark:bg-slate-700'
                                         }`}
                                 >
                                     <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{t.label}</span>
@@ -207,8 +211,8 @@ export const MagicWandEditor: React.FC<MagicWandEditorProps> = ({ initialText, o
                                     key={idx}
                                     onClick={() => handleApplyAlternative(alt)}
                                     className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all text-sm leading-relaxed ${selectedAlt === idx
-                                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-100'
-                                            : 'border-slate-200 dark:border-slate-600 hover:border-indigo-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-100'
+                                        : 'border-slate-200 dark:border-slate-600 hover:border-indigo-300 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200'
                                         }`}
                                 >
                                     <span className="absolute top-2 right-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">#{idx + 1}</span>

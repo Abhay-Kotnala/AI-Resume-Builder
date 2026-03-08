@@ -31,7 +31,8 @@ public class AiAnalysisService {
         analyticsService.logEvent(null, "AI_ACTION", "Feature: Analyze Resume");
 
         if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
-            return getMockResult(isPro);
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
 
         try {
@@ -68,15 +69,24 @@ public class AiAnalysisService {
 
             return result;
 
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockResult(isPro); // fallback
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to analyze resume with AI.", e);
         }
     }
 
     public com.airesume.entity.ParsedResume parseStructuredResume(String resumeText, boolean isPro) {
         if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
-            return getMockParsedResume(resumeText);
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
 
         try {
@@ -128,9 +138,17 @@ public class AiAnalysisService {
 
             return objectMapper.readValue(text, com.airesume.entity.ParsedResume.class);
 
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockParsedResume(resumeText);
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to parse resume with AI.", e);
         }
     }
 
@@ -139,7 +157,8 @@ public class AiAnalysisService {
         analyticsService.logEvent(null, "AI_ACTION", "Feature: Magic Wand Enhance");
 
         if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
-            return "Accomplished [X] as measured by [Y], by doing [Z]. (Mocked test feature with tone: " + tone + ")";
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are a professional resume writer who has drafted resumes for top-tier tech companies. "
@@ -177,9 +196,18 @@ public class AiAnalysisService {
                     .body(String.class);
 
             return extractTextFromGeminiResponse(response);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return "Enhanced: " + bulletPoint + " (Mocked fallback)";
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to enhance bullet point with AI.",
+                    e);
         }
     }
 
@@ -188,7 +216,8 @@ public class AiAnalysisService {
         analyticsService.logEvent(null, "AI_ACTION", "Feature: Cover Letter Generation");
 
         if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_gemini_api_key_here")) {
-            return "Dear Hiring Manager,\n\nI am writing to express my strong interest in the open position. Please find my resume attached.\n\nSincerely,\nCandidate (Mocked)";
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are an expert career coach and executive recruiter. Write a highly compelling, modern cover letter based on the following resume and job description. "
@@ -217,15 +246,26 @@ public class AiAnalysisService {
                     .body(String.class);
 
             return extractTextFromGeminiResponse(response);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error generating cover letter. (Mocked fallback)";
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to generate cover letter with AI.",
+                    e);
         }
     }
 
     public String generateInterviewQuestions(String resumeText, String jobDescription) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return "[{\"question\":\"Tell me about a challenging project you worked on and how you overcame the obstacles.\",\"tip\":\"Use the STAR method: Situation, Task, Action, Result.\",\"category\":\"Behavioural\"},{\"question\":\"How do you approach debugging a complex production issue?\",\"tip\":\"Mention systematic isolation, logging, and collaboration.\",\"category\":\"Technical\"},{\"question\":\"Describe a time when you disagreed with a technical decision. How did you handle it?\",\"tip\":\"Show maturity and ability to advocate constructively.\",\"category\":\"Behavioural\"},{\"question\":\"What is your approach to writing maintainable, scalable code?\",\"tip\":\"Mention SOLID principles, code reviews, tests.\",\"category\":\"Technical\"},{\"question\":\"Where do you see yourself professionally in 3 years?\",\"tip\":\"Align your growth with the company direction.\",\"category\":\"Career\"}]";
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)
+                || "your_gemini_api_key_here".equals(apiKey)) {
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are a senior engineering hiring manager at a top tech company conducting a technical interview. "
@@ -258,9 +298,18 @@ public class AiAnalysisService {
                     .body(String.class);
 
             return extractTextFromGeminiResponse(response);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return "[]";
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Failed to generate interview questions with AI.", e);
         }
     }
 
@@ -270,7 +319,8 @@ public class AiAnalysisService {
 
         if (apiKey == null || apiKey.isEmpty() || "your_gemini_api_key_here".equals(apiKey)
                 || "YOUR_KEY_HERE".equals(apiKey)) {
-            return "{\"matchScore\": 85, \"missingKeywords\": [\"Docker\", \"Kubernetes\"], \"matchingKeywords\": [\"Java\", \"Spring Boot\", \"React\"], \"tailoredAdvice\": \"MOCK: You have a strong foundation but are missing some cloud deployment skills. Consider adding Docker experience if you have it.\"}";
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are an expert technical recruiter and ATS ranking algorithm. "
@@ -305,9 +355,17 @@ public class AiAnalysisService {
                 text = text.substring(startIndex, endIndex + 1);
             }
             return text;
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return "{\"matchScore\": 0, \"missingKeywords\": [], \"matchingKeywords\": [], \"tailoredAdvice\": \"Error performing match analysis.\"}";
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to analyze job match with AI.", e);
         }
     }
 
@@ -361,7 +419,8 @@ public class AiAnalysisService {
             return objectMapper.readValue(text, AnalysisResult.class);
         } catch (Exception e) {
             e.printStackTrace();
-            return getMockResult(false);
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Failed to parse AI response: " + e.getMessage(), e);
         }
     }
 
@@ -409,38 +468,11 @@ public class AiAnalysisService {
         }
     }
 
-    private AnalysisResult getMockResult(boolean isPro) {
-        AnalysisResult result = new AnalysisResult();
-        result.setAtsScore(0);
-        result.setImpactScore(0);
-        result.setFormattingScore(0);
-        result.setKeywordsScore(0);
-        result.setSummary(
-                "API Key is missing or an error occurred during analysis. Could not score document. Please check the backend configuration or API limits.");
-        result.setStrengths("- Not applicable");
-        result.setWeaknesses(
-                "- Backend needs valid gemini.api.key configuration to function properly.");
-        result.setFoundKeywords("");
-
-        if (isPro) {
-            result.setPartialAnalysis(false);
-            result.setMissingKeywords("System Error: No API available");
-            result.setSuggestedImprovements(
-                    "Configure the environment with a valid API key.");
-        } else {
-            result.setPartialAnalysis(true);
-            result.setMissingKeywords(
-                    "System Error: No API available");
-            result.setSuggestedImprovements(
-                    "Configure the environment with a valid API key.");
-        }
-
-        return result;
-    }
-
     public com.airesume.entity.ParsedResume tailorResumeToJob(String resumeText, String jobDescription) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return getMockParsedResume(resumeText);
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)
+                || "your_gemini_api_key_here".equals(apiKey)) {
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are an expert resume tailoring AI. Given the candidate's current resume and a target job description, "
@@ -489,15 +521,25 @@ public class AiAnalysisService {
                     com.airesume.entity.ParsedResume.class);
             return tailored;
 
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to tailor resume with AI.", e);
         }
     }
 
     public String detectGrammarAndCliches(String resumeText) {
-        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)) {
-            return "[{\"phrase\":\"responsible for\",\"type\":\"cliche\",\"suggestion\":\"Replace with an active verb: 'led', 'owned', 'drove'\"},{\"phrase\":\"team player\",\"type\":\"cliche\",\"suggestion\":\"Show don't tell — describe a specific collaboration achievement\"},{\"phrase\":\"was managed\",\"type\":\"passive\",\"suggestion\":\"Rewrite actively: 'managed' or 'led'\"},{\"phrase\":\"go-getter\",\"type\":\"vague\",\"suggestion\":\"Replace with quantified accomplishments\"},{\"phrase\":\"detail oriented\",\"type\":\"cliche\",\"suggestion\":\"Remove — use specific examples instead\"}]";
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)
+                || "your_gemini_api_key_here".equals(apiKey)) {
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
         }
         try {
             String prompt = "You are a professional resume editor and ATS optimization expert. " +
@@ -536,43 +578,18 @@ public class AiAnalysisService {
             }
             return text;
 
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
         } catch (Exception e) {
             e.printStackTrace();
-            return "[]";
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to detect grammar with AI.", e);
         }
-    }
-
-    private com.airesume.entity.ParsedResume getMockParsedResume(String rawText) {
-        com.airesume.entity.ParsedResume mocked = new com.airesume.entity.ParsedResume();
-        mocked.setFullName("Your Name");
-        mocked.setEmail("email@example.com");
-        mocked.setPhone("(555) 555-5555");
-        mocked.setLocation("City, State");
-
-        // If we have raw text, dump it into the summary so it's not lost
-        if (rawText != null && !rawText.isEmpty()) {
-            mocked.setSummary(
-                    "System notice: AI parsing was unavailable. Here is your raw text to edit manually:\n\n" + rawText);
-        } else {
-            mocked.setSummary("System notice: AI parsing was unavailable. Please enter your summary manually.");
-        }
-
-        mocked.setSkills(java.util.Arrays.asList("Skill 1", "Skill 2"));
-
-        com.airesume.entity.Experience exp = new com.airesume.entity.Experience();
-        exp.setCompany("Company Name");
-        exp.setRole("Job Title");
-        exp.setDates("Dates");
-        exp.setSummary("• Describe your achievements here.");
-        mocked.setExperiences(java.util.Arrays.asList(exp));
-
-        com.airesume.entity.Education edu = new com.airesume.entity.Education();
-        edu.setInstitution("University Name");
-        edu.setDegree("Degree Name");
-        edu.setGraduationDate("Graduation Year");
-        mocked.setEducations(java.util.Arrays.asList(edu));
-
-        return mocked;
     }
 
     public com.airesume.entity.ParsedResume parseLinkedInText(String linkedInText) {

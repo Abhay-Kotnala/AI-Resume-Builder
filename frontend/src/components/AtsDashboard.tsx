@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnalysisResponse, exportToPdf, exportToDocx, getAuthHeaders } from '../services/api';
+import { AnalysisResponse, exportToPdf, exportToDocx } from '../services/api';
 import { MagicWandEditor } from './MagicWandEditor';
 import { BuilderSidebar, BuilderTab } from './BuilderSidebar';
 import { ResumeCanvas } from './ResumeCanvas';
@@ -230,19 +230,6 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
     const [ivOutput, setIvOutput] = useState('');
     const [ivLoading, setIvLoading] = useState(false);
     const [ivError, setIvError] = useState('');
-
-    // Generic job poller
-    const pollJobResult = async (jobId: string): Promise<any> => {
-        const JOBS_URL = `${import.meta.env.VITE_API_BASE_URL}/api/jobs`;
-        for (let i = 0; i < 60; i++) {
-            const r = await fetch(`${JOBS_URL}/${jobId}`, { headers: getAuthHeaders() });
-            const data = await r.json();
-            if (data.status === 'COMPLETED') return data.result;
-            if (data.status === 'FAILED') throw new Error(data.error || 'Job failed');
-            await new Promise(res => setTimeout(res, 2000));
-        }
-        throw new Error('Timed out waiting for AI response');
-    };
 
 
     // Callback fired by MagicWandEditor when user clicks 'Apply to Preview'
@@ -713,13 +700,16 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
             <button onClick={async () => {
                 setClLoading(true); setClError(''); setClOutput('');
                 try {
-                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
-                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/cover-letter`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobDescription: clJobDesc, tone: clTone }) });
-                    const data = await r.json();
-                    if (!r.ok) { setClError(data.message || data.error || 'Failed'); setClLoading(false); return; }
-                    const res = await pollJobResult(data.jobId);
+                    const { generateCoverLetter } = await import('../services/api');
+                    const res = await generateCoverLetter(result.resumeId, clJobDesc);
                     setClOutput(res.coverLetter || '');
-                } catch (e: any) { setClError(e.message); } finally { setClLoading(false); }
+                } catch (e: any) {
+                    if (e.message?.includes('High Demand') || e.message?.includes('Service Unavailable') || e.message?.includes('API Key is missing')) {
+                        setClError('Servers are currently experiencing high demand. Please try again in 60 seconds.');
+                    } else {
+                        setClError(e.message || 'Failed to generate cover letter');
+                    }
+                } finally { setClLoading(false); }
             }} disabled={clLoading} className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
                 {clLoading ? '✨ Generating...' : '✨ Generate Cover Letter'}
             </button>
@@ -748,13 +738,16 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                 if (!jmJobDesc.trim()) return;
                 setJmLoading(true); setJmError(''); setJmOutput(null);
                 try {
-                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
-                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/match`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobDescription: jmJobDesc }) });
-                    const data = await r.json();
-                    if (!r.ok) { setJmError(data.message || data.error || 'Failed'); setJmLoading(false); return; }
-                    const res = await pollJobResult(data.jobId);
-                    setJmOutput(res);
-                } catch (e: any) { setJmError(e.message); } finally { setJmLoading(false); }
+                    const { analyzeJobMatch } = await import('../services/api');
+                    const res = await analyzeJobMatch(result.resumeId, jmJobDesc);
+                    setJmOutput(JSON.parse(res.matchResult));
+                } catch (e: any) {
+                    if (e.message?.includes('High Demand') || e.message?.includes('Service Unavailable') || e.message?.includes('API Key is missing')) {
+                        setJmError('Servers are currently experiencing high demand. Please try again in 60 seconds.');
+                    } else {
+                        setJmError(e.message || 'Failed to analyze job match');
+                    }
+                } finally { setJmLoading(false); }
             }} disabled={jmLoading || !jmJobDesc.trim()} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
                 {jmLoading ? '🔍 Analyzing...' : '🔍 Analyze Match'}
             </button>
@@ -789,13 +782,16 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
             <button onClick={async () => {
                 setIvLoading(true); setIvError(''); setIvOutput('');
                 try {
-                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
-                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/interview-questions`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitle: ivJobTitle }) });
-                    const data = await r.json();
-                    if (!r.ok) { setIvError(data.message || data.error || 'Failed'); setIvLoading(false); return; }
-                    const res = await pollJobResult(data.jobId);
-                    setIvOutput(res.questions || res.interviewQuestions || JSON.stringify(res));
-                } catch (e: any) { setIvError(e.message); } finally { setIvLoading(false); }
+                    const { generateInterviewQuestions } = await import('../services/api');
+                    const res = await generateInterviewQuestions(result.resumeId, ivJobTitle);
+                    setIvOutput(res.questions);
+                } catch (e: any) {
+                    if (e.message?.includes('High Demand') || e.message?.includes('Service Unavailable') || e.message?.includes('API Key is missing')) {
+                        setIvError('Servers are currently experiencing high demand. Please try again in 60 seconds.');
+                    } else {
+                        setIvError(e.message || 'Failed to generate interview questions');
+                    }
+                } finally { setIvLoading(false); }
             }} disabled={ivLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
                 {ivLoading ? '🎯 Generating Questions...' : '🎯 Generate Interview Questions'}
             </button>

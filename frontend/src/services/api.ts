@@ -177,7 +177,59 @@ export const enhanceBulletPoint = async (bulletPoint: string, targetJob?: string
     return pollJob<{ enhancedBulletPoint: string }>(jobId, onProgress);
 };
 
+export const generateCoverLetter = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<{ coverLetter: string }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/cover-letter`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription }),
+    });
 
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to generate cover letter');
+    }
+
+    const { jobId } = await response.json();
+    return pollJob<{ coverLetter: string }>(jobId, onProgress);
+};
+
+export const generateInterviewQuestions = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<{ questions: string }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/interview-questions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription }),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to generate interview questions');
+    }
+
+    const { jobId } = await response.json();
+    return pollJob<{ questions: string }>(jobId, onProgress);
+};
+
+export const analyzeJobMatch = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<{ matchResult: string }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/match`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ jobDescription }),
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to analyze job match');
+    }
+
+    const { jobId } = await response.json();
+    return pollJob<{ matchResult: string }>(jobId, onProgress);
+};
 
 export interface PdfExportOptions {
     text: string;

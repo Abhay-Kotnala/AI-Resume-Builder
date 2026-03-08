@@ -73,8 +73,10 @@ export const ResumeUpload: React.FC<ResumeUploadProps> = ({ onAnalysisComplete }
         } catch (err: any) {
             if (err.code === 'QuotaExceeded') {
                 setIsPaywallOpen(true);
+            } else if (err.message?.includes('High Demand') || err.message?.includes('Service Unavailable') || err.message?.includes('API Key is missing')) {
+                setError('Servers are currently experiencing high demand from our recent launch! Please wait 60 seconds and try analyzing your resume again.');
             } else {
-                setError(err.message || 'Error processing resume');
+                setError(err.message || 'An error occurred while analyzing your resume. Please try again.');
             }
         } finally {
             setLoading(false);
