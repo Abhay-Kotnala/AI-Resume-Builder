@@ -278,8 +278,11 @@ public class ResumeController {
 
                 AnalysisResult savedResult = analysisResultRepository.save(result);
 
-                // Increment quota on successful processing if they are free
-                if (finalUser != null && !finalIsProUser) {
+                // Only increment quota if the AI returned a real result (not a fallback/error)
+                boolean isValidResult = result.getAtsScore() > 0 ||
+                        (result.getSummary() != null && !result.getSummary().toLowerCase().contains("error")
+                                && !result.getSummary().toLowerCase().contains("api key"));
+                if (finalUser != null && !finalIsProUser && isValidResult) {
                     finalUser.setScansUsed(finalUser.getScansUsed() + 1);
                     userRepository.save(finalUser);
                 }
