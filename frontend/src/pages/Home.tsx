@@ -172,7 +172,7 @@ export const Home: React.FC = () => {
                         </div>
 
                         {/* Right column: upload widget */}
-                        <div className="lg:col-span-7 relative">
+                        <div id="upload-section" className="lg:col-span-7 relative">
                             <ResumeUpload onAnalysisComplete={handleAnalysisComplete} />
                         </div>
                     </div>
@@ -193,6 +193,9 @@ export const Home: React.FC = () => {
                 <BeforeAfterComparison />
                 <AnalyzerMockup />
             </div >
+
+            {/* Template Selector scroll anchor for Tools menu */}
+            <div id="templates" className="scroll-mt-20" />
 
             {/* ── Resources ───────────────────────────────────────────── */}
             < ResourcesGrid />
