@@ -349,16 +349,55 @@ public class AiAnalysisService {
     private AnalysisResult parseResponse(String rawResponse) {
         try {
             String text = extractTextFromGeminiResponse(rawResponse);
+            // Extract the object boundaries
             int startIndex = text.indexOf('{');
             int endIndex = text.lastIndexOf('}');
             if (startIndex >= 0 && endIndex >= startIndex) {
                 text = text.substring(startIndex, endIndex + 1);
             }
+            // Sanitize: replace literal newlines/tabs inside JSON string values
+            // This handles AI responses that include unescaped control characters
+            text = sanitizeJsonString(text);
             return objectMapper.readValue(text, AnalysisResult.class);
         } catch (Exception e) {
             e.printStackTrace();
             return getMockResult(false);
         }
+    }
+
+    /**
+     * Replaces unescaped control characters (newlines, carriage returns, tabs)
+     * that appear inside JSON string values, which would otherwise cause
+     * "Expected ':' after property name" parse errors.
+     */
+    private String sanitizeJsonString(String json) {
+        StringBuilder out = new StringBuilder(json.length());
+        boolean inString = false;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                inString = !inString;
+                out.append(c);
+            } else if (inString) {
+                switch (c) {
+                    case '\n':
+                        out.append("\\n");
+                        break;
+                    case '\r':
+                        out.append("\\r");
+                        break;
+                    case '\t':
+                        out.append("\\t");
+                        break;
+                    default:
+                        out.append(c);
+                        break;
+                }
+            } else {
+                out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     private String extractTextFromGeminiResponse(String response) {
