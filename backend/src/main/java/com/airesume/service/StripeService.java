@@ -52,6 +52,10 @@ public class StripeService {
     public String createCheckoutSession(String userEmail, String plan) throws StripeException {
         // Build a Stripe Checkout Session
         // This generates a secure, hosted payment page URL for ElevateAI Pro
+        // Note: 'price_1T43xYHxyGtws4fLuYsO5s0q' is a Test Mode price currently set to
+        // $19 on your Stripe Dashboard.
+        // Once you launch LIVE, you will create a real $10 price on Stripe and paste
+        // its ID here.
         String priceId = "annual".equalsIgnoreCase(plan) ? "price_annual_placeholder"
                 : "price_1T43xYHxyGtws4fLuYsO5s0q";
 

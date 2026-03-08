@@ -73,6 +73,7 @@ class ResumeControllerExportTest {
         freeUser = new User();
         freeUser.setEmail("free@test.com");
         freeUser.setPro(false);
+        freeUser.setScansUsed(5); // Explicitly exhaust quota for tests expecting 403
 
         proUser = new User();
         proUser.setEmail("pro@test.com");

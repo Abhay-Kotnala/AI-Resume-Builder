@@ -490,7 +490,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                     { id: 'blue-pro', label: 'Blue Professional', img: '/templates/blue-pro.png', pro: true }
                 ].map(tpl => {
                     const isSelected = exportTemplate === tpl.id;
-                    const isLocked = result.isPartialAnalysis && (tpl as any).pro;
+                    const isLocked = (result.isPartialAnalysis || (!user?.isPro && (user?.scansUsed ?? 0) >= 4)) && (tpl as any).pro;
 
                     return (
                         <button
@@ -670,7 +670,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
             { id: 'blue-pro', label: 'Blue Pro', pro: true }
         ].find(t => t.id === exportTemplate);
 
-        const isCurrentlyLocked = result.isPartialAnalysis && (selectedTplConfig as any)?.pro;
+        const isCurrentlyLocked = (result.isPartialAnalysis || (!user?.isPro && (user?.scansUsed ?? 0) >= 4)) && (selectedTplConfig as any)?.pro;
 
         return (
             <div className="p-4 sm:p-6 flex flex-col h-full items-center justify-center text-center">

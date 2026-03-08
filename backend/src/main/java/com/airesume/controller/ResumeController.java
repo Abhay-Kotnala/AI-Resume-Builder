@@ -30,6 +30,9 @@ public class ResumeController {
 
     private static final Logger logger = LoggerFactory.getLogger(ResumeController.class);
 
+    @org.springframework.beans.factory.annotation.Value("${app.free-scans.default:4}")
+    private int defaultFreeScans;
+
     private final PdfParserService pdfParserService;
     private final AiAnalysisService aiAnalysisService;
     private final ResumeRepository resumeRepository;
@@ -247,14 +250,17 @@ public class ResumeController {
                 if (user != null) {
                     isProUser = user.isPro();
                     // Intercept free users over limit
-                    if (!isProUser && user.getScansUsed() >= 2) {
+                    if (!isProUser && user.getScansUsed() >= defaultFreeScans) {
                         return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
-                                "You have reached your free limit of 2 AI scans. Please upgrade to Pro to continue."));
+                                "You have reached your free limit of " + defaultFreeScans
+                                        + " AI scans. Please upgrade to Pro to continue."));
                     }
                 }
             }
 
-            final boolean finalIsProUser = isProUser;
+            // Treat users with remaining scans as "Pro" for this analysis to unlock full
+            // features
+            final boolean finalIsProUser = isProUser || (user != null && user.getScansUsed() < defaultFreeScans);
             final User finalUser = user;
             final String finalJobDescription = jobDescription;
 
@@ -358,13 +364,18 @@ public class ResumeController {
             @RequestBody(required = false) Map<String, String> request) {
         try {
             boolean isProUser = false;
+            int scansUsed = 0;
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+                User user = userRepository.findByEmail(auth.getName()).orElse(null);
+                if (user != null) {
+                    isProUser = user.isPro();
+                    scansUsed = user.getScansUsed();
+                }
             }
-            if (!isProUser) {
+            if (!isProUser && scansUsed >= defaultFreeScans) {
                 return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
-                        "Cover letter generation is an ElevateAI Pro feature. Please upgrade to continue."));
+                        "Cover letter generation requires ElevateAI Pro. Please upgrade to continue."));
             }
 
             String extractedText = "";
@@ -395,13 +406,18 @@ public class ResumeController {
             @RequestBody(required = false) Map<String, String> request) {
         try {
             boolean isProUser = false;
+            int scansUsed = 0;
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+                User user = userRepository.findByEmail(auth.getName()).orElse(null);
+                if (user != null) {
+                    isProUser = user.isPro();
+                    scansUsed = user.getScansUsed();
+                }
             }
-            if (!isProUser) {
+            if (!isProUser && scansUsed >= defaultFreeScans) {
                 return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
-                        "AI Interview Prep is an ElevateAI Pro feature. Please upgrade to continue."));
+                        "AI Interview Prep requires ElevateAI Pro. Please upgrade to continue."));
             }
 
             String extractedText = resumeRepository.findById(resumeId)
@@ -437,13 +453,18 @@ public class ResumeController {
             @RequestBody Map<String, String> request) {
         try {
             boolean isProUser = false;
+            int scansUsed = 0;
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-                isProUser = userRepository.findByEmail(auth.getName()).map(User::isPro).orElse(false);
+                User user = userRepository.findByEmail(auth.getName()).orElse(null);
+                if (user != null) {
+                    isProUser = user.isPro();
+                    scansUsed = user.getScansUsed();
+                }
             }
-            if (!isProUser) {
+            if (!isProUser && scansUsed >= defaultFreeScans) {
                 return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
-                        "Job Match Engine is an ElevateAI Pro feature. Please upgrade to continue."));
+                        "Job Match Engine requires ElevateAI Pro. Please upgrade to continue."));
             }
 
             String extractedText = "";
@@ -481,14 +502,17 @@ public class ResumeController {
         try {
             // Determine if user is Pro
             boolean isPro = false;
+            int scansUsed = 0;
             try {
                 org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext()
                         .getAuthentication();
                 if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
                     String email = auth.getName();
-                    isPro = userRepository.findByEmail(email)
-                            .map(u -> u.isPro())
-                            .orElse(false);
+                    User user = userRepository.findByEmail(email).orElse(null);
+                    if (user != null) {
+                        isPro = user.isPro();
+                        scansUsed = user.getScansUsed();
+                    }
                 }
             } catch (Exception ignored) {
             }
@@ -498,11 +522,11 @@ public class ResumeController {
 
             // Phase 3.1: Enforce Dynamic Paywall
             // Users cannot export a non-basic template unless they are Pro
-            if (!isPro && !template.equals("basic") && !template.equals("classic")) {
+            if (!isPro && scansUsed >= defaultFreeScans && !template.equals("basic") && !template.equals("classic")) {
                 return ResponseEntity.status(403)
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .body(Map.of("error", "QuotaExceeded", "message",
-                                "This premium template requires ElevateAI Pro."));
+                                "Exporting Premium templates requires ElevateAI Pro after using all free scans."));
             }
 
             String fileName = "My Resume";
@@ -586,14 +610,17 @@ public class ResumeController {
         try {
             // Determine if user is Pro
             boolean isPro = false;
+            int scansUsed = 0;
             try {
                 org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext()
                         .getAuthentication();
                 if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
                     String email = auth.getName();
-                    isPro = userRepository.findByEmail(email)
-                            .map(u -> u.isPro())
-                            .orElse(false);
+                    User user = userRepository.findByEmail(email).orElse(null);
+                    if (user != null) {
+                        isPro = user.isPro();
+                        scansUsed = user.getScansUsed();
+                    }
                 }
             } catch (Exception ignored) {
             }
@@ -603,11 +630,11 @@ public class ResumeController {
 
             // Phase 3.1: Enforce Dynamic Paywall
             // Users cannot export a non-basic DOCX template unless they are Pro
-            if (!isPro && !template.equals("basic") && !template.equals("classic")) {
+            if (!isPro && scansUsed >= defaultFreeScans && !template.equals("basic") && !template.equals("classic")) {
                 return ResponseEntity.status(403)
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .body(Map.of("error", "QuotaExceeded", "message",
-                                "This premium template requires ElevateAI Pro."));
+                                "Exporting Premium DOCX templates requires ElevateAI Pro after using all free scans."));
             }
 
             Resume resume = resumeRepository.findById(resumeId)
