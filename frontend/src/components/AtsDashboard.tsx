@@ -210,6 +210,38 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
     // Premium Phase 2 Feature: Heatmap Toggle
     const [showHeatmap, setShowHeatmap] = useState(true);
 
+    // ── Cover Letter State ───────────────────────────────────
+    const [clJobDesc, setClJobDesc] = useState('');
+    const [clTone, setClTone] = useState('professional');
+    const [clOutput, setClOutput] = useState('');
+    const [clLoading, setClLoading] = useState(false);
+    const [clError, setClError] = useState('');
+
+    // ── Job Match State ──────────────────────────────────────
+    const [jmJobDesc, setJmJobDesc] = useState('');
+    const [jmOutput, setJmOutput] = useState<{ matchScore?: number; missingSkills?: string; matchedSkills?: string; recommendation?: string } | null>(null);
+    const [jmLoading, setJmLoading] = useState(false);
+    const [jmError, setJmError] = useState('');
+
+    // ── Interview Prep State ─────────────────────────────────
+    const [ivJobTitle, setIvJobTitle] = useState('');
+    const [ivOutput, setIvOutput] = useState('');
+    const [ivLoading, setIvLoading] = useState(false);
+    const [ivError, setIvError] = useState('');
+
+    // Generic job poller
+    const pollJobResult = async (jobId: string): Promise<any> => {
+        const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
+        for (let i = 0; i < 60; i++) {
+            const r = await fetch(`${API_BASE_URL.replace('/api/resume', '')}/api/jobs/${jobId}`, { headers: getAuthHeaders() });
+            const data = await r.json();
+            if (data.status === 'COMPLETED') return data.result;
+            if (data.status === 'FAILED') throw new Error(data.error || 'Job failed');
+            await new Promise(res => setTimeout(res, 2000));
+        }
+        throw new Error('Timed out waiting for AI response');
+    };
+
 
     // Callback fired by MagicWandEditor when user clicks 'Apply to Preview'
     const handleApplyEdit = (original: string, enhanced: string) => {
@@ -656,6 +688,128 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
         </div>
     );
 
+    const renderCoverLetterPane = () => (
+        <div className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+                <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                <h2 className="text-lg font-extrabold text-slate-800">Cover Letter Generator</h2>
+            </div>
+            <p className="text-xs text-slate-500">Generate a tailored cover letter from your resume using AI.</p>
+            <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">Tone</label>
+                <select value={clTone} onChange={e => setClTone(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                    <option value="professional">Professional</option>
+                    <option value="enthusiastic">Enthusiastic</option>
+                    <option value="concise">Concise</option>
+                    <option value="formal">Formal</option>
+                </select>
+            </div>
+            <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">Job Description (optional)</label>
+                <textarea value={clJobDesc} onChange={e => setClJobDesc(e.target.value)} rows={4} placeholder="Paste the job description here..." className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
+            </div>
+            <button onClick={async () => {
+                setClLoading(true); setClError(''); setClOutput('');
+                try {
+                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
+                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/cover-letter`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobDescription: clJobDesc, tone: clTone }) });
+                    const data = await r.json();
+                    if (!r.ok) { setClError(data.message || data.error || 'Failed'); setClLoading(false); return; }
+                    const res = await pollJobResult(data.jobId);
+                    setClOutput(res.coverLetter || '');
+                } catch (e: any) { setClError(e.message); } finally { setClLoading(false); }
+            }} disabled={clLoading} className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
+                {clLoading ? '✨ Generating...' : '✨ Generate Cover Letter'}
+            </button>
+            {clError && <p className="text-rose-500 text-xs">{clError}</p>}
+            {clOutput && (
+                <div className="mt-2">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-600">Your Cover Letter</span>
+                        <button onClick={() => navigator.clipboard.writeText(clOutput)} className="text-xs text-violet-600 font-bold hover:underline">Copy</button>
+                    </div>
+                    <textarea readOnly value={clOutput} rows={12} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 resize-none" />
+                </div>
+            )}
+        </div>
+    );
+
+    const renderJobMatchPane = () => (
+        <div className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                <h2 className="text-lg font-extrabold text-slate-800">Job Match Engine</h2>
+            </div>
+            <p className="text-xs text-slate-500">Paste a job description to see how well your resume matches it.</p>
+            <textarea value={jmJobDesc} onChange={e => setJmJobDesc(e.target.value)} rows={6} placeholder="Paste the full job description here..." className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
+            <button onClick={async () => {
+                if (!jmJobDesc.trim()) return;
+                setJmLoading(true); setJmError(''); setJmOutput(null);
+                try {
+                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
+                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/match`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobDescription: jmJobDesc }) });
+                    const data = await r.json();
+                    if (!r.ok) { setJmError(data.message || data.error || 'Failed'); setJmLoading(false); return; }
+                    const res = await pollJobResult(data.jobId);
+                    setJmOutput(res);
+                } catch (e: any) { setJmError(e.message); } finally { setJmLoading(false); }
+            }} disabled={jmLoading || !jmJobDesc.trim()} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
+                {jmLoading ? '🔍 Analyzing...' : '🔍 Analyze Match'}
+            </button>
+            {jmError && <p className="text-rose-500 text-xs">{jmError}</p>}
+            {jmOutput && (
+                <div className="space-y-3 mt-2">
+                    <div className="flex items-center justify-center">
+                        <div className="text-center">
+                            <div className={`text-5xl font-black ${(jmOutput.matchScore ?? 0) >= 70 ? 'text-emerald-500' : (jmOutput.matchScore ?? 0) >= 50 ? 'text-amber-500' : 'text-rose-500'}`}>{jmOutput.matchScore ?? 0}%</div>
+                            <div className="text-xs text-slate-500 font-semibold mt-1">Match Score</div>
+                        </div>
+                    </div>
+                    {jmOutput.matchedSkills && <div><div className="text-xs font-bold text-emerald-700 mb-1">✅ Matched Skills</div><p className="text-xs text-slate-600 bg-emerald-50 p-2 rounded-lg">{jmOutput.matchedSkills}</p></div>}
+                    {jmOutput.missingSkills && <div><div className="text-xs font-bold text-rose-700 mb-1">⚠️ Missing Skills</div><p className="text-xs text-slate-600 bg-rose-50 p-2 rounded-lg">{jmOutput.missingSkills}</p></div>}
+                    {jmOutput.recommendation && <div><div className="text-xs font-bold text-blue-700 mb-1">💡 Recommendation</div><p className="text-xs text-slate-600 bg-blue-50 p-2 rounded-lg">{jmOutput.recommendation}</p></div>}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderInterviewPane = () => (
+        <div className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+                <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                <h2 className="text-lg font-extrabold text-slate-800">AI Interview Prep</h2>
+            </div>
+            <p className="text-xs text-slate-500">Get personalized interview questions and answers based on your resume.</p>
+            <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">Target Job Title</label>
+                <input value={ivJobTitle} onChange={e => setIvJobTitle(e.target.value)} type="text" placeholder="e.g. Senior Software Engineer" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <button onClick={async () => {
+                setIvLoading(true); setIvError(''); setIvOutput('');
+                try {
+                    const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
+                    const r = await fetch(`${API_BASE_URL}/${result.resumeId}/interview-questions`, { method: 'POST', headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ jobTitle: ivJobTitle }) });
+                    const data = await r.json();
+                    if (!r.ok) { setIvError(data.message || data.error || 'Failed'); setIvLoading(false); return; }
+                    const res = await pollJobResult(data.jobId);
+                    setIvOutput(res.questions || res.interviewQuestions || JSON.stringify(res));
+                } catch (e: any) { setIvError(e.message); } finally { setIvLoading(false); }
+            }} disabled={ivLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
+                {ivLoading ? '🎯 Generating Questions...' : '🎯 Generate Interview Questions'}
+            </button>
+            {ivError && <p className="text-rose-500 text-xs">{ivError}</p>}
+            {ivOutput && (
+                <div className="mt-2">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-600">Interview Questions</span>
+                        <button onClick={() => navigator.clipboard.writeText(ivOutput)} className="text-xs text-amber-600 font-bold hover:underline">Copy</button>
+                    </div>
+                    <div className="text-xs text-slate-700 bg-amber-50 border border-amber-100 rounded-xl p-3 whitespace-pre-wrap leading-relaxed">{ivOutput}</div>
+                </div>
+            )}
+        </div>
+    );
+
     const renderDownloadPane = () => {
         const selectedTplConfig = [
             { id: 'basic', label: 'Classic' },
@@ -784,6 +938,9 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                 {activeTab === 'addSection' && renderAddSectionPane()}
                 {activeTab === 'rearrange' && renderRearrangePane()}
                 {activeTab === 'download' && renderDownloadPane()}
+                {activeTab === 'coverLetter' && renderCoverLetterPane()}
+                {activeTab === 'jobMatch' && renderJobMatchPane()}
+                {activeTab === 'interview' && renderInterviewPane()}
             </div>
 
             {/* 3. Live Canvas (Right) */}

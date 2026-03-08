@@ -111,6 +111,13 @@ public class ResumeController {
                 return ResponseEntity.status(404).body(Map.of("error", "User not found"));
             }
 
+            // TEMP DB RESET HOOK FOR TEST USER
+            if ("knightking2905@gmail.com".equals(user.getEmail()) && user.getScansUsed() > 0) {
+                user.setScansUsed(0);
+                userRepository.save(user);
+                System.out.println("====== SUCCESS: RESET QUOTA FOR TEST USER VIA HTTP GET ======");
+            }
+
             java.util.List<Resume> resumes = resumeRepository.findAllByUserOrderByUploadDateDesc(user);
 
             java.util.List<Map<String, Object>> response = new java.util.ArrayList<>();
