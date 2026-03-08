@@ -31,7 +31,7 @@ export const Profile: React.FC = () => {
             .catch(() => setLoading(false));
     }, [token]);
 
-    const FREE_SCAN_LIMIT = 2;
+    const FREE_SCAN_LIMIT = 4;
 
     const handleBillingPortal = async () => {
         try {
@@ -159,7 +159,7 @@ export const Profile: React.FC = () => {
                                 <>
                                     <p className="text-3xl font-black text-slate-900 dark:text-white mb-2">Free</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1.5">
-                                        <Layers className="w-3.5 h-3.5" /> 2 AI scans total
+                                        <Layers className="w-3.5 h-3.5" /> {FREE_SCAN_LIMIT} AI scans total
                                     </p>
                                     <Link to="/pricing" className="inline-flex items-center gap-1.5 text-sm font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors group/link">
                                         Upgrade to Pro <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
