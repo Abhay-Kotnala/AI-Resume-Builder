@@ -40,10 +40,10 @@ export const MegaFooter: React.FC = () => {
                     <div>
                         <h4 className="text-white font-bold mb-5 tracking-wide">Product</h4>
                         <ul className="space-y-3 text-sm">
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">ATS Resume Checker</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">AI Bullet Point Writer</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Cover Letter Generator</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Resume Templates</a></li>
+                            <li><Link to="/" className="hover:text-emerald-400 transition-colors w-max block">ATS Resume Checker</Link></li>
+                            <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors w-max block">AI Bullet Point Writer</Link></li>
+                            <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors w-max block">Cover Letter Generator</Link></li>
+                            <li><Link to="/#templates" onClick={(e) => { e.preventDefault(); document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Resume Templates</Link></li>
                             <li><Link to="/pricing" className="hover:text-emerald-400 transition-colors w-max block">Pricing Options</Link></li>
                         </ul>
                     </div>
@@ -53,16 +53,16 @@ export const MegaFooter: React.FC = () => {
                         <h4 className="text-white font-bold mb-5 tracking-wide">Resources</h4>
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max flex items-center gap-1.5 text-emerald-400 font-semibold">
+                                <Link to="/help" className="hover:text-emerald-400 transition-colors w-max flex items-center gap-1.5 text-emerald-400 font-semibold">
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 10h16M4 14h10" /></svg>
                                     Resume Guides by Role
-                                </a>
+                                </Link>
                             </li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">What is an ATS?</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Top 100 Action Verbs</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Resume Formats 2026</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Career Advice Blog</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Help Center &amp; FAQ</a></li>
+                            <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">What is an ATS?</Link></li>
+                            <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Top 100 Action Verbs</Link></li>
+                            <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Resume Formats 2026</Link></li>
+                            <li><Link to="/article/career-advice" className="hover:text-emerald-400 transition-colors w-max block">Career Advice Blog</Link></li>
+                            <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Help Center &amp; FAQ</Link></li>
                         </ul>
                     </div>
 
@@ -70,10 +70,10 @@ export const MegaFooter: React.FC = () => {
                     <div>
                         <h4 className="text-white font-bold mb-5 tracking-wide">Company</h4>
                         <ul className="space-y-3 text-sm">
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">About Us</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Contact Support</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Privacy Policy</a></li>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Terms of Service</a></li>
+                            <li><Link to="/about" className="hover:text-emerald-400 transition-colors w-max block">About Us</Link></li>
+                            <li><Link to="/contact" className="hover:text-emerald-400 transition-colors w-max block">Contact Support</Link></li>
+                            <li><Link to="/privacy" className="hover:text-emerald-400 transition-colors w-max block">Privacy Policy</Link></li>
+                            <li><Link to="/terms" className="hover:text-emerald-400 transition-colors w-max block">Terms of Service</Link></li>
                         </ul>
                     </div>
                 </div>
