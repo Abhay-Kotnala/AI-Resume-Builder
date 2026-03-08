@@ -83,7 +83,7 @@ export interface AnalysisResponse {
     parsedResume?: ParsedResumeDTO;
 }
 
-const getAuthHeaders = (): Record<string, string> => {
+export const getAuthHeaders = (): Record<string, string> => {
     const token = localStorage.getItem('elevateAI_token');
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };

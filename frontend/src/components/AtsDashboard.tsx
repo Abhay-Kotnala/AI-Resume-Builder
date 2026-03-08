@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnalysisResponse, exportToPdf, exportToDocx } from '../services/api';
+import { AnalysisResponse, exportToPdf, exportToDocx, getAuthHeaders } from '../services/api';
 import { MagicWandEditor } from './MagicWandEditor';
 import { BuilderSidebar, BuilderTab } from './BuilderSidebar';
 import { ResumeCanvas } from './ResumeCanvas';
 import { trackPdfExported, trackAiRewriteUsed, trackUpgradeClicked } from '../services/analytics';
+import { useAuth } from '../context/AuthContext';
 import {
     DndContext,
     closestCenter,
@@ -162,6 +163,7 @@ const SortableSectionItem: React.FC<SortableSectionItemProps> = ({ id, onRemove 
 };
 
 export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnother }) => {
+    const { user } = useAuth();
     const [editingBullet, setEditingBullet] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<BuilderTab>('ats');
     const containerRef = useRef<HTMLDivElement>(null);
@@ -231,9 +233,9 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
 
     // Generic job poller
     const pollJobResult = async (jobId: string): Promise<any> => {
-        const { getAuthHeaders, API_BASE_URL } = await import('../services/api');
+        const JOBS_URL = `${import.meta.env.VITE_API_BASE_URL}/api/jobs`;
         for (let i = 0; i < 60; i++) {
-            const r = await fetch(`${API_BASE_URL.replace('/api/resume', '')}/api/jobs/${jobId}`, { headers: getAuthHeaders() });
+            const r = await fetch(`${JOBS_URL}/${jobId}`, { headers: getAuthHeaders() });
             const data = await r.json();
             if (data.status === 'COMPLETED') return data.result;
             if (data.status === 'FAILED') throw new Error(data.error || 'Job failed');

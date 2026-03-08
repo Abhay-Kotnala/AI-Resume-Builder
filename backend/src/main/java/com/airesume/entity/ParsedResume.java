@@ -2,6 +2,7 @@ package com.airesume.entity;
 
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,17 +35,17 @@ public class ParsedResume {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @Column(columnDefinition = "TEXT")
     private List<String> skills;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Experience> experiences;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Education> educations;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @jakarta.persistence.CollectionTable(name = "parsed_resume_custom_sections", joinColumns = @JoinColumn(name = "parsed_resume_id"))
     @jakarta.persistence.MapKeyColumn(name = "section_name")
     @Column(columnDefinition = "TEXT", name = "section_content")
