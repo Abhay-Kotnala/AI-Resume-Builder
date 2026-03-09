@@ -99,7 +99,11 @@ const handleApiError = async (response: Response, defaultMessage: string) => {
         const text = await response.text();
         if (text) {
             const data = JSON.parse(text);
-            if (data && data.message) errorMsg = data.message;
+            if (data && data.message) {
+                errorMsg = data.message;
+            } else if (data && data.error) {
+                errorMsg = data.error;
+            }
             if (data && data.error) errorCode = data.error;
         }
     } catch (e) { }

@@ -24,8 +24,6 @@ import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/resume")
-// Allow simple CORS matching for local dev
-@CrossOrigin(origins = { "http://localhost:5173", "http://localhost:5174" }, allowCredentials = "true")
 public class ResumeController {
 
     private static final Logger logger = LoggerFactory.getLogger(ResumeController.class);
