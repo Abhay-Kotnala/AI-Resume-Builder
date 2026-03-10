@@ -46,7 +46,8 @@ class AiAnalysisServiceTest {
         // Mock the RestClient chain: post() -> uri() -> body() -> retrieve() -> body()
         org.mockito.Mockito.when(restClient.post()).thenReturn(requestBodyUriSpec);
         org.mockito.Mockito
-                .when(requestBodyUriSpec.uri(org.mockito.Mockito.anyString(), org.mockito.Mockito.anyString()))
+                .when(requestBodyUriSpec.uri(org.mockito.ArgumentMatchers.anyString(),
+                        org.mockito.ArgumentMatchers.<Object>any(), org.mockito.ArgumentMatchers.<Object>any()))
                 .thenReturn(requestBodySpec);
         org.mockito.Mockito.when(requestBodySpec.body(org.mockito.Mockito.any(Object.class)))
                 .thenReturn(requestBodySpec);
@@ -70,7 +71,7 @@ class AiAnalysisServiceTest {
         org.mockito.Mockito.when(responseSpec.body(String.class)).thenReturn(mockJsonResponse);
 
         // Pass the mock analytics service
-        aiAnalysisService = new AiAnalysisService(restClientBuilder, "TEST_API_KEY", new ObjectMapper(),
+        aiAnalysisService = new AiAnalysisService(restClientBuilder, "TEST_API_KEY", "gemini-1.5-flash-latest", new ObjectMapper(),
                 analyticsService);
     }
 

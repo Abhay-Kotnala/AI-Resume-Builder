@@ -101,14 +101,14 @@ public class SecurityConfig {
                 return new HttpCookieOAuth2AuthorizationRequestRepository();
         }
 
+        @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
+        private String allowedOrigins;
+
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                // Allow local dev on both common Vite ports + configured production URL
-                configuration.setAllowedOrigins(List.of(
-                                "http://localhost:5173",
-                                "http://localhost:5174",
-                                frontendUrl));
+                // Allow configured production URLs and local development URLs
+                configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                 configuration.setAllowCredentials(true);

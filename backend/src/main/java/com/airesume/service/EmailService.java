@@ -399,6 +399,9 @@ public class EmailService {
         sendEmail(toEmail, subject, htmlBody);
     }
 
+    @Value("${app.admin.email:knightking2905@gmail.com}")
+    private String adminEmail;
+
     @Async
     public void sendFeedbackEmail(String userEmail, String message, Integer rating) {
         if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
@@ -407,9 +410,6 @@ public class EmailService {
         }
 
         String subject = "New Feedback Received! ⭐ " + rating + "/5";
-
-        // We'll send it to the admin (you can change this to your actual email)
-        String adminEmail = "knightking2905@gmail.com";
 
         String htmlBody = String.format(
                 "<!DOCTYPE html>" +

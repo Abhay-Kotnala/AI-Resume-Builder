@@ -13,15 +13,18 @@ public class AiAnalysisService {
 
     private final RestClient restClient;
     private final String apiKey;
+    private final String apiModel;
     private final ObjectMapper objectMapper;
     private final AnalyticsService analyticsService;
 
     public AiAnalysisService(RestClient.Builder restClientBuilder,
             @Value("${gemini.api.key}") String apiKey,
+            @Value("${gemini.api.model:gemini-1.5-flash-latest}") String apiModel,
             ObjectMapper objectMapper,
             AnalyticsService analyticsService) {
         this.restClient = restClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build();
         this.apiKey = apiKey;
+        this.apiModel = apiModel;
         this.objectMapper = objectMapper;
         this.analyticsService = analyticsService;
     }
@@ -46,7 +49,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -124,7 +127,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -135,6 +138,9 @@ public class AiAnalysisService {
             if (startIndex >= 0 && endIndex >= startIndex) {
                 text = text.substring(startIndex, endIndex + 1);
             }
+
+            // Sanitize JSON to prevent parser errors with literal newlines from the AI
+            text = sanitizeJsonString(text);
 
             return objectMapper.readValue(text, com.airesume.entity.ParsedResume.class);
 
@@ -190,7 +196,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -240,7 +246,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -292,7 +298,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -343,7 +349,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -504,7 +510,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
@@ -515,6 +521,8 @@ public class AiAnalysisService {
             if (startIndex >= 0 && endIndex >= startIndex) {
                 text = text.substring(startIndex, endIndex + 1);
             }
+
+            text = sanitizeJsonString(text);
 
             // Parse the partial update and return it as a ParsedResume for merging
             com.airesume.entity.ParsedResume tailored = objectMapper.readValue(text,
@@ -565,7 +573,7 @@ public class AiAnalysisService {
                     });
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", apiKey)
+                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
                     .body(requestBody)
                     .retrieve()
                     .body(String.class);
