@@ -108,7 +108,7 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
                 // Allow configured production URLs and local development URLs
-                configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+                configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                 configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                 configuration.setAllowCredentials(true);
