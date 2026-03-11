@@ -71,7 +71,7 @@ class AiAnalysisServiceTest {
         org.mockito.Mockito.when(responseSpec.body(String.class)).thenReturn(mockJsonResponse);
 
         // Pass the mock analytics service
-        aiAnalysisService = new AiAnalysisService(restClientBuilder, "TEST_API_KEY", "gemini-1.5-flash-latest", new ObjectMapper(),
+        aiAnalysisService = new AiAnalysisService(restClientBuilder, "TEST_API_KEY", "gemini-2.0-flash", new ObjectMapper(),
                 analyticsService);
     }
 

@@ -44,8 +44,8 @@ public class EmailService {
 
     @Async
     public void sendWelcomeEmail(String toEmail, String name) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Welcome Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Welcome Email to {}", toEmail);
             return;
         }
 
@@ -123,8 +123,8 @@ public class EmailService {
 
     @Async
     public void sendProUpgradeEmail(String toEmail, String name) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Pro Upgrade Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Pro Upgrade Email to {}", toEmail);
             return;
         }
 
@@ -216,8 +216,8 @@ public class EmailService {
 
     @Async
     public void sendReferralSuccessEmail(String toEmail, String referrerName, String referredName) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Referral Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Referral Email to {}", toEmail);
             return;
         }
 
@@ -263,8 +263,8 @@ public class EmailService {
 
     @Async
     public void sendProExpiringEmail(String toEmail, String name) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Expiring Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Expiring Email to {}", toEmail);
             return;
         }
 
@@ -309,8 +309,8 @@ public class EmailService {
 
     @Async
     public void sendInactiveUserEmail(String toEmail, String name) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Inactive Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Inactive Email to {}", toEmail);
             return;
         }
 
@@ -355,8 +355,8 @@ public class EmailService {
 
     @Async
     public void sendNewTemplateEmail(String toEmail, String name) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking New Template Email to {}", toEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking New Template Email to {}", toEmail);
             return;
         }
 
@@ -404,8 +404,8 @@ public class EmailService {
 
     @Async
     public void sendFeedbackEmail(String userEmail, String message, Integer rating) {
-        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here")) {
-            logger.warn("Resend API key missing. Mocking Feedback Email from {}", userEmail);
+        if (resendApiKey == null || resendApiKey.isEmpty() || resendApiKey.equals("your_resend_api_key_here") || resendApiKey.startsWith("mock_")) {
+            logger.warn("Resend API key missing or mock. Mocking Feedback Email from {}", userEmail);
             return;
         }
 
@@ -430,6 +430,7 @@ public class EmailService {
     }
 
     private void sendEmail(String to, String subject, String html) {
+        logger.info("Attempting to send email to: {} with subject: {}", to, subject);
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -447,10 +448,12 @@ public class EmailService {
             ResponseEntity<String> response = restTemplate.postForEntity(RESEND_API_URL, entity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                logger.info("Email sent successfully to: {}", to);
+                logger.info("Email sent successfully to: {}. Resend response: {}", to, response.getBody());
             } else {
-                logger.error("Failed to send email to {}. Response: {}", to, response.getBody());
+                logger.error("Failed to send email to {}. Status: {}, Response: {}", to, response.getStatusCode(), response.getBody());
             }
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            logger.error("Resend API error sending email to {}. Status: {}, Body: {}", to, e.getStatusCode(), e.getResponseBodyAsString(), e);
         } catch (Exception e) {
             logger.error("Error occurred while sending email to {}: {}", to, e.getMessage(), e);
         }

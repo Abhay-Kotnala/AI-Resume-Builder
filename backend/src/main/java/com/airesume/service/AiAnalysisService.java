@@ -19,7 +19,7 @@ public class AiAnalysisService {
 
     public AiAnalysisService(RestClient.Builder restClientBuilder,
             @Value("${gemini.api.key}") String apiKey,
-            @Value("${gemini.api.model:gemini-1.5-flash-latest}") String apiModel,
+            @Value("${gemini.api.model:gemini-2.0-flash}") String apiModel,
             ObjectMapper objectMapper,
             AnalyticsService analyticsService) {
         this.restClient = restClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build();
