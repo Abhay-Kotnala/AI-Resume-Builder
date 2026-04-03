@@ -1196,7 +1196,14 @@ export const ResumeCanvas: React.FC<ResumeCanvasProps> = ({
                 Click any field to edit
             </div>
 
-            <div className="relative z-[1]" style={{ pointerEvents: 'auto' }}>
+            <div className="relative z-[1]" style={{ pointerEvents: 'auto' }}
+                 onClick={(e) => {
+                     const target = e.target as HTMLElement;
+                     if (target && target.dataset && target.dataset.phrase) {
+                         onPhraseClick?.(target.dataset.phrase);
+                     }
+                 }}
+            >
                 {template === 'basic' && <ClassicCanvas {...commonProps} />}
                 {template === 'modern' && <ModernCanvas {...commonProps} />}
                 {template === 'executive' && <ExecutiveCanvas {...commonProps} />}

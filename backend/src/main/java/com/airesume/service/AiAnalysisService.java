@@ -16,6 +16,9 @@ public class AiAnalysisService {
     private final String apiModel;
     private final ObjectMapper objectMapper;
     private final AnalyticsService analyticsService;
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AiAnalysisService.class);
+    private static final int MAX_RETRIES = 3;
+    private static final long INITIAL_BACKOFF_MS = 15000;
 
     public AiAnalysisService(RestClient.Builder restClientBuilder,
             @Value("${gemini.api.key}") String apiKey,
@@ -27,6 +30,65 @@ public class AiAnalysisService {
         this.apiModel = apiModel;
         this.objectMapper = objectMapper;
         this.analyticsService = analyticsService;
+    }
+
+    /**
+     * Calls the Gemini API with automatic retry and exponential backoff for 429 (rate limit) errors.
+     * The free tier limits input tokens per minute, so we need to wait long enough for the window to reset.
+     * Google typically suggests retryDelay of ~30s, so our backoffs are: 15s, 30s, 60s.
+     */
+    private String callGeminiWithRetry(Map<String, Object> requestBody) {
+        for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                return restClient.post()
+                        .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
+                        .body(requestBody)
+                        .retrieve()
+                        .body(String.class);
+            } catch (org.springframework.web.client.HttpClientErrorException e) {
+                if (e.getStatusCode().value() == 429 && attempt < MAX_RETRIES) {
+                    // Parse Google's suggested retry delay from the error response
+                    long waitMs = extractRetryDelay(e.getResponseBodyAsString());
+                    if (waitMs <= 0) {
+                        // Fallback: 15s, 30s, 60s
+                        waitMs = INITIAL_BACKOFF_MS * (long) Math.pow(2, attempt);
+                    }
+                    logger.warn("Gemini API rate limited (429). Waiting {}s before retry (attempt {}/{})",
+                            waitMs / 1000, attempt + 1, MAX_RETRIES);
+                    try {
+                        Thread.sleep(waitMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new com.airesume.exception.AiServiceUnavailableException("Interrupted during retry backoff.", ie);
+                    }
+                } else {
+                    throw e; // Re-throw non-429 errors or final attempt
+                }
+            }
+        }
+        throw new com.airesume.exception.AiServiceUnavailableException("Gemini API rate limit exceeded after all retries.");
+    }
+
+    /**
+     * Extracts the retryDelay value from a Gemini 429 error response JSON.
+     * Returns delay in milliseconds, or -1 if parsing fails.
+     */
+    private long extractRetryDelay(String errorBody) {
+        try {
+            com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(errorBody);
+            com.fasterxml.jackson.databind.JsonNode details = root.path("error").path("details");
+            for (com.fasterxml.jackson.databind.JsonNode detail : details) {
+                if (detail.has("retryDelay")) {
+                    String delayStr = detail.get("retryDelay").asText(); // e.g. "28s" or "45.123s"
+                    delayStr = delayStr.replace("s", "").trim();
+                    double seconds = Double.parseDouble(delayStr);
+                    return (long) (seconds * 1000) + 2000; // Add 2s buffer
+                }
+            }
+        } catch (Exception ignored) {
+            // Fall through to default backoff
+        }
+        return -1;
     }
 
     public AnalysisResult analyzeResume(String resumeText, String jobDescription, boolean isPro) {
@@ -48,11 +110,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             AnalysisResult result = parseResponse(response);
 
@@ -93,9 +151,11 @@ public class AiAnalysisService {
         }
 
         try {
-            String prompt = "You are an expert AI resume parser. I will provide you with unstructured text from a resume PDF. "
+            String prompt = "You are an expert data extraction AI for resume parsing. I will provide you with unstructured text from a resume PDF. "
                     +
-                    "Extract all information and organize it perfectly into the following ONLY valid JSON structure. " +
+                    "Your single goal is to extract literally ALL information provided without summarizing, omitting, or truncating anything. " +
+                    "Copy bullet points and descriptions verbatim. Everything in the input MUST be captured in the output JSON. " +
+                    "Organize the extracted data perfectly into the following ONLY valid JSON structure. " +
                     "DO NOT include markdown block tags like ```json. \n" +
                     "{\n" +
                     "  \"fullName\": \"\",\n" +
@@ -115,7 +175,10 @@ public class AiAnalysisService {
                     "    \"Languages\": \"English, Spanish\"\n" +
                     "  }\n" +
                     "}\n\n" +
-                    "NOTE: Extract any additional resume sections (e.g., Projects, Certifications, Awards, Languages, Publications, Volunteering) into the customSections map. The keys must be the section header as a string, and the value must be the section text as a single string, using • for list items and \\n for newlines.\n\n"
+                    "CRITICAL INSTRUCTIONS:\n" +
+                    "1. For the 'summary' fields in experiences, include EXACTLY all bullet points from the source. Do NOT drop any bullet points. Separate them by newlines (\\n).\n" +
+                    "2. Extract any additional resume sections (e.g., Projects, Certifications, Awards, Languages, Publications, Volunteering) into the customSections map. The keys must be the section header as a string, and the value must be the section text verbatim as a single string, using • for list items and \\n for newlines.\n" +
+                    "3. DO NOT hallucinate info.\n\n"
                     +
                     "RESUME TEXT TO PARSE:\n" + resumeText;
 
@@ -126,11 +189,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             String text = extractTextFromGeminiResponse(response);
             int startIndex = text.indexOf('{');
@@ -185,6 +244,14 @@ public class AiAnalysisService {
             if (targetJob != null && !targetJob.isBlank()) {
                 prompt += "Tailor it specifically to highlight skills relevant to this role: " + targetJob + ". ";
             }
+            
+            prompt += "\n\n*** FEW-SHOT EXAMPLES OF ELITE TARGET BULLETS ***\n" +
+                      "Bad: Managed a team of engineers to build a new feature.\n" +
+                      "Elite: Directed a cross-functional team of 6 engineers to architect a scalable microservice, decreasing API latency by 45% and saving $12,000 annually in AWS costs.\n" +
+                      "Bad: Handled customer support tickets.\n" +
+                      "Elite: Resolved 40+ complex Tier-3 technical support tickets weekly, maintaining a 98% CSAT score and reducing average resolution time by 20%.\n" +
+                      "*** END EXAMPLES ***\n\n";
+
             prompt += "Original Bullet point: '" + bulletPoint
                     + "'\n\nReturn EXACTLY AND ONLY the rewritten bullet point text. Do not include introductory phrases like 'Here is the rewritten bullet point:'.";
 
@@ -195,11 +262,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             return extractTextFromGeminiResponse(response);
         } catch (org.springframework.web.client.HttpClientErrorException e) {
@@ -245,11 +308,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             return extractTextFromGeminiResponse(response);
         } catch (org.springframework.web.client.HttpClientErrorException e) {
@@ -297,11 +356,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             return extractTextFromGeminiResponse(response);
         } catch (org.springframework.web.client.HttpClientErrorException e) {
@@ -348,11 +403,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             String text = extractTextFromGeminiResponse(response);
             int startIndex = text.indexOf('{');
@@ -509,11 +560,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             String text = extractTextFromGeminiResponse(response);
             int startIndex = text.indexOf('{');
@@ -572,11 +619,7 @@ public class AiAnalysisService {
                             })
                     });
 
-            String response = restClient.post()
-                    .uri("/v1beta/models/{model}:generateContent?key={key}", apiModel, apiKey)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+            String response = callGeminiWithRetry(requestBody);
 
             String text = extractTextFromGeminiResponse(response);
             int startIndex = text.indexOf('[');

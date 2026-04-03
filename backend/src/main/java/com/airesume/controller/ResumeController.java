@@ -82,11 +82,15 @@ public class ResumeController {
             }
 
             // Immediately run phase 1 semantic document structure parsing!
-            com.airesume.entity.ParsedResume parsedStructure = aiAnalysisService.parseStructuredResume(parsedText,
-                    isPro);
-            if (parsedStructure != null) {
-                parsedStructure.setResume(resume);
-                resume.setParsedResume(parsedStructure);
+            try {
+                com.airesume.entity.ParsedResume parsedStructure = aiAnalysisService.parseStructuredResume(parsedText, isPro);
+                if (parsedStructure != null) {
+                    parsedStructure.setResume(resume);
+                    resume.setParsedResume(parsedStructure);
+                }
+            } catch (Exception e) {
+                logger.warn("AI Structure Parsing failed during upload. Resume text safely saved without parsed structure. Error: {}", e.getMessage());
+                // We purposefully do not crash the upload. The user can retry analysis later.
             }
 
             Resume savedResume = resumeRepository.save(resume);

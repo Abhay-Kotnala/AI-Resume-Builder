@@ -26,7 +26,7 @@ export const FeedbackWidget: React.FC = () => {
         setIsSubmitting(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+            const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8095';
             const res = await fetch(`${apiUrl}/api/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

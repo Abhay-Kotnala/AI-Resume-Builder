@@ -24,12 +24,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const fetchUserProfile = async (token: string): Promise<UserProfile | null> => {
+const fetchUserProfile = async (token: string, logoutFn?: () => void): Promise<UserProfile | null> => {
     try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) return response.json();
+        if (response.status === 401 && logoutFn) {
+            logoutFn();
+        }
     } catch (e) {
         console.error('Failed to fetch user profile', e);
     }
@@ -42,12 +45,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isLoading, setIsLoading] = useState(true);
     const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
+    const logout = () => {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('elevateAI_token');
+    };
+
     useEffect(() => {
         const storedToken = localStorage.getItem('elevateAI_token');
         if (storedToken) {
             setToken(storedToken);
-            fetchUserProfile(storedToken)
-                .then(setUser)
+            fetchUserProfile(storedToken, logout)
+                .then((userData) => {
+                    if (userData) {
+                        setUser(userData);
+                    } else {
+                        // If no user data was returned (e.g. 401 expired), clear state so they don't get stuck
+                        logout();
+                    }
+                })
                 .finally(() => setIsLoading(false));
         } else {
             setIsLoading(false);
@@ -57,13 +73,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const login = (newToken: string) => {
         setToken(newToken);
         localStorage.setItem('elevateAI_token', newToken);
-        fetchUserProfile(newToken).then(setUser);
-    };
-
-    const logout = () => {
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('elevateAI_token');
+        fetchUserProfile(newToken, logout).then((userData) => {
+            if (userData) setUser(userData);
+        });
     };
 
     const value = {

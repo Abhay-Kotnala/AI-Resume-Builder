@@ -377,13 +377,6 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                                         <span className="leading-relaxed">{weakness}</span>
                                         <div className="flex flex-wrap items-center justify-between gap-2 mt-0.5">
                                             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${tColor}`}>{type}</span>
-
-                                            <button
-                                                onClick={() => { trackAiRewriteUsed(); setEditingBullet(weakness); }}
-                                                className="text-[10px] font-bold inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg border border-indigo-200 shadow-sm transition-colors shrink-0 whitespace-nowrap"
-                                            >
-                                                ✨ Fix with AI
-                                            </button>
                                         </div>
                                     </div>
                                 </li>
