@@ -52,7 +52,7 @@ export const FeedbackWidget: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className="fixed bottom-6 right-4 sm:right-6 z-[9999] flex flex-col items-end">
             {/* Modal */}
             {isOpen && (
                 <div className="absolute bottom-20 right-0 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800 p-5 animate-fade-in-up origin-bottom-right">

@@ -217,6 +217,22 @@ export const generateInterviewQuestions = async (resumeId: number, jobDescriptio
     return pollJob<{ questions: string }>(jobId, onProgress);
 };
 
+export const generateLinkedInProfile = async (resumeId: number, onProgress?: (status: string) => void): Promise<{ profile: string }> => {
+    const response = await fetch(`${API_BASE_URL}/${resumeId}/linkedin-profile`, {
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+        },
+    });
+
+    if (!response.ok) {
+        await handleApiError(response, 'Failed to generate LinkedIn profile');
+    }
+
+    const { jobId } = await response.json();
+    return pollJob<{ profile: string }>(jobId, onProgress);
+};
+
 export const analyzeJobMatch = async (resumeId: number, jobDescription: string, onProgress?: (status: string) => void): Promise<{ matchResult: string }> => {
     const response = await fetch(`${API_BASE_URL}/${resumeId}/match`, {
         method: 'POST',

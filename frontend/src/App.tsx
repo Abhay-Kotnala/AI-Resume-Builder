@@ -12,11 +12,11 @@ import { ThemeProvider } from './context/ThemeContext';
 import { Dashboard } from './pages/Dashboard';
 import { Builder } from './pages/Builder';
 import { Profile } from './pages/Profile';
-import { AboutUs } from './pages/AboutUs';
-import { PrivacyPolicy } from './pages/PrivacyPolicy';
-import { TermsOfService } from './pages/TermsOfService';
-import { HelpFAQ } from './pages/HelpFAQ';
+import { About } from './pages/About';
+import { Legal } from './pages/Legal';
+import { HelpCenter } from './pages/HelpCenter';
 import { Contact } from './pages/Contact';
+import { Blog } from './pages/Blog';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -52,10 +52,11 @@ function App() {
               <Route index element={<Home />} />
               <Route path="pricing" element={<Pricing />} />
               <Route path="article/:id" element={<Article />} />
-              <Route path="about" element={<AboutUs />} />
-              <Route path="privacy" element={<PrivacyPolicy />} />
-              <Route path="terms" element={<TermsOfService />} />
-              <Route path="help" element={<HelpFAQ />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="about" element={<About />} />
+              <Route path="privacy" element={<Legal />} />
+              <Route path="terms" element={<Legal />} />
+              <Route path="help" element={<HelpCenter />} />
               <Route path="contact" element={<Contact />} />
             </Route>
             {/* Full screen routes without the main Layout (Navbar/Footer) */}

@@ -409,22 +409,54 @@ public class EmailService {
             return;
         }
 
-        String subject = "New Feedback Received! ⭐ " + rating + "/5";
+        String subject = "New Feedback! ⭐ " + rating + "/5";
+        
+        StringBuilder stars = new StringBuilder();
+        for(int i=0; i<5; i++) {
+            if(i < rating) stars.append("⭐");
+            else stars.append("☆");
+        }
 
         String htmlBody = String.format(
                 "<!DOCTYPE html>" +
-                        "<html>" +
-                        "<body style=\"font-family:sans-serif;color:#333;line-height:1.6;\">" +
-                        "  <h2>New Feedback Submission</h2>" +
-                        "  <p><strong>From:</strong> %s</p>" +
-                        "  <p><strong>Rating:</strong> %d / 5</p>" +
-                        "  <div style=\"background-color:#f4f4f4;padding:15px;border-left:4px solid #10b981;margin-top:20px;\">"
-                        +
-                        "    <p style=\"margin:0;\">%s</p>" +
-                        "  </div>" +
-                        "</body>" +
-                        "</html>",
-                userEmail, rating, message.replace("\n", "<br>"));
+                "<html>" +
+                "<body style=\"margin:0;padding:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background-color:#f8fafc;color:#1e293b;\">" +
+                "  <div style=\"width:100%%;background-color:#0f172a;padding:40px 0;\">" +
+                "    <div style=\"max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);\">" +
+                "      " +
+                "      <!-- Header Gradient -->" +
+                "      <div style=\"background:linear-gradient(135deg,#10b981 0%%,#059669 100%%);padding:30px;text-align:center;\">" +
+                "        <h1 style=\"color:#ffffff;margin:0;font-size:28px;\">New User Feedback \uD83D\uDCE3</h1>" +
+                "      </div>" +
+                "      " +
+                "      <!-- Content -->" +
+                "      <div style=\"padding:40px 30px;\">" +
+                "        <div style=\"margin-bottom:25px;\">" +
+                "          <div style=\"font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:bold;margin-bottom:5px;\">From User</div>" +
+                "          <div style=\"font-size:18px;font-weight:600;color:#0f172a;\">%s</div>" +
+                "        </div>" +
+                "        " +
+                "        <div style=\"margin-bottom:30px;\">" +
+                "          <div style=\"font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:bold;margin-bottom:8px;\">Rating</div>" +
+                "          <div style=\"font-size:24px;letter-spacing:4px;\">%s</div>" +
+                "        </div>" +
+                "        " +
+                "        <div style=\"background-color:#f1f5f9;border-left:4px solid #10b981;padding:24px;border-radius:0 12px 12px 0;margin-bottom:30px;\">" +
+                "          <h3 style=\"margin:0 0 10px 0;font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:1px;\">Message</h3>" +
+                "          <p style=\"margin:0;color:#334155;font-size:16px;line-height:1.6;white-space:pre-wrap;\">%s</p>" +
+                "        </div>" +
+                "        " +
+                "        <div style=\"text-align:center;margin-top:40px;\">" +
+                "          <a href=\"mailto:%s\" style=\"display:inline-block;background-color:#10b981;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:14px 28px;border-radius:8px;box-shadow:0 4px 6px -1px rgba(16,185,129,0.2);\">" +
+                "            Reply to User" +
+                "          </a>" +
+                "        </div>" +
+                "      </div>" +
+                "    </div>" +
+                "  </div>" +
+                "</body>" +
+                "</html>",
+                userEmail, stars.toString(), message.replace("\n", "<br>"), userEmail);
 
         sendEmail(adminEmail, subject, htmlBody);
     }

@@ -40,11 +40,11 @@ export const MegaFooter: React.FC = () => {
                     <div>
                         <h4 className="text-white font-bold mb-5 tracking-wide">Product</h4>
                         <ul className="space-y-3 text-sm">
-                            <li><Link to="/" className="hover:text-emerald-400 transition-colors w-max block">ATS Resume Checker</Link></li>
-                            <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors w-max block">AI Bullet Point Writer</Link></li>
-                            <li><Link to="/dashboard" className="hover:text-emerald-400 transition-colors w-max block">Cover Letter Generator</Link></li>
-                            <li><Link to="/#templates" onClick={(e) => { e.preventDefault(); document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-emerald-400 transition-colors w-max block">Resume Templates</Link></li>
-                            <li><Link to="/pricing" className="hover:text-emerald-400 transition-colors w-max block">Pricing Options</Link></li>
+                            <li><Link to="/" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} className="hover:text-emerald-400 transition-colors w-max block">ATS Resume Checker</Link></li>
+                            <li><Link to="/#features" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); } }} className="hover:text-emerald-400 transition-colors w-max block">AI Bullet Point Writer</Link></li>
+                            <li><Link to="/#features" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); } }} className="hover:text-emerald-400 transition-colors w-max block">Cover Letter Generator</Link></li>
+                            <li><Link to="/#templates" onClick={(e) => { if (window.location.pathname === '/') { e.preventDefault(); document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' }); } }} className="hover:text-emerald-400 transition-colors w-max block">Resume Templates</Link></li>
+                            <li><Link to="/pricing" onClick={(e) => { if (window.location.pathname === '/pricing') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} className="hover:text-emerald-400 transition-colors w-max block">Pricing Options</Link></li>
                         </ul>
                     </div>
 
@@ -61,7 +61,7 @@ export const MegaFooter: React.FC = () => {
                             <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">What is an ATS?</Link></li>
                             <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Top 100 Action Verbs</Link></li>
                             <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Resume Formats 2026</Link></li>
-                            <li><Link to="/article/career-advice" className="hover:text-emerald-400 transition-colors w-max block">Career Advice Blog</Link></li>
+                            <li><Link to="/blog" className="hover:text-emerald-400 transition-colors w-max block">Career Advice Blog</Link></li>
                             <li><Link to="/help" className="hover:text-emerald-400 transition-colors w-max block">Help Center &amp; FAQ</Link></li>
                         </ul>
                     </div>

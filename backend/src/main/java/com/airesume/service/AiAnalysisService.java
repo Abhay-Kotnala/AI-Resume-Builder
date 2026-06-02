@@ -187,7 +187,12 @@ public class AiAnalysisService {
                             Map.of("parts", new Object[] {
                                     Map.of("text", prompt)
                             })
-                    });
+                    },
+                    "generationConfig", Map.of(
+                            "maxOutputTokens", 8192,
+                            "responseMimeType", "application/json"
+                    )
+            );
 
             String response = callGeminiWithRetry(requestBody);
 
@@ -335,11 +340,11 @@ public class AiAnalysisService {
         try {
             String prompt = "You are a senior engineering hiring manager at a top tech company conducting a technical interview. "
                     +
-                    "Based on the candidate's resume and the job description provided, generate EXACTLY 5 highly targeted interview questions. "
+                    "Based on the candidate's resume's skills and experience, generate EXACTLY 10 highly targeted interview questions. "
                     +
-                    "The questions should be a mix of: behavioural (2 questions), technical (2 questions), and career/motivation (1 question). "
+                    "The questions should be a mix of: behavioural, technical, and career/motivation. "
                     +
-                    "Each question must be specific to the candidate's actual experience and the role—do NOT use generic cookie-cutter questions. "
+                    "Each question must be specific to the candidate's actual experience—do NOT use generic cookie-cutter questions. "
                     +
                     "Return ONLY a valid JSON array (no markdown, no explanation) in this exact format: " +
                     "[{\"question\": \"...\", \"tip\": \"Brief 1-sentence coaching tip for answering this question well.\", \"category\": \"Behavioural|Technical|Career\"}]\\n\\n";
@@ -649,4 +654,53 @@ public class AiAnalysisService {
         return parseStructuredResume(linkedInText, true);
     }
 
+    public String generateLinkedInProfile(String resumeText) {
+        analyticsService.logEvent(null, "AI_ACTION", "Feature: LinkedIn Profile Optimizer");
+
+        if (apiKey == null || apiKey.isEmpty() || "YOUR_KEY_HERE".equals(apiKey)
+                || "your_gemini_api_key_here".equals(apiKey)) {
+            throw new com.airesume.exception.AiServiceUnavailableException(
+                    "Gemini API Key is missing or invalid. Please check backend configuration.");
+        }
+        try {
+            String prompt = "You are an expert personal branding coach and LinkedIn optimization specialist. "
+                    + "Using the data from the provided resume, automatically write a highly optimized LinkedIn Headline and an About section that the user can directly copy and paste. "
+                    + "The headline should be catchy and highlight their core expertise and value proposition (max 120 characters). "
+                    + "The About section should be a compelling, first-person narrative that summarizes their career journey, key skills, and greatest achievements. "
+                    + "Return ONLY a valid JSON object in this exact format (no markdown, no explanation):\n"
+                    + "{\n"
+                    + "  \"headline\": \"Your optimized LinkedIn headline here...\",\n"
+                    + "  \"about\": \"Your tailored, compelling About section here...\"\n"
+                    + "}\n\n"
+                    + "CANDIDATE RESUME:\n" + resumeText;
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", new Object[] {
+                            Map.of("parts", new Object[] {
+                                    Map.of("text", prompt)
+                            })
+                    });
+
+            String response = callGeminiWithRetry(requestBody);
+
+            String text = extractTextFromGeminiResponse(response);
+            int startIndex = text.indexOf('{');
+            int endIndex = text.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                text = text.substring(startIndex, endIndex + 1);
+            }
+            return text;
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            e.printStackTrace();
+            if (e.getStatusCode().value() == 429) {
+                throw new com.airesume.exception.AiServiceUnavailableException(
+                        "High Demand: The AI service is currently receiving too many requests. Please try again in 60 seconds.",
+                        e);
+            }
+            throw new com.airesume.exception.AiServiceUnavailableException("AI Service Error: " + e.getMessage(), e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new com.airesume.exception.AiServiceUnavailableException("Failed to generate LinkedIn profile with AI.", e);
+        }
+    }
 }

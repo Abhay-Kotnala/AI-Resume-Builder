@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type BuilderTab = 'templates' | 'design' | 'ats' | 'addSection' | 'rearrange' | 'download' | 'coverLetter' | 'jobMatch' | 'interview';
+export type BuilderTab = 'templates' | 'design' | 'ats' | 'addSection' | 'rearrange' | 'download' | 'coverLetter' | 'jobMatch' | 'interview' | 'linkedin';
 
 interface BuilderSidebarProps {
     activeTab: BuilderTab;
@@ -88,6 +88,16 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ activeTab, setAc
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            )
+        },
+        {
+            id: 'linkedin' as BuilderTab,
+            label: 'LinkedIn',
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" />
+                    <circle cx="4" cy="4" r="2" />
                 </svg>
             )
         },

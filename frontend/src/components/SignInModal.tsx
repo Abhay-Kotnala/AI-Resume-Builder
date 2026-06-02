@@ -93,7 +93,7 @@ export const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => 
                 {/* Footer Section */}
                 <div className="bg-slate-50/80 backdrop-blur-md p-5 border-t border-slate-100/50 text-center relative z-10">
                     <p className="text-xs text-slate-500 font-medium">
-                        By continuing, you agree to our <a href="#" className="text-slate-700 hover:text-emerald-600 underline decoration-slate-300 hover:decoration-emerald-400 underline-offset-2 transition-all">Terms of Service</a> and <a href="#" className="text-slate-700 hover:text-emerald-600 underline decoration-slate-300 hover:decoration-emerald-400 underline-offset-2 transition-all">Privacy Policy</a>.
+                        By continuing, you agree to our <a href="/terms" className="text-slate-700 hover:text-emerald-600 underline decoration-slate-300 hover:decoration-emerald-400 underline-offset-2 transition-all">Terms of Service</a> and <a href="/privacy" className="text-slate-700 hover:text-emerald-600 underline decoration-slate-300 hover:decoration-emerald-400 underline-offset-2 transition-all">Privacy Policy</a>.
                     </p>
                 </div>
             </div>

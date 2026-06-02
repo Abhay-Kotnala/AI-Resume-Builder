@@ -37,3 +37,10 @@ logs/
 
 # ---- Test artifacts ----
 *.dump
+
+# ---- Local Planning & Documentation (DO NOT COMMIT) ----
+linkedin_launch_campaign.md
+linkedin_post_ideas.md
+project_data_for_report.md
+Outlier_DA_Complete_Strategy.md
+implementation_plan.md

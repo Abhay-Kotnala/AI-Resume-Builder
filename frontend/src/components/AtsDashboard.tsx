@@ -231,6 +231,11 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
     const [ivLoading, setIvLoading] = useState(false);
     const [ivError, setIvError] = useState('');
 
+    // ── LinkedIn Optimizer State ─────────────────────────────
+    const [liOutput, setLiOutput] = useState<{ headline?: string; about?: string } | null>(null);
+    const [liLoading, setLiLoading] = useState(false);
+    const [liError, setLiError] = useState('');
+
 
     // Callback fired by MagicWandEditor when user clicks 'Apply to Preview'
     const handleApplyEdit = (original: string, enhanced: string) => {
@@ -388,15 +393,15 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
 
             {/* ATS Heatmap Scorecard */}
             {(foundKeywordsList.length > 0 || missingKeywordsList.length > 0) && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     {/* Heatmap toggle header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-100">🔥 Keyword Heatmap</span>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+                        <span className="text-sm font-extrabold text-slate-800">🔥 Keyword Heatmap</span>
                         <button
                             onClick={() => setShowHeatmap(prev => !prev)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${showHeatmap
                                 ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-200/50'
-                                : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                : 'border-slate-300 text-slate-600 hover:border-emerald-400'
                                 }`}
                         >
                             <span className={`w-2 h-2 rounded-full ${showHeatmap ? 'bg-white' : 'bg-slate-400'}`} />
@@ -409,12 +414,12 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         {foundKeywordsList.length > 0 && (
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
-                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Keyword Match</span>
-                                    <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
+                                    <span className="text-xs font-bold text-slate-600">Keyword Match</span>
+                                    <span className="text-xs font-extrabold text-emerald-600">
                                         {foundKeywordsList.length} of {foundKeywordsList.length + missingKeywordsList.length} matched
                                     </span>
                                 </div>
-                                <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                                     <div
                                         className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-700"
                                         style={{ width: `${Math.round((foundKeywordsList.length / (foundKeywordsList.length + missingKeywordsList.length)) * 100)}%` }}
@@ -426,13 +431,13 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         {/* Found keywords */}
                         {foundKeywordsList.length > 0 && (
                             <div>
-                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-700 mb-2 flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
                                     Matched Keywords
                                 </h4>
                                 <div className="flex flex-wrap gap-1.5">
                                     {foundKeywordsList.map((kw, i) => (
-                                        <span key={i} className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-200 dark:border-emerald-700 flex items-center gap-1">
+                                        <span key={i} className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-lg border border-emerald-200 flex items-center gap-1">
                                             <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                                             {kw}
                                         </span>
@@ -444,14 +449,14 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         {/* Missing keywords */}
                         {missingKeywordsList.length > 0 && (
                             <div>
-                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-rose-700 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+                                <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-rose-700 mb-2 flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-rose-400 inline-block" />
                                     Missing Keywords — Add These
                                 </h4>
                                 <div className="flex flex-wrap gap-1.5 relative">
                                     <div className={`flex flex-wrap gap-1.5 ${result.isPartialAnalysis ? 'blur-[3px] select-none opacity-60' : ''}`}>
                                         {missingKeywordsList.map((kw, i) => (
-                                            <span key={i} className="px-2.5 py-1 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 text-[10px] font-bold rounded-lg border border-rose-200 dark:border-rose-700 flex items-center gap-1">
+                                            <span key={i} className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[10px] font-bold rounded-lg border border-rose-200 flex items-center gap-1">
                                                 <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
                                                 {kw}
                                             </span>
@@ -469,7 +474,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         )}
 
                         {/* Legend */}
-                        <div className="flex items-center gap-4 pt-1 border-t border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center gap-4 pt-1 border-t border-slate-100">
                             <span className="text-[10px] text-slate-400 font-medium">Legend:</span>
                             <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Matched
@@ -767,7 +772,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                 <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 <h2 className="text-lg font-extrabold text-slate-800">AI Interview Prep</h2>
             </div>
-            <p className="text-xs text-slate-500">Get personalized interview questions and answers based on your resume.</p>
+            <p className="text-xs text-slate-500">Get 10 personalized mock interview questions based on your resume's skills and experience.</p>
             <div>
                 <label className="text-xs font-semibold text-slate-600 mb-1 block">Target Job Title</label>
                 <input value={ivJobTitle} onChange={e => setIvJobTitle(e.target.value)} type="text" placeholder="e.g. Senior Software Engineer" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
@@ -796,6 +801,57 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                         <button onClick={() => navigator.clipboard.writeText(ivOutput)} className="text-xs text-amber-600 font-bold hover:underline">Copy</button>
                     </div>
                     <div className="text-xs text-slate-700 bg-amber-50 border border-amber-100 rounded-xl p-3 whitespace-pre-wrap leading-relaxed">{ivOutput}</div>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderLinkedInPane = () => (
+        <div className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+                <svg className="w-6 h-6 text-[#0A66C2]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                <h2 className="text-lg font-extrabold text-slate-800">LinkedIn Optimizer</h2>
+            </div>
+            <p className="text-xs text-slate-500">Generate an optimized LinkedIn headline and about section based on your resume.</p>
+            <button onClick={async () => {
+                setLiLoading(true); setLiError(''); setLiOutput(null);
+                try {
+                    const { generateLinkedInProfile } = await import('../services/api');
+                    const res = await generateLinkedInProfile(result.resumeId);
+                    setLiOutput(JSON.parse(res.profile));
+                } catch (e: any) {
+                    if (e.message?.includes('High Demand') || e.message?.includes('Service Unavailable') || e.message?.includes('API Key is missing')) {
+                        setLiError('Servers are currently experiencing high demand. Please try again in 60 seconds.');
+                    } else {
+                        setLiError(e.message || 'Failed to generate LinkedIn profile');
+                    }
+                } finally { setLiLoading(false); }
+            }} disabled={liLoading} className="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all disabled:opacity-60">
+                {liLoading ? '🔗 Optimizing...' : '🔗 Optimize Profile'}
+            </button>
+            {liError && <p className="text-rose-500 text-xs">{liError}</p>}
+            {liOutput && (
+                <div className="mt-4 space-y-4">
+                    {liOutput.headline && (
+                        <div>
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-slate-600">Optimized Headline</span>
+                                <button onClick={() => navigator.clipboard.writeText(liOutput.headline!)} className="text-xs text-sky-600 font-bold hover:underline">Copy</button>
+                            </div>
+                            <div className="text-sm font-bold text-slate-800 bg-sky-50 border border-sky-100 rounded-xl p-3 leading-relaxed">{liOutput.headline}</div>
+                        </div>
+                    )}
+                    {liOutput.about && (
+                        <div>
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-slate-600">About Section</span>
+                                <button onClick={() => navigator.clipboard.writeText(liOutput.about!)} className="text-xs text-sky-600 font-bold hover:underline">Copy</button>
+                            </div>
+                            <div className="text-xs text-slate-700 bg-sky-50 border border-sky-100 rounded-xl p-3 whitespace-pre-wrap leading-relaxed">{liOutput.about}</div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -932,6 +988,7 @@ export const AtsDashboard: React.FC<AtsDashboardProps> = ({ result, onCheckAnoth
                 {activeTab === 'coverLetter' && renderCoverLetterPane()}
                 {activeTab === 'jobMatch' && renderJobMatchPane()}
                 {activeTab === 'interview' && renderInterviewPane()}
+                {activeTab === 'linkedin' && renderLinkedInPane()}
             </div>
 
             {/* 3. Live Canvas (Right) */}

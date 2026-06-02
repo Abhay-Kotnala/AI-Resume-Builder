@@ -460,6 +460,50 @@ public class ResumeController {
         }
     }
 
+    @PostMapping("/{resumeId}/linkedin-profile")
+    public ResponseEntity<?> generateLinkedInProfile(@PathVariable Long resumeId) {
+        try {
+            boolean isProUser = false;
+            int scansUsed = 0;
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+                User user = userRepository.findByEmail(auth.getName()).orElse(null);
+                if (user != null) {
+                    isProUser = user.isPro();
+                    scansUsed = user.getScansUsed();
+                }
+            }
+            if (!isProUser && scansUsed >= defaultFreeScans) {
+                return ResponseEntity.status(403).body(Map.of("error", "QuotaExceeded", "message",
+                        "LinkedIn Optimizer requires ElevateAI Pro. Please upgrade to continue."));
+            }
+
+            String extractedText = resumeRepository.findById(resumeId)
+                    .map(Resume::getExtractedText)
+                    .orElse("");
+            final String finalExtractedText = extractedText;
+
+            String jobId = backgroundJobService.submitJob(() -> {
+                String linkedInJson = aiAnalysisService.generateLinkedInProfile(finalExtractedText);
+
+                // Clean up any markdown fences Gemini might add
+                linkedInJson = linkedInJson.trim();
+                if (linkedInJson.startsWith("```json"))
+                    linkedInJson = linkedInJson.substring(7);
+                if (linkedInJson.startsWith("```"))
+                    linkedInJson = linkedInJson.substring(3);
+                if (linkedInJson.endsWith("```"))
+                    linkedInJson = linkedInJson.substring(0, linkedInJson.length() - 3);
+
+                return Map.of("profile", linkedInJson.trim());
+            });
+
+            return ResponseEntity.accepted().body(Map.of("jobId", jobId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/{resumeId}/match")
     public ResponseEntity<?> analyzeJobMatch(@PathVariable Long resumeId,
             @RequestBody Map<String, String> request) {

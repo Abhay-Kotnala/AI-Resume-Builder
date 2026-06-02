@@ -66,34 +66,34 @@ export const Pricing: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 
                 {/* ── Heading ────────────────────────────────────────────── */}
                 <div ref={heroRef} className="section-hidden text-center max-w-3xl mx-auto mb-14">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold mb-5 border border-emerald-200">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-sm font-semibold mb-5 border border-emerald-200 dark:border-emerald-800">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
                         Simple pricing
                     </span>
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-5">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-5">
                         Invest in your career,<br />not in resume writers.
                     </h1>
-                    <p className="text-xl text-slate-500">
+                    <p className="text-xl text-slate-500 dark:text-slate-400">
                         Start free. Upgrade when you're ready for the full AI suite.
                     </p>
 
                     {/* Billing Toggle */}
-                    <div className="mt-8 inline-flex items-center gap-3 bg-slate-100 rounded-full p-1 border border-slate-200">
+                    <div className="mt-8 inline-flex items-center gap-3 bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700">
                         <button
                             onClick={() => setAnnual(false)}
-                            className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!annual ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
+                            className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${!annual ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
                         >
                             Monthly
                         </button>
                         <button
                             onClick={() => setAnnual(true)}
-                            className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${annual ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
+                            className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${annual ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
                         >
                             Annual
                             <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Save 20%</span>
@@ -105,22 +105,22 @@ export const Pricing: React.FC = () => {
                 <div className="grid md:grid-cols-2 gap-8 mb-16">
 
                     {/* Free Plan */}
-                    <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col">
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">Basic Checker</h3>
-                        <p className="text-slate-500 mb-6">Perfect for a quick resume review.</p>
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Basic Checker</h3>
+                        <p className="text-slate-500 dark:text-slate-400 mb-6">Perfect for a quick resume review.</p>
                         <div className="mb-8 flex items-end gap-2">
-                            <span className="text-5xl font-extrabold text-slate-900">$0</span>
-                            <span className="text-slate-500 mb-1">/forever</span>
+                            <span className="text-5xl font-extrabold text-slate-900 dark:text-white">$0</span>
+                            <span className="text-slate-500 dark:text-slate-400 mb-1">/forever</span>
                         </div>
                         <ul className="space-y-3 mb-8 flex-1">
                             {FREE_FEATURES.map((f, i) => (
-                                <li key={i} className="flex items-center gap-3 text-slate-700">
+                                <li key={i} className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                                     <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                                     {f}
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={handleFreeStartClick} className="w-full py-4 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors text-center">
+                        <button onClick={handleFreeStartClick} className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-center">
                             Get Started Free
                         </button>
                     </div>
@@ -162,20 +162,20 @@ export const Pricing: React.FC = () => {
 
                 {/* ── Feature Comparison Table ───────────────────────────── */}
                 <div ref={tableRef} className="section-hidden mb-16">
-                    <h2 className="text-2xl font-bold text-slate-800 text-center mb-8">Full feature comparison</h2>
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white text-center mb-8">Full feature comparison</h2>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b border-slate-100 bg-slate-50">
-                                    <th className="text-left p-5 font-bold text-slate-600">Feature</th>
-                                    <th className="p-5 font-bold text-slate-600 text-center">Free</th>
+                                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                                    <th className="text-left p-5 font-bold text-slate-600 dark:text-slate-300">Feature</th>
+                                    <th className="p-5 font-bold text-slate-600 dark:text-slate-300 text-center">Free</th>
                                     <th className="p-5 font-bold text-emerald-600 text-center">Pro</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {COMPARISON.map((row, i) => (
-                                    <tr key={i} className={`border-b border-slate-50 ${i % 2 === 0 ? '' : 'bg-slate-50/40'}`}>
-                                        <td className="p-5 text-slate-700 font-medium">{row.feature}</td>
+                                    <tr key={i} className={`border-b border-slate-50 dark:border-slate-800/50 ${i % 2 === 0 ? '' : 'bg-slate-50/40 dark:bg-slate-800/20'}`}>
+                                        <td className="p-5 text-slate-700 dark:text-slate-300 font-medium">{row.feature}</td>
                                         <td className="p-5 text-center text-slate-400">{row.free}</td>
                                         <td className="p-5 text-center text-emerald-600 font-semibold">{row.pro}</td>
                                     </tr>
@@ -187,12 +187,12 @@ export const Pricing: React.FC = () => {
 
                 {/* ── FAQ Strip ─────────────────────────────────────────── */}
                 <div ref={faqRef} className="section-hidden">
-                    <h2 className="text-2xl font-bold text-slate-800 text-center mb-8">Common questions</h2>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white text-center mb-8">Common questions</h2>
                     <div className="grid md:grid-cols-3 gap-6">
                         {FAQS.map((faq, i) => (
-                            <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                                <p className="font-bold text-slate-800 mb-2">{faq.q}</p>
-                                <p className="text-slate-500 text-sm leading-relaxed">{faq.a}</p>
+                            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <p className="font-bold text-slate-800 dark:text-white mb-2">{faq.q}</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{faq.a}</p>
                             </div>
                         ))}
                     </div>
