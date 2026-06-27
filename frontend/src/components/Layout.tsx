@@ -12,7 +12,6 @@ export const Layout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isToolsOpen, setIsToolsOpen] = useState(false);
     const { isAuthenticated, logout, user, isSignInModalOpen, openSignInModal, closeSignInModal } = useAuth();
     const { toggleTheme, isDark } = useTheme();
     const firstName = user?.name?.split(' ')[0] || '';
