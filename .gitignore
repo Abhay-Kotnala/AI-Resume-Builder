@@ -10,6 +10,7 @@ application-local.properties
 **/.env.*.local
 frontend/.env.local
 frontend/.env.*.local
+*.pem
 
 # ---- Build outputs ----
 target/
@@ -44,3 +45,9 @@ linkedin_post_ideas.md
 project_data_for_report.md
 Outlier_DA_Complete_Strategy.md
 implementation_plan.md
+
+# ---- Personal & Server Configs (DO NOT COMMIT) ----
+*.pdf
+elevate.service
+nginx.conf
+*.py
