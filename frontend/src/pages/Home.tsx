@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { ResumeUpload } from '../components/ResumeUpload';
 import { AtsDashboard } from '../components/AtsDashboard';
 import { HowItWorks } from '../components/HowItWorks';
@@ -65,6 +66,10 @@ export const Home: React.FC = () => {
     const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
     const [showStickyCta, setShowStickyCta] = useState(false);
     const { isAuthenticated, openSignInModal } = useAuth();
+    
+    // Attempt to get setHideFooter from Outlet context
+    const outletContext = useOutletContext<{ setHideFooter: (hide: boolean) => void } | null>();
+    const setHideFooter = outletContext?.setHideFooter;
 
     const howItWorksRef = useInView();
     const featuresRef = useInView();
@@ -76,6 +81,18 @@ export const Home: React.FC = () => {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
+    // Effect to hide footer when analysis is showing
+    useEffect(() => {
+        if (setHideFooter) {
+            setHideFooter(!!analysisResult);
+        }
+        return () => {
+            if (setHideFooter) {
+                setHideFooter(false);
+            }
+        };
+    }, [analysisResult, setHideFooter]);
+
     const handleAnalysisComplete = (result: AnalysisResponse) => {
         setAnalysisResult(result);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -85,7 +102,6 @@ export const Home: React.FC = () => {
     if (analysisResult) {
         return (
             <div className="w-full animate-fade-in-up">
-                <style>{`footer { display: none !important; }`}</style>
                 {/* full-width dashboard — no wrapper constraints */}
                 <AtsDashboard result={analysisResult} onCheckAnother={() => setAnalysisResult(null)} />
             </div>

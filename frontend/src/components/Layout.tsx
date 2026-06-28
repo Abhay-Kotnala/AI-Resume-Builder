@@ -12,6 +12,7 @@ export const Layout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [hideFooter, setHideFooter] = useState(false);
     const { isAuthenticated, logout, user, isSignInModalOpen, openSignInModal, closeSignInModal } = useAuth();
     const { toggleTheme, isDark } = useTheme();
     const firstName = user?.name?.split(' ')[0] || '';
@@ -162,11 +163,11 @@ export const Layout: React.FC = () => {
 
             {/* Main Content Area */}
             <main className="flex-grow">
-                <Outlet />
+                <Outlet context={{ setHideFooter }} />
             </main>
 
             {/* Footer — hidden on dashboard and builder pages */}
-            {!location.pathname.startsWith('/dashboard') && !location.pathname.startsWith('/builder') && <MegaFooter />}
+            {!location.pathname.startsWith('/dashboard') && !location.pathname.startsWith('/builder') && !hideFooter && <MegaFooter />}
         </div>
     );
 };
