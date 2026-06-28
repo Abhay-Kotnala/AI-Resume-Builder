@@ -117,6 +117,10 @@ public class AiAnalysisService {
             String response = callGeminiWithRetry(requestBody);
 
             AnalysisResult result = parseResponse(response);
+            
+            // Calculate deterministic overall ATS score to prevent LLM contradictions
+            int calculatedScore = (int) Math.round((result.getImpactScore() + result.getFormattingScore() + result.getKeywordsScore()) / 3.0);
+            result.setAtsScore(calculatedScore);
 
             // Apply Partial Analysis for Free Users
             if (!isPro) {
