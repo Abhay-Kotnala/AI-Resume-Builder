@@ -85,6 +85,7 @@ export const Home: React.FC = () => {
     if (analysisResult) {
         return (
             <div className="w-full animate-fade-in-up">
+                <style>{`footer { display: none !important; }`}</style>
                 {/* full-width dashboard — no wrapper constraints */}
                 <AtsDashboard result={analysisResult} onCheckAnother={() => setAnalysisResult(null)} />
             </div>

@@ -108,7 +108,11 @@ public class AiAnalysisService {
                             Map.of("parts", new Object[] {
                                     Map.of("text", prompt)
                             })
-                    });
+                    },
+                    "generationConfig", Map.of(
+                            "responseMimeType", "application/json"
+                    )
+            );
 
             String response = callGeminiWithRetry(requestBody);
 
@@ -460,7 +464,7 @@ public class AiAnalysisService {
             base += "Since no job description was provided, evaluate it against general best practices for a modern Software Engineering or Tech role.\n\n";
         }
 
-        base += "CRITICAL RULE: If the resume text appears to be fake, gibberish, extremely short (e.g. just 'test'), or does not resemble a true resume, YOU MUST set all integer scores (atsScore, impactScore, formattingScore, keywordsScore) to 0. In the 'summary', explicitly state that the document does not appear to be a real resume.\n\n";
+        base += "CRITICAL RULE: If the resume text is empty, contains only gibberish, or is shorter than 20 words, YOU MUST set all integer scores to 0. Otherwise, you MUST provide realistic integer scores between 1 and 100 based on the quality of the resume.\n\n";
 
         base += "RESUME TEXT TO EVALUATE:\n" + resumeText;
         return base;
